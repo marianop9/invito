@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>{{ .Title }} &mdash; Event Invitation</title>
+  <meta name="description" content="{{ .Description }}">
+
+  <!-- OpenGraph Metadata for Social & Messaging Previews -->
+  <meta property="og:title" content="{{ .Title }}">
+  <meta property="og:description" content="{{ .Description }}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="/i/{{ .Slug }}">
+  {{ if and .Sections.Hero .Sections.Hero.CoverImageURL }}
+    <meta property="og:image" content="{{ .Sections.Hero.CoverImageURL }}">
+  {{ end }}
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/static/css/invitation.css">
+  <link rel="stylesheet" href="/static/css/themes/{{ .Theme.ID }}.css">
+
+  {{ if .Theme.PaletteOverride }}
+  <style>
+    :root {
+      {{ if .Theme.PaletteOverride.Primary }}--inv-accent: {{ .Theme.PaletteOverride.Primary }};{{ end }}
+      {{ if .Theme.PaletteOverride.Background }}--inv-bg: {{ .Theme.PaletteOverride.Background }};{{ end }}
+      {{ if .Theme.PaletteOverride.Text }}--inv-text: {{ .Theme.PaletteOverride.Text }};{{ end }}
+      {{ if .Theme.PaletteOverride.CardBg }}--inv-surface: {{ .Theme.PaletteOverride.CardBg }};{{ end }}
+    }
+  </style>
+  {{ end }}
+
+  {{ if .Theme.CustomCSS }}
+  <style>
+    {{ .Theme.CustomCSS }}
+  </style>
+  {{ end }}
+
+  <!-- Structured Data JSON-LD (Schema.org Event) -->
+  {{ $jsonld := .JSONLD }}
+  {{ if $jsonld }}
+  <script type="application/ld+json">
+    {{ $jsonld }}
+  </script>
+  {{ end }}
+</head>
+<body class="invitation-body theme-{{ .Theme.ID }}">
+  
+  <!-- Top utility bar -->
+  <nav class="inv-top-bar">
+    <a href="/" id="btn-back-home">&larr; Invito</a>
+    <span>Digital Invitation</span>
+  </nav>
+
+  <!-- Continuous Single-Sheet Canvas -->
+  <main class="inv-sheet">
+    {{ template "partial_hero" . }}
+    {{ template "partial_details" . }}
+    {{ template "partial_timeline" . }}
+    {{ template "partial_dress_code" . }}
+    {{ template "partial_rsvp_form" . }}
+    {{ template "partial_faqs" . }}
+    {{ template "partial_registry" . }}
+
+    <footer class="inv-footer">
+      <span>Event details &bull; Hosted on Invito</span>
+    </footer>
+  </main>
+
+  <!-- Interactivity Script -->
+  <script src="/static/js/invitation.js"></script>
+</body>
+</html>

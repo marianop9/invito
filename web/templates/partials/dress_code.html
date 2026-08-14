@@ -1,0 +1,23 @@
+{{ define "partial_dress_code" }}
+{{ if .Sections.DressCode }}
+<div class="inv-section" id="section-dress-code">
+  <div class="inv-section-heading">Dress Code</div>
+  <div class="dress-code-compact">
+    <div class="dress-code-header">
+      <span class="dress-code-title">{{ .Sections.DressCode.Title }}</span>
+      {{ if .Sections.DressCode.PaletteHints }}
+        <div class="swatches-inline" title="Palette suggestions">
+          {{ range .Sections.DressCode.PaletteHints }}
+            <span class="swatch-dot" style="background-color: {{ . }};"></span>
+          {{ end }}
+        </div>
+      {{ end }}
+    </div>
+
+    {{ if .Sections.DressCode.Description }}
+      <p class="dress-code-desc">{{ .Sections.DressCode.Description }}</p>
+    {{ end }}
+  </div>
+</div>
+{{ end }}
+{{ end }}

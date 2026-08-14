@@ -1,0 +1,69 @@
+{
+  "version": "1.0",
+  "slug": "lucas-30th-birthday-sunset-fiesta",
+  "title": "Lucas is 30",
+  "subtitle": "Golden hour spritzes, sourdough pizza, and summer vibes",
+  "hosts": [
+    "Lucas Morales"
+  ],
+  "description": "Celebrating chapter 30 with mezcal cocktails, woodfired pizza fresh from the oven, and sunset dancing.",
+  "date_start": "2026-08-22T17:30:00Z",
+  "date_end": "2026-08-23T00:30:00Z",
+  "timezone": "America/Los_Angeles",
+  "location": {
+    "name": "Cliffside Villa",
+    "address": "1200 Pacific Coast Hwy, Malibu, CA",
+    "map_url": "https://maps.google.com/?q=Malibu+Pacific+Coast+Highway",
+    "directions_note": "Rideshare drop-off at main gate."
+  },
+  "theme": {
+    "id": "golden-sunset"
+  },
+  "sections": {
+    "hero": {
+      "badge": "Chapter 30 &bull; Aug 22, 2026",
+      "show_countdown": true
+    },
+    "timeline": [
+      {
+        "time": "5:30 PM",
+        "title": "Spritz Bar",
+        "description": "Aperol & palomas by the pool"
+      },
+      {
+        "time": "7:00 PM",
+        "title": "Artisanal Pizza",
+        "description": "Woodfired sourdough & salads"
+      },
+      {
+        "time": "8:30 PM",
+        "title": "Cake & Toasts",
+        "description": "Dessert & champagne"
+      },
+      {
+        "time": "9:30 PM",
+        "title": "DJ & Fire Pit",
+        "description": "Late night beats & lounge"
+      }
+    ],
+    "dress_code": {
+      "title": "Summer Chic",
+      "description": "Linen shirts, breezy dresses, and warm tones. Pool is heated!",
+      "palette_hints": ["#D74E2A", "#F2A65A", "#FBF0E8", "#2A1C16"]
+    },
+    "rsvp": {
+      "enabled": true,
+      "deadline": "2026-08-15T23:59:59Z",
+      "max_party_size": 2,
+      "ask_dietary": true,
+      "ask_song_request": true,
+      "custom_note": "RSVP before Aug 15th"
+    },
+    "faqs": [
+      {
+        "question": "Are gifts expected?",
+        "answer": "No gifts! Just bring good vibes and yourself."
+      }
+    ]
+  }
+}

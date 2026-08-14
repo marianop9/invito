@@ -1,0 +1,16 @@
+{{ define "partial_faqs" }}
+{{ if .Sections.FAQs }}
+<div class="inv-section" id="section-faqs">
+  <div class="inv-section-heading">Information</div>
+
+  <div class="faq-compact-list">
+    {{ range .Sections.FAQs }}
+      <div class="faq-compact-item">
+        <span class="faq-compact-q">{{ .Question }}</span>
+        <span class="faq-compact-a">{{ .Answer }}</span>
+      </div>
+    {{ end }}
+  </div>
+</div>
+{{ end }}
+{{ end }}

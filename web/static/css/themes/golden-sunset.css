@@ -1,0 +1,19 @@
+/* Theme: Golden Sunset */
+:root {
+  --inv-bg: #FAF5F0;
+  --inv-surface: #FFFFFF;
+  --inv-surface-alt: #FBF0E8;
+  --inv-text: #2A1C16;
+  --inv-text-muted: #785F55;
+  --inv-accent: #D74E2A;
+  --inv-accent-hover: #BE3D1B;
+  --inv-accent-light: #FCEBE5;
+  --inv-border: #EEDCD0;
+  --inv-border-light: #F5EAE2;
+  --inv-font-heading: 'Plus Jakarta Sans', sans-serif;
+  --inv-font-body: 'Plus Jakarta Sans', sans-serif;
+}
+
+body.invitation-body {
+  background-image: linear-gradient(180deg, #FAF4EE 0%, #F5E8DC 100%);
+}

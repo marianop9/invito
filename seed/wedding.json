@@ -1,0 +1,92 @@
+{
+  "version": "1.0",
+  "slug": "sarah-and-alex-wedding",
+  "title": "Sarah & Alex",
+  "subtitle": "Request the pleasure of your company to celebrate their marriage",
+  "hosts": [
+    "Sarah Jenkins",
+    "Alexander Hayes"
+  ],
+  "description": "Join us for an evening of vows, seasonal dinner, and dancing under the stars at Willowbrook Estate.",
+  "date_start": "2026-09-19T16:00:00Z",
+  "date_end": "2026-09-19T23:30:00Z",
+  "timezone": "America/New_York",
+  "location": {
+    "name": "Willowbrook Botanical Estate",
+    "address": "450 Magnolia Lane, Charlottesville, VA",
+    "map_url": "https://maps.google.com/?q=Willowbrook+Botanical+Estate+Charlottesville",
+    "directions_note": "Valet parking available at the main gate."
+  },
+  "theme": {
+    "id": "botanical-elegance"
+  },
+  "sections": {
+    "hero": {
+      "badge": "Save The Date &bull; Sep 19, 2026",
+      "show_countdown": true
+    },
+    "timeline": [
+      {
+        "time": "4:00 PM",
+        "title": "Welcome Drinks",
+        "description": "Conservatory Lawn"
+      },
+      {
+        "time": "4:45 PM",
+        "title": "Ceremony",
+        "description": "Rose Garden Pavilion"
+      },
+      {
+        "time": "5:45 PM",
+        "title": "Cocktail Hour",
+        "description": "Passed bites & string quartet"
+      },
+      {
+        "time": "7:00 PM",
+        "title": "Seated Dinner & Toasts",
+        "description": "Grand Glasshouse"
+      },
+      {
+        "time": "9:00 PM",
+        "title": "Dancing & Send-off",
+        "description": "Sparkler farewell at 11:30 PM"
+      }
+    ],
+    "dress_code": {
+      "title": "Garden Formal",
+      "description": "Suits or cocktail attire. Block heels recommended for the lawn.",
+      "palette_hints": ["#2A4738", "#D4AF37", "#EFEBE4", "#8A9A86"]
+    },
+    "rsvp": {
+      "enabled": true,
+      "deadline": "2026-08-25T23:59:59Z",
+      "max_party_size": 2,
+      "ask_dietary": true,
+      "ask_song_request": false,
+      "custom_note": "Kindly RSVP by August 25th"
+    },
+    "faqs": [
+      {
+        "question": "Are children invited?",
+        "answer": "We kindly request an adults-only celebration."
+      },
+      {
+        "question": "Is transportation provided?",
+        "answer": "Shuttle departs from Downtown Omni Hotel at 3:15 PM."
+      }
+    ],
+    "gift_registry": {
+      "message": "Your presence is our present. For those who wish to gift:",
+      "links": [
+        {
+          "label": "Crate & Barrel",
+          "url": "https://www.crateandbarrel.com"
+        },
+        {
+          "label": "Honeymoon Fund",
+          "url": "https://www.zola.com"
+        }
+      ]
+    }
+  }
+}

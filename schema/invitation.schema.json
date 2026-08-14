@@ -1,0 +1,163 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://invito.app/schemas/invitation.schema.json",
+  "title": "EventInvitation",
+  "description": "Structured schema definition for event invitations in the Invito platform",
+  "type": "object",
+  "required": ["version", "slug", "title", "date_start", "location", "theme"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "default": "1.0",
+      "description": "Schema version"
+    },
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "URL-friendly unique identifier (e.g. sarah-and-alex-wedding)"
+    },
+    "title": {
+      "type": "string",
+      "description": "Main title of the event"
+    },
+    "subtitle": {
+      "type": "string",
+      "description": "Optional secondary headline or invitation greeting"
+    },
+    "hosts": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "List of host names"
+    },
+    "description": {
+      "type": "string",
+      "description": "Welcome message or narrative for guests"
+    },
+    "date_start": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Start timestamp in ISO-8601 format"
+    },
+    "date_end": {
+      "type": "string",
+      "format": "date-time",
+      "description": "End timestamp in ISO-8601 format"
+    },
+    "timezone": {
+      "type": "string",
+      "default": "UTC",
+      "description": "IANA timezone identifier (e.g. America/New_York, Europe/Paris)"
+    },
+    "location": {
+      "type": "object",
+      "required": ["name", "address"],
+      "properties": {
+        "name": { "type": "string", "description": "Venue name" },
+        "address": { "type": "string", "description": "Full street address" },
+        "map_url": { "type": "string", "description": "Google Maps or OpenStreetMap direct link" },
+        "directions_note": { "type": "string", "description": "Parking, shuttle, or navigation instructions" }
+      }
+    },
+    "theme": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": ["botanical-elegance", "midnight-soiree", "modern-minimal", "golden-sunset"],
+          "description": "Pre-defined theme identifier"
+        },
+        "palette_override": {
+          "type": "object",
+          "properties": {
+            "primary": { "type": "string" },
+            "background": { "type": "string" },
+            "text": { "type": "string" },
+            "accent": { "type": "string" },
+            "card_bg": { "type": "string" }
+          }
+        },
+        "font_heading": { "type": "string" },
+        "font_body": { "type": "string" },
+        "custom_css": { "type": "string" }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "properties": {
+        "hero": {
+          "type": "object",
+          "properties": {
+            "badge": { "type": "string", "description": "Eyebrow badge above headline (e.g. Save The Date)" },
+            "cover_image_url": { "type": "string" },
+            "show_countdown": { "type": "boolean", "default": true }
+          }
+        },
+        "timeline": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["time", "title"],
+            "properties": {
+              "time": { "type": "string", "description": "Display time (e.g. 4:00 PM)" },
+              "title": { "type": "string", "description": "Event segment title" },
+              "description": { "type": "string" },
+              "icon": { "type": "string", "description": "Optional icon keyword (ceremony, cocktail, dinner, party, speech, toast)" }
+            }
+          }
+        },
+        "dress_code": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "description": "Dress code title (e.g. Formal Black Tie, Cocktail Attire)" },
+            "description": { "type": "string" },
+            "palette_hints": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Hex color codes or color names suggested for guests"
+            }
+          }
+        },
+        "rsvp": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean", "default": true },
+            "deadline": { "type": "string", "format": "date-time" },
+            "max_party_size": { "type": "integer", "default": 2, "minimum": 1, "maximum": 10 },
+            "ask_dietary": { "type": "boolean", "default": true },
+            "ask_song_request": { "type": "boolean", "default": false },
+            "custom_note": { "type": "string" }
+          }
+        },
+        "faqs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["question", "answer"],
+            "properties": {
+              "question": { "type": "string" },
+              "answer": { "type": "string" }
+            }
+          }
+        },
+        "gift_registry": {
+          "type": "object",
+          "properties": {
+            "message": { "type": "string" },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["label", "url"],
+                "properties": {
+                  "label": { "type": "string" },
+                  "url": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

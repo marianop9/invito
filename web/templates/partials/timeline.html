@@ -1,0 +1,21 @@
+{{ define "partial_timeline" }}
+{{ if .Sections.Timeline }}
+<div class="inv-section" id="section-timeline">
+  <div class="inv-section-heading">Schedule</div>
+
+  <ul class="timeline-compact">
+    {{ range .Sections.Timeline }}
+      <li class="timeline-compact-item">
+        <span class="timeline-time-badge">{{ .Time }}</span>
+        <div class="timeline-compact-content">
+          <div class="timeline-compact-title">{{ .Title }}</div>
+          {{ if .Description }}
+            <div class="timeline-compact-desc">{{ .Description }}</div>
+          {{ end }}
+        </div>
+      </li>
+    {{ end }}
+  </ul>
+</div>
+{{ end }}
+{{ end }}

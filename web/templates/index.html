@@ -1,0 +1,90 @@
+{{ template "base.html" . }}
+
+{{ define "title" }}Invito &mdash; Event Invitation Platform{{ end }}
+
+{{ define "content" }}
+<div class="hero-card">
+  <div class="status-badge">
+    <span class="status-dot"></span>
+    <span>Prototype Engine Online &bull; Active Templates</span>
+  </div>
+  <h1 class="hero-title">Structured Event Invitations with Go</h1>
+  <p class="hero-description">
+    Invito generates responsive, themeable event invitations from a single JSON schema. 
+    Complete with live countdowns, Google &amp; Apple Calendar sync, and interactive RSVP confirmations.
+  </p>
+
+  <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+    <a href="#showcase-templates" class="btn btn-primary" id="btn-browse-templates">Explore Starter Templates &darr;</a>
+    <a href="/health" class="btn btn-secondary" id="btn-health-check">System Health</a>
+  </div>
+</div>
+
+<section id="showcase-templates" style="margin-top: 2.5rem;">
+  <div style="margin-bottom: 1.5rem;">
+    <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">
+      Pre-Defined Invitation Templates
+    </h2>
+    <p style="color: var(--text-secondary); font-size: 0.9375rem;">
+      Select a template below to experience dynamic server-side rendering, theme styling, and RSVP confirmation.
+    </p>
+  </div>
+
+  <div class="feature-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+    {{ range .Invitations }}
+    <div class="feature-item" style="display: flex; flex-direction: column; justify-content: space-between; background: var(--bg-surface);">
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+          <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.08em; padding: 0.2rem 0.6rem; border-radius: 9999px; background: var(--bg-subtle); color: var(--text-secondary);">
+            {{ .Theme.ID }}
+          </span>
+          <span style="font-size: 0.8125rem; color: var(--text-muted);">{{ .FormattedDateShort }}</span>
+        </div>
+
+        <h3 class="feature-item-title" style="font-size: 1.125rem; line-height: 1.35; margin-bottom: 0.5rem;">
+          {{ .Title }}
+        </h3>
+        
+        <p class="feature-item-desc" style="margin-bottom: 1rem; font-size: 0.875rem;">
+          {{ .Description }}
+        </p>
+
+        <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.25rem;">
+          <div>📍 <strong>{{ .Location.Name }}</strong></div>
+          <div>🕒 {{ .FormattedTime }}</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+        <a href="/i/{{ .Slug }}" class="btn btn-primary" style="flex: 1; font-size: 0.875rem; padding: 0.5rem;" target="_blank" rel="noopener noreferrer">
+          Open Invitation &nearr;
+        </a>
+        <a href="/i/{{ .Slug }}/calendar.ics" class="btn btn-secondary" style="font-size: 0.875rem; padding: 0.5rem;" title="Download iCal">
+          📅 .ics
+        </a>
+      </div>
+    </div>
+    {{ end }}
+  </div>
+</section>
+
+<section style="margin-top: 3.5rem; border-top: 1px solid var(--border-subtle); padding-top: 2rem;">
+  <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">
+    Architecture Highlights
+  </h3>
+  <div class="feature-grid">
+    <div class="feature-item">
+      <h4 class="feature-item-title">Type-Safe JSON Schema</h4>
+      <p class="feature-item-desc">Defines event metadata, timeline items, dress code hints, and RSVP constraints with Go validation.</p>
+    </div>
+    <div class="feature-item">
+      <h4 class="feature-item-title">Dynamic SSR Engine</h4>
+      <p class="feature-item-desc">Renders responsive HTML with OpenGraph cards, JSON-LD Schema.org Event data, and custom theme CSS.</p>
+    </div>
+    <div class="feature-item">
+      <h4 class="feature-item-title">Calendar &amp; RSVP Handlers</h4>
+      <p class="feature-item-desc">Generates standard RFC 5545 `.ics` downloads, Google Calendar links, and AJAX attendance confirmations.</p>
+    </div>
+  </div>
+</section>
+{{ end }}

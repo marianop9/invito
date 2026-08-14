@@ -1,0 +1,20 @@
+{{ define "partial_registry" }}
+{{ if .Sections.GiftRegistry }}
+<div class="inv-section" id="section-registry">
+  <div class="inv-section-heading">Registry</div>
+  {{ if .Sections.GiftRegistry.Message }}
+    <p class="dress-code-desc">{{ .Sections.GiftRegistry.Message }}</p>
+  {{ end }}
+
+  {{ if .Sections.GiftRegistry.Links }}
+    <div class="registry-chips">
+      {{ range .Sections.GiftRegistry.Links }}
+        <a href="{{ .URL }}" target="_blank" rel="noopener noreferrer" class="registry-chip">
+          🎁 {{ .Label }} &rarr;
+        </a>
+      {{ end }}
+    </div>
+  {{ end }}
+</div>
+{{ end }}
+{{ end }}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ block "title" . }}Event Invitation Platform{{ end }}</title>
+  <meta name="description" content="{{ block "description" . }}A lightweight platform to create, preview, and share structured event invitations.{{ end }}">
+  <link rel="stylesheet" href="/static/css/base.css">
+  {{ block "head" . }}{{ end }}
+</head>
+<body>
+  <div class="app-wrapper">
+    <header class="site-header">
+      <div class="container header-content">
+        <a href="/" class="brand-link" id="brand-logo-link">
+          <span class="brand-icon">✦</span>
+          <span>Invito</span>
+        </a>
+        <nav class="nav-links">
+          <a href="/" class="nav-link" id="nav-home">Home</a>
+          <a href="/health" class="nav-link" id="nav-health">Status</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <div class="container">
+        {{ block "content" . }}{{ end }}
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>&copy; {{ .CurrentYear }} Invito &mdash; Event Invitation Engine</p>
+      </div>
+    </footer>
+  </div>
+  {{ block "scripts" . }}{{ end }}
+</body>
+</html>
