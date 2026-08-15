@@ -195,8 +195,8 @@ func (s *Server) handleRSVPSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	maxParty := 2
-	if inv.Sections.RSVP != nil && inv.Sections.RSVP.MaxPartySize > 0 {
-		maxParty = inv.Sections.RSVP.MaxPartySize
+	if rsvp := inv.RSVPSection(); rsvp != nil && rsvp.MaxPartySize > 0 {
+		maxParty = rsvp.MaxPartySize
 	}
 
 	if err := sub.Validate(maxParty); err != nil {

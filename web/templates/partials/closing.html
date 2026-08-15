@@ -1,15 +1,13 @@
 {{ define "partial_closing" }}
-{{ if .HasClosing }}
 <section class="inv-section inv-closing-section" id="section-closing">
   <div class="inv-closing-content">
-    {{ if .Sections.Closing.Message }}
-      <p class="inv-closing-message">{{ .Sections.Closing.Message }}</p>
+    {{ if .Section.Message }}
+      <p class="inv-closing-message">{{ .Section.Message }}</p>
     {{ end }}
-    {{ if .Sections.Closing.Signoff }}
-      <p class="inv-closing-signoff">{{ .Sections.Closing.Signoff }}</p>
+    {{ if .Section.Signoff }}
+      <p class="inv-closing-signoff">{{ .Section.Signoff }}</p>
     {{ end }}
-    <p class="inv-closing-hosts">{{ .Sections.Closing.DisplayHosts .HostsDisplay }}</p>
+    <p class="inv-closing-hosts">{{ .Section.DisplayHosts .Invitation.HostsDisplay }}</p>
   </div>
 </section>
-{{ end }}
 {{ end }}

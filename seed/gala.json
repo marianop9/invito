@@ -19,39 +19,51 @@
   "theme": {
     "id": "midnight-soiree"
   },
-  "sections": {
-    "hero": {
+  "sections": [
+    {
+      "type": "hero",
       "badge": "Black Tie &bull; Oct 24, 2026",
       "show_countdown": true
     },
-    "timeline": [
-      {
-        "time": "7:00 PM",
-        "title": "Champagne Reception",
-        "description": "Caviar bar & red carpet"
-      },
-      {
-        "time": "8:15 PM",
-        "title": "Keynote & Live Auction",
-        "description": "Charity art & expeditions"
-      },
-      {
-        "time": "9:30 PM",
-        "title": "Gala Dinner",
-        "description": "Curated wine pairings"
-      },
-      {
-        "time": "11:00 PM",
-        "title": "Late Night Symphony",
-        "description": "Terrace lounge & DJ set"
-      }
-    ],
-    "dress_code": {
+    {
+      "type": "details",
+      "show_map_link": true,
+      "show_calendar_button": true
+    },
+    {
+      "type": "timeline",
+      "title": "Evening Programme",
+      "items": [
+        {
+          "time": "7:00 PM",
+          "title": "Champagne Reception",
+          "description": "Caviar bar & red carpet"
+        },
+        {
+          "time": "8:15 PM",
+          "title": "Keynote & Live Auction",
+          "description": "Charity art & expeditions"
+        },
+        {
+          "time": "9:30 PM",
+          "title": "Gala Dinner",
+          "description": "Curated wine pairings"
+        },
+        {
+          "time": "11:00 PM",
+          "title": "Late Night Symphony",
+          "description": "Terrace lounge & DJ set"
+        }
+      ]
+    },
+    {
+      "type": "dress_code",
       "title": "Black Tie / Midnight Glamour",
       "description": "Tuxedos and floor-length evening gowns.",
       "palette_hints": ["#090D16", "#D4AF37", "#202C45", "#F8FAFC"]
     },
-    "rsvp": {
+    {
+      "type": "rsvp",
       "enabled": true,
       "deadline": "2026-10-01T23:59:59Z",
       "max_party_size": 4,
@@ -59,11 +71,21 @@
       "ask_song_request": false,
       "custom_note": "Confirm before October 1st"
     },
-    "faqs": [
-      {
-        "question": "Is admission tax-deductible?",
-        "answer": "Yes, 80% of ticket value qualifies as a 501(c)(3) tax deduction."
-      }
-    ]
-  }
+    {
+      "type": "faqs",
+      "title": "Gala Information",
+      "items": [
+        {
+          "question": "Is admission tax-deductible?",
+          "answer": "Yes, 80% of ticket value qualifies as a 501(c)(3) tax deduction."
+        }
+      ]
+    },
+    {
+      "type": "closing",
+      "message": "We look forward to an extraordinary evening together.",
+      "signoff": "Warm regards,",
+      "hosts": "Aurora Foundation"
+    }
+  ]
 }

@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 	"time"
@@ -23,11 +24,9 @@ func TestInvitationValidation(t *testing.T) {
 		Theme: ThemeConfig{
 			ID: ThemeBotanicalElegance,
 		},
-		Sections: Sections{
-			RSVP: &RSVPSection{
-				Enabled:      true,
-				MaxPartySize: 2,
-			},
+		Sections: []Section{
+			&HeroSection{SectionType: SectionHero, Badge: "Save The Date"},
+			&RSVPSection{SectionType: SectionRSVP, Enabled: true, MaxPartySize: 2},
 		},
 	}
 
@@ -52,11 +51,14 @@ func TestInvitationValidation(t *testing.T) {
 
 	// Test invalid carousel with empty image URL
 	invalidCarouselInv := validInv
-	invalidCarouselInv.Sections.Carousel = &CarouselSection{
-		Title: "Our Moments",
-		Images: []CarouselImage{
-			{URL: "/static/img/hero.webp", Caption: "Valid photo"},
-			{URL: "", Caption: "Missing URL photo"},
+	invalidCarouselInv.Sections = []Section{
+		&CarouselSection{
+			SectionType: SectionCarousel,
+			Title:       "Our Moments",
+			Images: []CarouselImage{
+				{URL: "/static/img/hero.webp", Caption: "Valid photo"},
+				{URL: "", Caption: "Missing URL photo"},
+			},
 		},
 	}
 	if err := invalidCarouselInv.Validate(); err == nil {
@@ -65,17 +67,140 @@ func TestInvitationValidation(t *testing.T) {
 
 	// Test invalid message with empty text
 	invalidMsgInv := validInv
-	invalidMsgInv.Sections.Message = &MessageSection{Text: "   "}
+	invalidMsgInv.Sections = []Section{
+		&MessageSection{SectionType: SectionMessage, Text: "   "},
+	}
 	if err := invalidMsgInv.Validate(); err == nil {
 		t.Errorf("expected error when message text is empty, got nil")
 	}
 
 	// Test invalid image with empty url
 	invalidImgInv := validInv
-	invalidImgInv.Sections.Image = &ImageSection{URL: "   "}
+	invalidImgInv.Sections = []Section{
+		&ImageSection{SectionType: SectionImage, URL: "   "},
+	}
 	if err := invalidImgInv.Validate(); err == nil {
 		t.Errorf("expected error when image url is empty, got nil")
 	}
+}
+
+func TestInvitationJSONUnmarshaling(t *testing.T) {
+	t.Run("Polymorphic Array Unmarshaling with Multiple Messages and Images", func(t *testing.T) {
+		jsonBlob := `{
+			"version": "1.0",
+			"slug": "custom-blocks-event",
+			"title": "Custom Blocks Wedding",
+			"date_start": "2026-09-19T16:00:00Z",
+			"location": {
+				"name": "Botanical Estate",
+				"address": "450 Magnolia Lane"
+			},
+			"theme": { "id": "botanical-elegance" },
+			"sections": [
+				{ "type": "hero", "badge": "Special Announcement", "cover_image_url": "/static/img/demo-hero.webp" },
+				{ "type": "message", "text": "First quote: Two lives, one path.", "author": "Poet" },
+				{ "type": "carousel", "title": "Photo Moments", "images": [{ "url": "/static/img/c1.webp" }, { "url": "/static/img/c2.webp" }] },
+				{ "type": "details", "show_map_link": true },
+				{ "type": "timeline", "title": "Schedule", "items": [{ "time": "4:00 PM", "title": "Ceremony" }] },
+				{ "type": "image", "url": "/static/img/venue.webp", "caption": "The Glasshouse Conservatory" },
+				{ "type": "message", "text": "Second message: Shuttle departs at 3:15 PM sharp." },
+				{ "type": "dress_code", "title": "Garden Formal", "palette_hints": ["#2A4738", "#D4AF37"] },
+				{ "type": "image", "url": "/static/img/swatches.webp", "caption": "Color Swatches" },
+				{ "type": "rsvp", "enabled": true, "max_party_size": 2 },
+				{ "type": "faqs", "title": "Questions", "items": [{ "question": "Parking?", "answer": "Valet at gate" }] },
+				{ "type": "gift_registry", "message": "Gifts welcome", "links": [{ "label": "Store", "url": "https://store.com" }] },
+				{ "type": "closing", "message": "See you there!", "signoff": "Love,", "hosts": "Sarah & Alex" }
+			]
+		}`
+
+		var inv Invitation
+		if err := json.Unmarshal([]byte(jsonBlob), &inv); err != nil {
+			t.Fatalf("failed to unmarshal polymorphic blocks: %v", err)
+		}
+
+		if len(inv.Sections) != 13 {
+			t.Fatalf("expected 13 sections, got %d", len(inv.Sections))
+		}
+
+		// Verify ordering and types
+		expectedTypes := []SectionType{
+			SectionHero,
+			SectionMessage,
+			SectionCarousel,
+			SectionDetails,
+			SectionTimeline,
+			SectionImage,
+			SectionMessage,
+			SectionDressCode,
+			SectionImage,
+			SectionRSVP,
+			SectionFAQs,
+			SectionGiftRegistry,
+			SectionClosing,
+		}
+
+		for i, expected := range expectedTypes {
+			if inv.Sections[i].Type() != expected {
+				t.Errorf("section #%d: expected type %s, got %s", i+1, expected, inv.Sections[i].Type())
+			}
+		}
+
+		// Check multiple message contents
+		msg1, ok := inv.Sections[1].(*MessageSection)
+		if !ok || !strings.Contains(msg1.Text, "First quote") {
+			t.Errorf("unexpected msg1: %+v", inv.Sections[1])
+		}
+		msg2, ok := inv.Sections[6].(*MessageSection)
+		if !ok || !strings.Contains(msg2.Text, "Shuttle departs") {
+			t.Errorf("unexpected msg2: %+v", inv.Sections[6])
+		}
+
+		// Check multiple image contents
+		img1, ok := inv.Sections[5].(*ImageSection)
+		if !ok || img1.URL != "/static/img/venue.webp" {
+			t.Errorf("unexpected img1: %+v", inv.Sections[5])
+		}
+		img2, ok := inv.Sections[8].(*ImageSection)
+		if !ok || img2.URL != "/static/img/swatches.webp" {
+			t.Errorf("unexpected img2: %+v", inv.Sections[8])
+		}
+
+		if err := inv.Validate(); err != nil {
+			t.Fatalf("unmarshaled invitation failed validation: %v", err)
+		}
+	})
+
+	t.Run("Legacy Object Map Fallback Unmarshaling", func(t *testing.T) {
+		legacyJSON := `{
+			"version": "1.0",
+			"slug": "legacy-party",
+			"title": "Legacy Party",
+			"date_start": "2026-09-19T16:00:00Z",
+			"location": { "name": "Hall", "address": "123 Main" },
+			"theme": { "id": "golden-sunset" },
+			"sections": {
+				"hero": { "badge": "Legacy Eyebrow" },
+				"message": { "text": "Legacy statement" },
+				"rsvp": { "enabled": true, "max_party_size": 2 }
+			}
+		}`
+
+		var inv Invitation
+		if err := json.Unmarshal([]byte(legacyJSON), &inv); err != nil {
+			t.Fatalf("failed to unmarshal legacy map: %v", err)
+		}
+
+		if len(inv.Sections) == 0 {
+			t.Fatalf("expected legacy sections to convert to slice, got 0")
+		}
+
+		if inv.HeroSection() == nil || inv.HeroSection().Badge != "Legacy Eyebrow" {
+			t.Errorf("expected hero section to be parsed from legacy map")
+		}
+		if inv.RSVPSection() == nil || !inv.RSVPSection().Enabled {
+			t.Errorf("expected rsvp section to be parsed from legacy map")
+		}
+	})
 }
 
 func TestInvitationHelpers(t *testing.T) {
@@ -92,32 +217,37 @@ func TestInvitationHelpers(t *testing.T) {
 			Name:    "Botanical Gardens",
 			Address: "123 Flower Ave",
 		},
-		Sections: Sections{
-			Hero: &HeroSection{
+		Sections: []Section{
+			&HeroSection{
+				SectionType:    SectionHero,
 				Badge:          "Save The Date",
 				CoverImageURL:  "/static/img/hero.webp",
 				BannerImageURL: "/static/img/banner.webp",
 			},
-			Message: &MessageSection{
-				Text:   "Two lives, one shared journey.",
-				Author: "Poet",
+			&MessageSection{
+				SectionType: SectionMessage,
+				Text:        "Two lives, one shared journey.",
+				Author:      "Poet",
 			},
-			Carousel: &CarouselSection{
-				Title: "Our Journey",
+			&CarouselSection{
+				SectionType: SectionCarousel,
+				Title:       "Our Journey",
 				Images: []CarouselImage{
 					{URL: "/static/img/carousel-1.webp", Caption: "Engagement Day", Alt: "Sarah and Alex engagement"},
 					{URL: "/static/img/carousel-2.webp", Caption: "Summer in Italy"},
 				},
 			},
-			Image: &ImageSection{
-				URL:     "/static/img/venue.webp",
-				Caption: "The conservatory",
-				Alt:     "Glasshouse venue",
+			&ImageSection{
+				SectionType: SectionImage,
+				URL:         "/static/img/venue.webp",
+				Caption:     "The conservatory",
+				Alt:         "Glasshouse venue",
 			},
-			Closing: &ClosingSection{
-				Message: "See you soon!",
-				Signoff: "With love,",
-				Hosts:   "Sarah & Alex",
+			&ClosingSection{
+				SectionType: SectionClosing,
+				Message:     "See you soon!",
+				Signoff:     "With love,",
+				Hosts:       "Sarah & Alex",
 			},
 		},
 	}
@@ -136,41 +266,37 @@ func TestInvitationHelpers(t *testing.T) {
 	if inv.CoverImage() != "/static/img/hero.webp" {
 		t.Errorf("expected CoverImage() to return '/static/img/hero.webp', got %q", inv.CoverImage())
 	}
-	if !inv.Sections.Hero.HasCoverImage() || !inv.Sections.Hero.HasBannerImage() {
+	hero := inv.HeroSection()
+	if !hero.HasCoverImage() || !hero.HasBannerImage() {
 		t.Errorf("expected HeroSection HasCoverImage and HasBannerImage to be true")
 	}
 
-	if !inv.HasMessage() {
-		t.Errorf("expected HasMessage() to be true")
+	imgSec := inv.Sections[3].(*ImageSection)
+	if imgSec.AltText("def") != "Glasshouse venue" {
+		t.Errorf("expected image alt text 'Glasshouse venue', got %q", imgSec.AltText("def"))
 	}
-	if !inv.HasImage() {
-		t.Errorf("expected HasImage() to be true")
-	}
-	if inv.Sections.Image.AltText("def") != "Glasshouse venue" {
-		t.Errorf("expected image alt text 'Glasshouse venue', got %q", inv.Sections.Image.AltText("def"))
-	}
-	if !inv.HasClosing() {
-		t.Errorf("expected HasClosing() to be true")
-	}
-	if inv.Sections.Closing.DisplayHosts("fallback") != "Sarah & Alex" {
-		t.Errorf("expected 'Sarah & Alex', got %q", inv.Sections.Closing.DisplayHosts("fallback"))
+
+	closingSec := inv.Sections[4].(*ClosingSection)
+	if closingSec.DisplayHosts("fallback") != "Sarah & Alex" {
+		t.Errorf("expected 'Sarah & Alex', got %q", closingSec.DisplayHosts("fallback"))
 	}
 
 	if !inv.HasCarousel() {
 		t.Errorf("expected HasCarousel() to be true")
 	}
-	if inv.Sections.Carousel.ImageCount() != 2 {
-		t.Errorf("expected ImageCount() == 2, got %d", inv.Sections.Carousel.ImageCount())
+	carousel := inv.CarouselSection()
+	if carousel.ImageCount() != 2 {
+		t.Errorf("expected ImageCount() == 2, got %d", carousel.ImageCount())
 	}
-	if !inv.Sections.Carousel.HasImages() {
+	if !carousel.HasImages() {
 		t.Errorf("expected HasImages() to be true")
 	}
 
-	img1 := inv.Sections.Carousel.Images[0]
+	img1 := carousel.Images[0]
 	if img1.AltText("default") != "Sarah and Alex engagement" {
 		t.Errorf("expected alt text 'Sarah and Alex engagement', got %q", img1.AltText("default"))
 	}
-	img2 := inv.Sections.Carousel.Images[1]
+	img2 := carousel.Images[1]
 	if img2.AltText("default") != "Summer in Italy" {
 		t.Errorf("expected caption fallback for alt text 'Summer in Italy', got %q", img2.AltText("default"))
 	}

@@ -17,7 +17,9 @@ type Renderer struct {
 
 // New creates a new Renderer and parses all embedded templates and partials.
 func New() (*Renderer, error) {
-	tmpl := template.New("invito").Funcs(template.FuncMap{
+	var rootTmpl *template.Template
+
+	funcs := template.FuncMap{
 		"safeHTML": func(s string) template.HTML {
 			return template.HTML(s)
 		},
@@ -27,7 +29,27 @@ func New() (*Renderer, error) {
 		"add": func(a, b int) int {
 			return a + b
 		},
-	})
+		"renderSection": func(sec domain.Section, inv *domain.Invitation) (template.HTML, error) {
+			if sec == nil || rootTmpl == nil {
+				return "", nil
+			}
+			tmplName := sec.TemplateName()
+			if tmplName == "" {
+				return "", nil
+			}
+			data := map[string]any{
+				"Section":    sec,
+				"Invitation": inv,
+			}
+			var buf bytes.Buffer
+			if err := rootTmpl.ExecuteTemplate(&buf, tmplName, data); err != nil {
+				return "", fmt.Errorf("failed to render section %q with template %q: %w", sec.Type(), tmplName, err)
+			}
+			return template.HTML(buf.String()), nil
+		},
+	}
+
+	tmpl := template.New("invito").Funcs(funcs)
 
 	// Parse all templates and sub-templates in partials
 	parsed, err := tmpl.ParseFS(web.Files,
@@ -38,6 +60,7 @@ func New() (*Renderer, error) {
 		return nil, fmt.Errorf("failed to parse templates from embed.FS: %w", err)
 	}
 
+	rootTmpl = parsed
 	return &Renderer{tmpl: parsed}, nil
 }
 

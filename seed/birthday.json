@@ -19,42 +19,55 @@
   "theme": {
     "id": "golden-sunset"
   },
-  "sections": {
-    "hero": {
+  "sections": [
+    {
+      "type": "hero",
       "badge": "Chapter 30 &bull; Aug 22, 2026",
       "show_countdown": true
     },
-    "message": {
+    {
+      "type": "message",
       "text": "The best memories are made with good friends, chilled mezcal, and ocean sunsets."
     },
-    "timeline": [
-      {
-        "time": "5:30 PM",
-        "title": "Golden Hour Spritz Bar",
-        "description": "Aperol, mezcal palomas & passed tapas by the pool"
-      },
-      {
-        "time": "7:00 PM",
-        "title": "Woodfired Pizza",
-        "description": "Artisanal sourdough pies & summer garden salads"
-      },
-      {
-        "time": "8:30 PM",
-        "title": "Cake & Sunset Toast",
-        "description": "Dessert, chilled prosecco & birthday toast"
-      },
-      {
-        "time": "9:30 PM",
-        "title": "DJ Beats & Fire Pit",
-        "description": "Late night dancing and poolside lounge"
-      }
-    ],
-    "dress_code": {
+    {
+      "type": "details",
+      "show_map_link": true,
+      "show_calendar_button": true
+    },
+    {
+      "type": "timeline",
+      "title": "Evening Schedule",
+      "items": [
+        {
+          "time": "5:30 PM",
+          "title": "Golden Hour Spritz Bar",
+          "description": "Aperol, mezcal palomas & passed tapas by the pool"
+        },
+        {
+          "time": "7:00 PM",
+          "title": "Woodfired Pizza",
+          "description": "Artisanal sourdough pies & summer garden salads"
+        },
+        {
+          "time": "8:30 PM",
+          "title": "Cake & Sunset Toast",
+          "description": "Dessert, chilled prosecco & birthday toast"
+        },
+        {
+          "time": "9:30 PM",
+          "title": "DJ Beats & Fire Pit",
+          "description": "Late night dancing and poolside lounge"
+        }
+      ]
+    },
+    {
+      "type": "dress_code",
       "title": "Summer Chic & Warm Sunset Tones",
       "description": "Linen shirts, breezy dresses, and warm terracotta accents. Pool is heated!",
       "palette_hints": ["#D74E2A", "#F2A65A", "#FBF0E8", "#2A1C16"]
     },
-    "rsvp": {
+    {
+      "type": "rsvp",
       "enabled": true,
       "deadline": "2026-08-15T23:59:59Z",
       "max_party_size": 2,
@@ -62,20 +75,25 @@
       "ask_song_request": true,
       "custom_note": "Kindly RSVP by August 15th"
     },
-    "faqs": [
-      {
-        "question": "Are gifts expected?",
-        "answer": "No boxed gifts! Your presence and good energy are all that's wanted."
-      },
-      {
-        "question": "Should I bring swimwear?",
-        "answer": "Yes! The pool and spa will be heated throughout the evening."
-      }
-    ],
-    "closing": {
+    {
+      "type": "faqs",
+      "title": "Party FAQs",
+      "items": [
+        {
+          "question": "Are gifts expected?",
+          "answer": "No boxed gifts! Your presence and good energy are all that's wanted."
+        },
+        {
+          "question": "Should I bring swimwear?",
+          "answer": "Yes! The pool and spa will be heated throughout the evening."
+        }
+      ]
+    },
+    {
+      "type": "closing",
       "message": "Bring your swimwear and good energy. See you at sunset!",
       "signoff": "Cheers,",
       "hosts": "Lucas"
     }
-  }
+  ]
 }

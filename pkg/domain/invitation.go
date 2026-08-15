@@ -1,7 +1,9 @@
 package domain
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -44,22 +46,120 @@ type Location struct {
 	DirectionsNote string `json:"directions_note,omitempty"`
 }
 
-// HeroSection configures the top introductory card.
-type HeroSection struct {
-	Badge          string `json:"badge,omitempty"`
-	CoverImageURL  string `json:"cover_image_url,omitempty"`
-	BannerImageURL string `json:"banner_image_url,omitempty"`
-	ShowCountdown  bool   `json:"show_countdown"`
+// SectionType identifies the discriminator type of a section block.
+type SectionType string
+
+const (
+	SectionHero         SectionType = "hero"
+	SectionDetails      SectionType = "details"
+	SectionMessage      SectionType = "message"
+	SectionImage        SectionType = "image"
+	SectionCarousel     SectionType = "carousel"
+	SectionTimeline     SectionType = "timeline"
+	SectionDressCode    SectionType = "dress_code"
+	SectionRSVP         SectionType = "rsvp"
+	SectionFAQs         SectionType = "faqs"
+	SectionGiftRegistry SectionType = "gift_registry"
+	SectionClosing      SectionType = "closing"
+)
+
+// Section defines the interface contract for any self-contained, ordered invitation building block.
+type Section interface {
+	Type() SectionType
+	Validate() error
+	TemplateName() string
 }
 
-// HasCoverImage returns true if a hero cover image URL is present.
+// SectionFactory instantiates a fresh concrete Section implementation.
+type SectionFactory func() Section
+
+var sectionRegistry = map[SectionType]SectionFactory{
+	SectionHero: func() Section { return &HeroSection{SectionType: SectionHero, ShowCountdown: true} },
+	SectionDetails: func() Section {
+		return &DetailsSection{SectionType: SectionDetails, ShowMapLink: true, ShowCalendarButton: true}
+	},
+	SectionMessage:      func() Section { return &MessageSection{SectionType: SectionMessage} },
+	SectionImage:        func() Section { return &ImageSection{SectionType: SectionImage} },
+	SectionCarousel:     func() Section { return &CarouselSection{SectionType: SectionCarousel} },
+	SectionTimeline:     func() Section { return &TimelineSection{SectionType: SectionTimeline} },
+	SectionDressCode:    func() Section { return &DressCodeSection{SectionType: SectionDressCode} },
+	SectionRSVP:         func() Section { return &RSVPSection{SectionType: SectionRSVP, Enabled: true, MaxPartySize: 2} },
+	SectionFAQs:         func() Section { return &FAQsSection{SectionType: SectionFAQs} },
+	SectionGiftRegistry: func() Section { return &GiftRegistrySection{SectionType: SectionGiftRegistry} },
+	SectionClosing:      func() Section { return &ClosingSection{SectionType: SectionClosing} },
+}
+
+// HeroSection configures the top introductory card.
+type HeroSection struct {
+	SectionType    SectionType `json:"type"`
+	Badge          string      `json:"badge,omitempty"`
+	CoverImageURL  string      `json:"cover_image_url,omitempty"`
+	BannerImageURL string      `json:"banner_image_url,omitempty"`
+	ShowCountdown  bool        `json:"show_countdown"`
+}
+
+func (h *HeroSection) Type() SectionType    { return SectionHero }
+func (h *HeroSection) TemplateName() string { return "partial_hero" }
+func (h *HeroSection) Validate() error      { return nil }
 func (h *HeroSection) HasCoverImage() bool {
 	return h != nil && strings.TrimSpace(h.CoverImageURL) != ""
 }
-
-// HasBannerImage returns true if a hero banner image URL is present.
 func (h *HeroSection) HasBannerImage() bool {
 	return h != nil && strings.TrimSpace(h.BannerImageURL) != ""
+}
+
+// DetailsSection configures the Date, Time, and Venue quick strip.
+type DetailsSection struct {
+	SectionType        SectionType `json:"type"`
+	ShowMapLink        bool        `json:"show_map_link"`
+	ShowCalendarButton bool        `json:"show_calendar_button"`
+}
+
+func (d *DetailsSection) Type() SectionType    { return SectionDetails }
+func (d *DetailsSection) TemplateName() string { return "partial_details" }
+func (d *DetailsSection) Validate() error      { return nil }
+
+// MessageSection represents a simple statement, quote, or narrative highlight.
+type MessageSection struct {
+	SectionType SectionType `json:"type"`
+	Text        string      `json:"text"`
+	Author      string      `json:"author,omitempty"`
+}
+
+func (m *MessageSection) Type() SectionType    { return SectionMessage }
+func (m *MessageSection) TemplateName() string { return "partial_message" }
+func (m *MessageSection) Validate() error {
+	if strings.TrimSpace(m.Text) == "" {
+		return errors.New("message text is required")
+	}
+	return nil
+}
+
+// ImageSection represents a standalone static image block.
+type ImageSection struct {
+	SectionType SectionType `json:"type"`
+	URL         string      `json:"url"`
+	Caption     string      `json:"caption,omitempty"`
+	Alt         string      `json:"alt,omitempty"`
+}
+
+func (img *ImageSection) Type() SectionType    { return SectionImage }
+func (img *ImageSection) TemplateName() string { return "partial_image" }
+func (img *ImageSection) Validate() error {
+	if strings.TrimSpace(img.URL) == "" {
+		return errors.New("image url is required")
+	}
+	return nil
+}
+
+func (img *ImageSection) AltText(defaultAlt string) string {
+	if strings.TrimSpace(img.Alt) != "" {
+		return img.Alt
+	}
+	if strings.TrimSpace(img.Caption) != "" {
+		return img.Caption
+	}
+	return defaultAlt
 }
 
 // CarouselImage represents an individual photo in a carousel or gallery.
@@ -69,7 +169,6 @@ type CarouselImage struct {
 	Alt     string `json:"alt,omitempty"`
 }
 
-// AltText returns the configured Alt text, falling back to Caption, or defaultAlt.
 func (img *CarouselImage) AltText(defaultAlt string) string {
 	if strings.TrimSpace(img.Alt) != "" {
 		return img.Alt
@@ -82,16 +181,25 @@ func (img *CarouselImage) AltText(defaultAlt string) string {
 
 // CarouselSection configures an image gallery or carousel section.
 type CarouselSection struct {
-	Title  string          `json:"title,omitempty"`
-	Images []CarouselImage `json:"images,omitempty"`
+	SectionType SectionType     `json:"type"`
+	Title       string          `json:"title,omitempty"`
+	Images      []CarouselImage `json:"images,omitempty"`
 }
 
-// HasImages returns true if the carousel contains one or more images.
-func (c *CarouselSection) HasImages() bool {
-	return c != nil && len(c.Images) > 0
+func (c *CarouselSection) Type() SectionType    { return SectionCarousel }
+func (c *CarouselSection) TemplateName() string { return "partial_carousel" }
+func (c *CarouselSection) Validate() error {
+	if len(c.Images) == 0 {
+		return errors.New("carousel images list cannot be empty")
+	}
+	for i, img := range c.Images {
+		if strings.TrimSpace(img.URL) == "" {
+			return fmt.Errorf("carousel image #%d: url is required", i+1)
+		}
+	}
+	return nil
 }
-
-// ImageCount returns the total number of images in the carousel.
+func (c *CarouselSection) HasImages() bool { return c != nil && len(c.Images) > 0 }
 func (c *CarouselSection) ImageCount() int {
 	if c == nil {
 		return 0
@@ -107,21 +215,60 @@ type TimelineItem struct {
 	Icon        string `json:"icon,omitempty"`
 }
 
+// TimelineSection holds a schedule of events.
+type TimelineSection struct {
+	SectionType SectionType    `json:"type"`
+	Title       string         `json:"title,omitempty"`
+	Items       []TimelineItem `json:"items"`
+}
+
+func (t *TimelineSection) Type() SectionType    { return SectionTimeline }
+func (t *TimelineSection) TemplateName() string { return "partial_timeline" }
+func (t *TimelineSection) Validate() error {
+	if len(t.Items) == 0 {
+		return errors.New("timeline items list cannot be empty")
+	}
+	for i, item := range t.Items {
+		if strings.TrimSpace(item.Time) == "" {
+			return fmt.Errorf("timeline item #%d: time is required", i+1)
+		}
+		if strings.TrimSpace(item.Title) == "" {
+			return fmt.Errorf("timeline item #%d: title is required", i+1)
+		}
+	}
+	return nil
+}
+
 // DressCodeSection details the dress code guidelines and color palette suggestions.
 type DressCodeSection struct {
-	Title        string   `json:"title,omitempty"`
-	Description  string   `json:"description,omitempty"`
-	PaletteHints []string `json:"palette_hints,omitempty"`
+	SectionType  SectionType `json:"type"`
+	Title        string      `json:"title,omitempty"`
+	Description  string      `json:"description,omitempty"`
+	PaletteHints []string    `json:"palette_hints,omitempty"`
 }
+
+func (d *DressCodeSection) Type() SectionType    { return SectionDressCode }
+func (d *DressCodeSection) TemplateName() string { return "partial_dress_code" }
+func (d *DressCodeSection) Validate() error      { return nil }
 
 // RSVPSection configures the attendance confirmation form.
 type RSVPSection struct {
-	Enabled        bool       `json:"enabled"`
-	Deadline       *time.Time `json:"deadline,omitempty"`
-	MaxPartySize   int        `json:"max_party_size"`
-	AskDietary     bool       `json:"ask_dietary"`
-	AskSongRequest bool       `json:"ask_song_request"`
-	CustomNote     string     `json:"custom_note,omitempty"`
+	SectionType    SectionType `json:"type"`
+	Enabled        bool        `json:"enabled"`
+	Deadline       *time.Time  `json:"deadline,omitempty"`
+	MaxPartySize   int         `json:"max_party_size"`
+	AskDietary     bool        `json:"ask_dietary"`
+	AskSongRequest bool        `json:"ask_song_request"`
+	CustomNote     string      `json:"custom_note,omitempty"`
+}
+
+func (r *RSVPSection) Type() SectionType    { return SectionRSVP }
+func (r *RSVPSection) TemplateName() string { return "partial_rsvp_form" }
+func (r *RSVPSection) Validate() error {
+	if r.MaxPartySize <= 0 {
+		r.MaxPartySize = 2
+	}
+	return nil
 }
 
 // FAQItem represents a frequently asked question and answer.
@@ -130,69 +277,71 @@ type FAQItem struct {
 	Answer   string `json:"answer"`
 }
 
+// FAQsSection holds frequently asked questions.
+type FAQsSection struct {
+	SectionType SectionType `json:"type"`
+	Title       string      `json:"title,omitempty"`
+	Items       []FAQItem   `json:"items"`
+}
+
+func (f *FAQsSection) Type() SectionType    { return SectionFAQs }
+func (f *FAQsSection) TemplateName() string { return "partial_faqs" }
+func (f *FAQsSection) Validate() error {
+	for i, item := range f.Items {
+		if strings.TrimSpace(item.Question) == "" {
+			return fmt.Errorf("FAQ #%d: question is required", i+1)
+		}
+		if strings.TrimSpace(item.Answer) == "" {
+			return fmt.Errorf("FAQ #%d: answer is required", i+1)
+		}
+	}
+	return nil
+}
+
 // RegistryLink represents a gift registry or donation link.
 type RegistryLink struct {
 	Label string `json:"label"`
 	URL   string `json:"url"`
 }
 
-// MessageSection represents a simple statement, quote, or narrative highlight.
-type MessageSection struct {
-	Text   string `json:"text"`
-	Author string `json:"author,omitempty"`
+// GiftRegistrySection describes gift registry instructions and URLs.
+type GiftRegistrySection struct {
+	SectionType SectionType    `json:"type"`
+	Message     string         `json:"message,omitempty"`
+	Links       []RegistryLink `json:"links,omitempty"`
 }
 
-// ImageSection represents a standalone static image block.
-type ImageSection struct {
-	URL     string `json:"url"`
-	Caption string `json:"caption,omitempty"`
-	Alt     string `json:"alt,omitempty"`
-}
-
-// AltText returns the Alt text if present, or falls back to Caption, or defaultAlt.
-func (img *ImageSection) AltText(defaultAlt string) string {
-	if strings.TrimSpace(img.Alt) != "" {
-		return img.Alt
+func (g *GiftRegistrySection) Type() SectionType    { return SectionGiftRegistry }
+func (g *GiftRegistrySection) TemplateName() string { return "partial_registry" }
+func (g *GiftRegistrySection) Validate() error {
+	for i, link := range g.Links {
+		if strings.TrimSpace(link.Label) == "" {
+			return fmt.Errorf("registry link #%d: label is required", i+1)
+		}
+		if strings.TrimSpace(link.URL) == "" {
+			return fmt.Errorf("registry link #%d: url is required", i+1)
+		}
 	}
-	if strings.TrimSpace(img.Caption) != "" {
-		return img.Caption
-	}
-	return defaultAlt
+	return nil
 }
 
 // ClosingSection configures the final warm greeting and sign-off at the end of the invitation.
 type ClosingSection struct {
-	Message string `json:"message,omitempty"`
-	Signoff string `json:"signoff,omitempty"`
-	Hosts   string `json:"hosts,omitempty"`
+	SectionType SectionType `json:"type"`
+	Message     string      `json:"message,omitempty"`
+	Signoff     string      `json:"signoff,omitempty"`
+	Hosts       string      `json:"hosts,omitempty"`
 }
 
-// DisplayHosts returns the configured host sign-off or falls back to defaultHosts.
+func (c *ClosingSection) Type() SectionType    { return SectionClosing }
+func (c *ClosingSection) TemplateName() string { return "partial_closing" }
+func (c *ClosingSection) Validate() error      { return nil }
+
 func (c *ClosingSection) DisplayHosts(defaultHosts string) string {
 	if c != nil && strings.TrimSpace(c.Hosts) != "" {
 		return c.Hosts
 	}
 	return defaultHosts
-}
-
-// GiftRegistrySection describes gift registry instructions and URLs.
-type GiftRegistrySection struct {
-	Message string         `json:"message,omitempty"`
-	Links   []RegistryLink `json:"links,omitempty"`
-}
-
-// Sections holds the modular blocks of an invitation.
-type Sections struct {
-	Hero         *HeroSection         `json:"hero,omitempty"`
-	Carousel     *CarouselSection     `json:"carousel,omitempty"`
-	Message      *MessageSection      `json:"message,omitempty"`
-	Image        *ImageSection        `json:"image,omitempty"`
-	Timeline     []TimelineItem       `json:"timeline,omitempty"`
-	DressCode    *DressCodeSection    `json:"dress_code,omitempty"`
-	RSVP         *RSVPSection         `json:"rsvp,omitempty"`
-	FAQs         []FAQItem            `json:"faqs,omitempty"`
-	GiftRegistry *GiftRegistrySection `json:"gift_registry,omitempty"`
-	Closing      *ClosingSection      `json:"closing,omitempty"`
 }
 
 // Invitation is the top-level structured event invitation entity.
@@ -208,7 +357,198 @@ type Invitation struct {
 	Timezone    string      `json:"timezone"`
 	Location    Location    `json:"location"`
 	Theme       ThemeConfig `json:"theme"`
-	Sections    Sections    `json:"sections"`
+	Sections    []Section   `json:"sections"`
+}
+
+// UnmarshalJSON unmarshals an Invitation, supporting both ordered []Section arrays and legacy section maps.
+func (inv *Invitation) UnmarshalJSON(data []byte) error {
+	type rawInvitation struct {
+		Version     string          `json:"version"`
+		Slug        string          `json:"slug"`
+		Title       string          `json:"title"`
+		Subtitle    string          `json:"subtitle,omitempty"`
+		Hosts       []string        `json:"hosts,omitempty"`
+		Description string          `json:"description,omitempty"`
+		DateStart   time.Time       `json:"date_start"`
+		DateEnd     *time.Time      `json:"date_end,omitempty"`
+		Timezone    string          `json:"timezone"`
+		Location    Location        `json:"location"`
+		Theme       ThemeConfig     `json:"theme"`
+		Sections    json.RawMessage `json:"sections"`
+	}
+
+	var raw rawInvitation
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	inv.Version = raw.Version
+	inv.Slug = raw.Slug
+	inv.Title = raw.Title
+	inv.Subtitle = raw.Subtitle
+	inv.Hosts = raw.Hosts
+	inv.Description = raw.Description
+	inv.DateStart = raw.DateStart
+	inv.DateEnd = raw.DateEnd
+	inv.Timezone = raw.Timezone
+	inv.Location = raw.Location
+	inv.Theme = raw.Theme
+	inv.Sections = nil
+
+	if len(raw.Sections) == 0 {
+		return nil
+	}
+
+	trimmed := bytes.TrimSpace(raw.Sections)
+	if bytes.HasPrefix(trimmed, []byte("[")) {
+		// Canonical Array of Polymorphic Section Blocks
+		var rawBlocks []json.RawMessage
+		if err := json.Unmarshal(trimmed, &rawBlocks); err != nil {
+			return fmt.Errorf("failed to unmarshal sections array: %w", err)
+		}
+
+		for idx, blockRaw := range rawBlocks {
+			var typeHeader struct {
+				Type SectionType `json:"type"`
+			}
+			if err := json.Unmarshal(blockRaw, &typeHeader); err != nil {
+				return fmt.Errorf("section #%d: invalid block header: %w", idx+1, err)
+			}
+			factory, ok := sectionRegistry[typeHeader.Type]
+			if !ok {
+				return fmt.Errorf("section #%d: unknown section type %q", idx+1, typeHeader.Type)
+			}
+			sec := factory()
+			if err := json.Unmarshal(blockRaw, sec); err != nil {
+				return fmt.Errorf("section #%d (%s): unmarshal error: %w", idx+1, typeHeader.Type, err)
+			}
+			inv.Sections = append(inv.Sections, sec)
+		}
+	} else if bytes.HasPrefix(trimmed, []byte("{")) {
+		// Legacy Object Map
+		var legacy struct {
+			Hero         *HeroSection         `json:"hero,omitempty"`
+			Message      *MessageSection      `json:"message,omitempty"`
+			Carousel     *CarouselSection     `json:"carousel,omitempty"`
+			Timeline     []TimelineItem       `json:"timeline,omitempty"`
+			Image        *ImageSection        `json:"image,omitempty"`
+			DressCode    *DressCodeSection    `json:"dress_code,omitempty"`
+			RSVP         *RSVPSection         `json:"rsvp,omitempty"`
+			FAQs         []FAQItem            `json:"faqs,omitempty"`
+			GiftRegistry *GiftRegistrySection `json:"gift_registry,omitempty"`
+			Closing      *ClosingSection      `json:"closing,omitempty"`
+		}
+		if err := json.Unmarshal(trimmed, &legacy); err != nil {
+			return fmt.Errorf("failed to unmarshal legacy sections map: %w", err)
+		}
+
+		if legacy.Hero != nil {
+			legacy.Hero.SectionType = SectionHero
+			inv.Sections = append(inv.Sections, legacy.Hero)
+		}
+		if legacy.Message != nil {
+			legacy.Message.SectionType = SectionMessage
+			inv.Sections = append(inv.Sections, legacy.Message)
+		}
+		if legacy.Carousel != nil {
+			legacy.Carousel.SectionType = SectionCarousel
+			inv.Sections = append(inv.Sections, legacy.Carousel)
+		}
+		// Default Details strip
+		inv.Sections = append(inv.Sections, &DetailsSection{SectionType: SectionDetails, ShowMapLink: true, ShowCalendarButton: true})
+
+		if len(legacy.Timeline) > 0 {
+			inv.Sections = append(inv.Sections, &TimelineSection{SectionType: SectionTimeline, Items: legacy.Timeline})
+		}
+		if legacy.Image != nil {
+			legacy.Image.SectionType = SectionImage
+			inv.Sections = append(inv.Sections, legacy.Image)
+		}
+		if legacy.DressCode != nil {
+			legacy.DressCode.SectionType = SectionDressCode
+			inv.Sections = append(inv.Sections, legacy.DressCode)
+		}
+		if legacy.RSVP != nil {
+			legacy.RSVP.SectionType = SectionRSVP
+			inv.Sections = append(inv.Sections, legacy.RSVP)
+		}
+		if len(legacy.FAQs) > 0 {
+			inv.Sections = append(inv.Sections, &FAQsSection{SectionType: SectionFAQs, Items: legacy.FAQs})
+		}
+		if legacy.GiftRegistry != nil {
+			legacy.GiftRegistry.SectionType = SectionGiftRegistry
+			inv.Sections = append(inv.Sections, legacy.GiftRegistry)
+		}
+		if legacy.Closing != nil {
+			legacy.Closing.SectionType = SectionClosing
+			inv.Sections = append(inv.Sections, legacy.Closing)
+		}
+	}
+
+	return nil
+}
+
+// HeroSection returns the first HeroSection configured in the invitation, or nil.
+func (inv *Invitation) HeroSection() *HeroSection {
+	for _, sec := range inv.Sections {
+		if h, ok := sec.(*HeroSection); ok {
+			return h
+		}
+	}
+	return nil
+}
+
+// RSVPSection returns the first RSVPSection configured in the invitation, or nil.
+func (inv *Invitation) RSVPSection() *RSVPSection {
+	for _, sec := range inv.Sections {
+		if r, ok := sec.(*RSVPSection); ok {
+			return r
+		}
+	}
+	return nil
+}
+
+// CarouselSection returns the first CarouselSection configured in the invitation, or nil.
+func (inv *Invitation) CarouselSection() *CarouselSection {
+	for _, sec := range inv.Sections {
+		if c, ok := sec.(*CarouselSection); ok {
+			return c
+		}
+	}
+	return nil
+}
+
+// HasCoverImage returns true if a hero cover image is present.
+func (inv *Invitation) HasCoverImage() bool {
+	h := inv.HeroSection()
+	return h != nil && h.HasCoverImage()
+}
+
+// CoverImage returns the hero cover image URL or empty string.
+func (inv *Invitation) CoverImage() string {
+	h := inv.HeroSection()
+	if h != nil {
+		return h.CoverImageURL
+	}
+	return ""
+}
+
+// HasCarousel returns true if any carousel section contains images.
+func (inv *Invitation) HasCarousel() bool {
+	c := inv.CarouselSection()
+	return c != nil && c.HasImages()
+}
+
+// IsRSVPOpen checks if RSVP is enabled and if the deadline has not passed.
+func (inv *Invitation) IsRSVPOpen() bool {
+	r := inv.RSVPSection()
+	if r == nil || !r.Enabled {
+		return false
+	}
+	if r.Deadline != nil && !r.Deadline.IsZero() {
+		return time.Now().Before(*r.Deadline)
+	}
+	return true
 }
 
 // HostsDisplay returns a formatted string of hosts.
@@ -263,54 +603,6 @@ func (inv *Invitation) GoogleCalendarURL() string {
 	return fmt.Sprintf("%s&text=%s&dates=%s&details=%s&location=%s", baseURL, title, dates, details, location)
 }
 
-// HasCoverImage returns true if the invitation has a hero cover image configured.
-func (inv *Invitation) HasCoverImage() bool {
-	return inv.Sections.Hero != nil && inv.Sections.Hero.HasCoverImage()
-}
-
-// CoverImage returns the cover image URL if set in hero.
-func (inv *Invitation) CoverImage() string {
-	if inv.Sections.Hero != nil {
-		return inv.Sections.Hero.CoverImageURL
-	}
-	return ""
-}
-
-// HasCarousel returns true if the invitation includes a carousel section with images.
-func (inv *Invitation) HasCarousel() bool {
-	return inv.Sections.Carousel != nil && inv.Sections.Carousel.HasImages()
-}
-
-// HasMessage returns true if the invitation includes a message / quote section.
-func (inv *Invitation) HasMessage() bool {
-	return inv.Sections.Message != nil && strings.TrimSpace(inv.Sections.Message.Text) != ""
-}
-
-// HasImage returns true if the invitation includes a static image block.
-func (inv *Invitation) HasImage() bool {
-	return inv.Sections.Image != nil && strings.TrimSpace(inv.Sections.Image.URL) != ""
-}
-
-// HasClosing returns true if the invitation includes a closing greeting section.
-func (inv *Invitation) HasClosing() bool {
-	if inv.Sections.Closing == nil {
-		return false
-	}
-	c := inv.Sections.Closing
-	return strings.TrimSpace(c.Message) != "" || strings.TrimSpace(c.Signoff) != "" || strings.TrimSpace(c.Hosts) != ""
-}
-
-// IsRSVPOpen checks if RSVP is enabled and if the deadline has not passed.
-func (inv *Invitation) IsRSVPOpen() bool {
-	if inv.Sections.RSVP == nil || !inv.Sections.RSVP.Enabled {
-		return false
-	}
-	if inv.Sections.RSVP.Deadline != nil && !inv.Sections.RSVP.Deadline.IsZero() {
-		return time.Now().Before(*inv.Sections.RSVP.Deadline)
-	}
-	return true
-}
-
 // JSONLD returns the Schema.org Event structured data for SEO rich cards.
 func (inv *Invitation) JSONLD() (string, error) {
 	data := map[string]any{
@@ -347,12 +639,12 @@ func (inv *Invitation) JSONLD() (string, error) {
 
 // RSVPSubmission represents a guest's attendance confirmation payload.
 type RSVPSubmission struct {
-	Name            string `json:"name"`
-	Email           string `json:"email"`
-	Attending       bool   `json:"attending"`
-	GuestCount      int    `json:"guest_count"`
-	DietaryNeeds    string `json:"dietary_needs,omitempty"`
-	SongRequest     string `json:"song_request,omitempty"`
-	PersonalMessage string `json:"personal_message,omitempty"`
+	Name            string    `json:"name"`
+	Email           string    `json:"email"`
+	Attending       bool      `json:"attending"`
+	GuestCount      int       `json:"guest_count"`
+	DietaryNeeds    string    `json:"dietary_needs,omitempty"`
+	SongRequest     string    `json:"song_request,omitempty"`
+	PersonalMessage string    `json:"personal_message,omitempty"`
 	SubmittedAt     time.Time `json:"submitted_at"`
 }

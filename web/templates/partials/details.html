@@ -4,13 +4,15 @@
   <div class="detail-row">
     <span class="detail-row-icon">📅</span>
     <div class="detail-row-content">
-      <span class="detail-row-title">{{ .FormattedFullDate }}</span>
-      <span class="detail-row-sub">{{ .FormattedTime }} ({{ .Timezone }})</span>
+      <span class="detail-row-title">{{ .Invitation.FormattedFullDate }}</span>
+      <span class="detail-row-sub">{{ .Invitation.FormattedTime }} ({{ .Invitation.Timezone }})</span>
+      {{ if .Section.ShowCalendarButton }}
       <div class="detail-row-actions">
-        <a href="{{ .GoogleCalendarURL }}" target="_blank" rel="noopener noreferrer" class="quick-link" id="btn-add-google-calendar">
+        <a href="{{ .Invitation.GoogleCalendarURL }}" target="_blank" rel="noopener noreferrer" class="quick-link" id="btn-add-google-calendar">
           + Google Calendar
         </a>
       </div>
+      {{ end }}
     </div>
   </div>
 
@@ -18,14 +20,14 @@
   <div class="detail-row">
     <span class="detail-row-icon">📍</span>
     <div class="detail-row-content">
-      <span class="detail-row-title">{{ .Location.Name }}</span>
-      <span class="detail-row-sub">{{ .Location.Address }}</span>
-      {{ if .Location.DirectionsNote }}
-        <span class="detail-row-sub" style="font-style: italic;">{{ .Location.DirectionsNote }}</span>
+      <span class="detail-row-title">{{ .Invitation.Location.Name }}</span>
+      <span class="detail-row-sub">{{ .Invitation.Location.Address }}</span>
+      {{ if .Invitation.Location.DirectionsNote }}
+        <span class="detail-row-sub" style="font-style: italic;">{{ .Invitation.Location.DirectionsNote }}</span>
       {{ end }}
-      {{ if .Location.MapURL }}
+      {{ if and .Section.ShowMapLink .Invitation.Location.MapURL }}
         <div class="detail-row-actions">
-          <a href="{{ .Location.MapURL }}" target="_blank" rel="noopener noreferrer" class="quick-link" id="btn-view-map">
+          <a href="{{ .Invitation.Location.MapURL }}" target="_blank" rel="noopener noreferrer" class="quick-link" id="btn-view-map">
             Open in Maps &rarr;
           </a>
         </div>
@@ -35,10 +37,10 @@
 
   <!-- Quick Action Buttons -->
   <div class="inv-quick-actions">
-    <a href="/i/{{ .Slug }}/calendar.ics" class="btn-pill btn-pill-secondary" id="btn-download-ics">
+    <a href="/i/{{ .Invitation.Slug }}/calendar.ics" class="btn-pill btn-pill-secondary" id="btn-download-ics">
       📥 Download .ics
     </a>
-    {{ if .IsRSVPOpen }}
+    {{ if .Invitation.IsRSVPOpen }}
       <a href="#section-rsvp" class="btn-pill btn-pill-primary" id="btn-hero-rsvp">
         ✍️ RSVP
       </a>

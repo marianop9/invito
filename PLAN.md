@@ -21,7 +21,7 @@
 - [x] **JSON Schema & Domain Layer**: `schema/invitation.schema.json` and `pkg/domain` models with strict validation.
 - [x] **Calendar Sync**: Dynamic RFC 5545 iCalendar (`.ics`) generator and Google Calendar URL builder.
 - [x] **Streamlined Mobile Canvas**: Continuous single-sheet layout (`.inv-sheet`), compact quick details strip, inline time badges, and AJAX RSVP confirmation.
-- [x] **Modular Content Sections**: Text/quote statement section (`sections.message`), static image block (`sections.image`), and closing greeting with host sign-off (`sections.closing`).
+- [x] **Modular Content Sections & Interface-Driven Building Blocks**: Extensible `domain.Section` contract (`Type()`, `Validate()`, `TemplateName()`), dynamic `renderSection` template helper, supporting arbitrary sequence and multiple instances of messages, images, carousels, and custom blocks with full backward compatibility.
 
 ---
 

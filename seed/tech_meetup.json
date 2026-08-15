@@ -19,39 +19,51 @@
   "theme": {
     "id": "modern-minimal"
   },
-  "sections": {
-    "hero": {
+  "sections": [
+    {
+      "type": "hero",
       "badge": "150 Seats &bull; Nov 12, 2026",
       "show_countdown": true
     },
-    "timeline": [
-      {
-        "time": "2:00 PM",
-        "title": "Check-in & Espresso",
-        "description": "Speaker lounge open"
-      },
-      {
-        "time": "2:30 PM",
-        "title": "Core Keynotes",
-        "description": "Sub-millisecond inference scaling"
-      },
-      {
-        "time": "4:30 PM",
-        "title": "Lightning Demos",
-        "description": "10-minute architecture breakdowns"
-      },
-      {
-        "time": "6:00 PM",
-        "title": "Rooftop Mixer",
-        "description": "Craft beers & artisanal tacos"
-      }
-    ],
-    "dress_code": {
+    {
+      "type": "details",
+      "show_map_link": true,
+      "show_calendar_button": true
+    },
+    {
+      "type": "timeline",
+      "title": "Summit Schedule",
+      "items": [
+        {
+          "time": "2:00 PM",
+          "title": "Check-in & Espresso",
+          "description": "Speaker lounge open"
+        },
+        {
+          "time": "2:30 PM",
+          "title": "Core Keynotes",
+          "description": "Sub-millisecond inference scaling"
+        },
+        {
+          "time": "4:30 PM",
+          "title": "Lightning Demos",
+          "description": "10-minute architecture breakdowns"
+        },
+        {
+          "time": "6:00 PM",
+          "title": "Rooftop Mixer",
+          "description": "Craft beers & artisanal tacos"
+        }
+      ]
+    },
+    {
+      "type": "dress_code",
       "title": "Smart Casual",
       "description": "Comfortable tech-forward attire.",
       "palette_hints": ["#0052FF", "#0B0E17", "#EBF0F7", "#566479"]
     },
-    "rsvp": {
+    {
+      "type": "rsvp",
       "enabled": true,
       "deadline": "2026-11-01T23:59:59Z",
       "max_party_size": 1,
@@ -59,11 +71,21 @@
       "ask_song_request": false,
       "custom_note": "Badge printed with your GitHub handle"
     },
-    "faqs": [
-      {
-        "question": "Will talks be published?",
-        "answer": "Yes, recorded videos will be posted publicly within 2 weeks."
-      }
-    ]
-  }
+    {
+      "type": "faqs",
+      "title": "Summit FAQs",
+      "items": [
+        {
+          "question": "Will talks be published?",
+          "answer": "Yes, recorded videos will be posted publicly within 2 weeks."
+        }
+      ]
+    },
+    {
+      "type": "closing",
+      "message": "See you in San Francisco!",
+      "signoff": "Best,",
+      "hosts": "Kernel Labs"
+    }
+  ]
 }

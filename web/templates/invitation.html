@@ -11,8 +11,8 @@
   <meta property="og:description" content="{{ .Description }}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="/i/{{ .Slug }}">
-  {{ if and .Sections.Hero .Sections.Hero.CoverImageURL }}
-    <meta property="og:image" content="{{ .Sections.Hero.CoverImageURL }}">
+  {{ if .HasCoverImage }}
+    <meta property="og:image" content="{{ .CoverImage }}">
   {{ end }}
 
   <!-- Stylesheets -->
@@ -54,17 +54,10 @@
 
   <!-- Continuous Single-Sheet Canvas -->
   <main class="inv-sheet">
-    {{ template "partial_hero" . }}
-    {{ template "partial_message" . }}
-    {{ template "partial_carousel" . }}
-    {{ template "partial_details" . }}
-    {{ template "partial_timeline" . }}
-    {{ template "partial_image" . }}
-    {{ template "partial_dress_code" . }}
-    {{ template "partial_rsvp_form" . }}
-    {{ template "partial_faqs" . }}
-    {{ template "partial_registry" . }}
-    {{ template "partial_closing" . }}
+    {{ $inv := . }}
+    {{ range .Sections }}
+      {{ renderSection . $inv }}
+    {{ end }}
 
     <footer class="inv-footer">
       <span>Event details &bull; Hosted on Invito</span>

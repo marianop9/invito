@@ -20,17 +20,20 @@
   "theme": {
     "id": "botanical-elegance"
   },
-  "sections": {
-    "hero": {
+  "sections": [
+    {
+      "type": "hero",
       "badge": "Save The Date &bull; Sep 19, 2026",
       "cover_image_url": "/static/img/demo-hero.webp",
       "show_countdown": true
     },
-    "message": {
+    {
+      "type": "message",
       "text": "Whatever our souls are made of, his and mine are the same.",
       "author": "Emily Brontë"
     },
-    "carousel": {
+    {
+      "type": "carousel",
       "title": "Our Story & Moments",
       "images": [
         {
@@ -50,45 +53,59 @@
         }
       ]
     },
-    "message": {
-      "text": "Save the date. 09/11"
+    {
+      "type": "details",
+      "show_map_link": true,
+      "show_calendar_button": true
     },
-    "timeline": [
-      {
-        "time": "4:00 PM",
-        "title": "Welcome Drinks",
-        "description": "Conservatory Lawn"
-      },
-      {
-        "time": "4:45 PM",
-        "title": "Ceremony",
-        "description": "Rose Garden Pavilion"
-      },
-      {
-        "time": "5:45 PM",
-        "title": "Cocktail Hour",
-        "description": "Passed bites & string quartet"
-      },
-      {
-        "time": "7:00 PM",
-        "title": "Seated Dinner & Toasts",
-        "description": "Grand Glasshouse"
-      },
-      {
-        "time": "9:00 PM",
-        "title": "Dancing & Send-off",
-        "description": "Sparkler farewell at 11:30 PM"
-      }
-    ],
-    "image": {
-      "url": "/static/img/demo-hero.webp"
+    {
+      "type": "timeline",
+      "title": "Schedule of Events",
+      "items": [
+        {
+          "time": "4:00 PM",
+          "title": "Welcome Drinks",
+          "description": "Conservatory Lawn"
+        },
+        {
+          "time": "4:45 PM",
+          "title": "Ceremony",
+          "description": "Rose Garden Pavilion"
+        },
+        {
+          "time": "5:45 PM",
+          "title": "Cocktail Hour",
+          "description": "Passed bites & string quartet"
+        },
+        {
+          "time": "7:00 PM",
+          "title": "Seated Dinner & Toasts",
+          "description": "Grand Glasshouse"
+        },
+        {
+          "time": "9:00 PM",
+          "title": "Dancing & Send-off",
+          "description": "Sparkler farewell at 11:30 PM"
+        }
+      ]
     },
-    "dress_code": {
+    {
+      "type": "image",
+      "url": "/static/img/demo-hero.webp",
+      "caption": "Willowbrook Botanical Pavilion & Conservatory"
+    },
+    {
+      "type": "message",
+      "text": "Complimentary guest shuttles will depart from the Downtown Omni Hotel at 3:15 PM."
+    },
+    {
+      "type": "dress_code",
       "title": "Garden Formal",
       "description": "Suits or cocktail attire. Block heels recommended for the lawn.",
       "palette_hints": ["#2A4738", "#D4AF37", "#EFEBE4", "#8A9A86"]
     },
-    "rsvp": {
+    {
+      "type": "rsvp",
       "enabled": true,
       "deadline": "2026-08-25T23:59:59Z",
       "max_party_size": 2,
@@ -96,17 +113,22 @@
       "ask_song_request": false,
       "custom_note": "Kindly RSVP by August 25th"
     },
-    "faqs": [
-      {
-        "question": "Are children invited?",
-        "answer": "We kindly request an adults-only celebration."
-      },
-      {
-        "question": "Is transportation provided?",
-        "answer": "Shuttle departs from Downtown Omni Hotel at 3:15 PM."
-      }
-    ],
-    "gift_registry": {
+    {
+      "type": "faqs",
+      "title": "Information for Guests",
+      "items": [
+        {
+          "question": "Are children invited?",
+          "answer": "We kindly request an adults-only celebration."
+        },
+        {
+          "question": "Is transportation provided?",
+          "answer": "Shuttle departs from Downtown Omni Hotel at 3:15 PM."
+        }
+      ]
+    },
+    {
+      "type": "gift_registry",
       "message": "Your presence is our present. For those who wish to gift:",
       "links": [
         {
@@ -119,10 +141,11 @@
         }
       ]
     },
-    "closing": {
+    {
+      "type": "closing",
       "message": "We cannot wait to celebrate our special day with all of you!",
       "signoff": "With love & gratitude,",
       "hosts": "Sarah & Alexander"
     }
-  }
+  ]
 }

@@ -30,15 +30,25 @@ func TestRenderer(t *testing.T) {
 		Theme: domain.ThemeConfig{
 			ID: domain.ThemeMidnightSoiree,
 		},
-		Sections: domain.Sections{
-			Hero: &domain.HeroSection{
+		Sections: []domain.Section{
+			&domain.HeroSection{
+				SectionType:   domain.SectionHero,
 				Badge:         "Black Tie Only",
 				ShowCountdown: true,
 			},
-			Timeline: []domain.TimelineItem{
-				{Time: "7:00 PM", Title: "Reception"},
+			&domain.DetailsSection{
+				SectionType:        domain.SectionDetails,
+				ShowMapLink:        true,
+				ShowCalendarButton: true,
 			},
-			RSVP: &domain.RSVPSection{
+			&domain.TimelineSection{
+				SectionType: domain.SectionTimeline,
+				Items: []domain.TimelineItem{
+					{Time: "7:00 PM", Title: "Reception"},
+				},
+			},
+			&domain.RSVPSection{
+				SectionType:  domain.SectionRSVP,
 				Enabled:      true,
 				MaxPartySize: 2,
 			},
@@ -70,15 +80,19 @@ func TestRenderer(t *testing.T) {
 
 	t.Run("RenderInvitation with Hero Cover Image and Carousel", func(t *testing.T) {
 		weddingInv := *inv
-		weddingInv.Sections.Hero = &domain.HeroSection{
-			Badge:         "Wedding Celebration",
-			CoverImageURL: "/static/img/demo-hero.webp",
-		}
-		weddingInv.Sections.Carousel = &domain.CarouselSection{
-			Title: "Photo Moments",
-			Images: []domain.CarouselImage{
-				{URL: "/static/img/demo-carousel-1.webp", Caption: "Engagement at Big Sur"},
-				{URL: "/static/img/demo-carousel-2.webp", Caption: "Tuscany Trip"},
+		weddingInv.Sections = []domain.Section{
+			&domain.HeroSection{
+				SectionType:   domain.SectionHero,
+				Badge:         "Wedding Celebration",
+				CoverImageURL: "/static/img/demo-hero.webp",
+			},
+			&domain.CarouselSection{
+				SectionType: domain.SectionCarousel,
+				Title:       "Photo Moments",
+				Images: []domain.CarouselImage{
+					{URL: "/static/img/demo-carousel-1.webp", Caption: "Engagement at Big Sur"},
+					{URL: "/static/img/demo-carousel-2.webp", Caption: "Tuscany Trip"},
+				},
 			},
 		}
 
@@ -105,20 +119,38 @@ func TestRenderer(t *testing.T) {
 		}
 	})
 
-	t.Run("RenderInvitation with Message, Static Image, and Closing", func(t *testing.T) {
+	t.Run("RenderInvitation with Multiple Messages and Multiple Images in Custom Order", func(t *testing.T) {
 		fullInv := *inv
-		fullInv.Sections.Message = &domain.MessageSection{
-			Text:   "Two lives, one shared journey.",
-			Author: "Rumi",
-		}
-		fullInv.Sections.Image = &domain.ImageSection{
-			URL:     "/static/img/venue.webp",
-			Caption: "The Botanical Glasshouse",
-		}
-		fullInv.Sections.Closing = &domain.ClosingSection{
-			Message: "We can't wait to celebrate with you!",
-			Signoff: "With love,",
-			Hosts:   "Sarah & Alex",
+		fullInv.Sections = []domain.Section{
+			&domain.HeroSection{
+				SectionType: domain.SectionHero,
+				Badge:       "Welcome",
+			},
+			&domain.MessageSection{
+				SectionType: domain.SectionMessage,
+				Text:        "First quote: Two lives, one shared journey.",
+				Author:      "Rumi",
+			},
+			&domain.ImageSection{
+				SectionType: domain.SectionImage,
+				URL:         "/static/img/venue.webp",
+				Caption:     "The Botanical Glasshouse",
+			},
+			&domain.MessageSection{
+				SectionType: domain.SectionMessage,
+				Text:        "Second message: Complimentary shuttle departs from hotel lobby.",
+			},
+			&domain.ImageSection{
+				SectionType: domain.SectionImage,
+				URL:         "/static/img/swatches.webp",
+				Caption:     "Attire Inspiration Swatches",
+			},
+			&domain.ClosingSection{
+				SectionType: domain.SectionClosing,
+				Message:     "We can't wait to celebrate with you!",
+				Signoff:     "With love,",
+				Hosts:       "Sarah & Alex",
+			},
 		}
 
 		var buf bytes.Buffer
@@ -129,11 +161,14 @@ func TestRenderer(t *testing.T) {
 		html := buf.String()
 		expectedKeywords := []string{
 			"section-message",
-			"Two lives, one shared journey.",
+			"First quote: Two lives, one shared journey.",
 			"Rumi",
 			"section-image",
 			"/static/img/venue.webp",
 			"The Botanical Glasshouse",
+			"Second message: Complimentary shuttle departs from hotel lobby.",
+			"/static/img/swatches.webp",
+			"Attire Inspiration Swatches",
 			"section-closing",
 			"We can&#39;t wait to celebrate with you!",
 			"With love,",
@@ -144,6 +179,21 @@ func TestRenderer(t *testing.T) {
 			if !strings.Contains(html, kw) {
 				t.Errorf("expected rendered HTML to contain %q, but missing", kw)
 			}
+		}
+
+		// Verify ordering in output: First quote before Second message
+		idxFirstMsg := strings.Index(html, "First quote")
+		idxFirstImg := strings.Index(html, "/static/img/venue.webp")
+		idxSecondMsg := strings.Index(html, "Second message")
+		idxSecondImg := strings.Index(html, "/static/img/swatches.webp")
+		idxClosing := strings.Index(html, "section-closing")
+
+		if idxFirstMsg == -1 || idxFirstImg == -1 || idxSecondMsg == -1 || idxSecondImg == -1 || idxClosing == -1 {
+			t.Fatalf("missing expected elements in rendered output")
+		}
+
+		if !(idxFirstMsg < idxFirstImg && idxFirstImg < idxSecondMsg && idxSecondMsg < idxSecondImg && idxSecondImg < idxClosing) {
+			t.Errorf("expected blocks to render in exact configured sequence: first msg < first img < second msg < second img < closing")
 		}
 	})
 

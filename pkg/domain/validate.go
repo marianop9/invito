@@ -56,33 +56,14 @@ func (inv *Invitation) Validate() error {
 		errs = append(errs, fmt.Sprintf("unknown theme id: %q", inv.Theme.ID))
 	}
 
-	// Set RSVP defaults if RSVP section exists
-	if inv.Sections.RSVP != nil {
-		if inv.Sections.RSVP.MaxPartySize <= 0 {
-			inv.Sections.RSVP.MaxPartySize = 2
+	// Validate each section block using its own Section.Validate() contract
+	for idx, sec := range inv.Sections {
+		if sec == nil {
+			errs = append(errs, fmt.Sprintf("section #%d: section block cannot be nil", idx+1))
+			continue
 		}
-	}
-
-	// Validate carousel images if carousel section exists
-	if inv.Sections.Carousel != nil {
-		for i, img := range inv.Sections.Carousel.Images {
-			if strings.TrimSpace(img.URL) == "" {
-				errs = append(errs, fmt.Sprintf("carousel image #%d: url is required", i+1))
-			}
-		}
-	}
-
-	// Validate message section if present
-	if inv.Sections.Message != nil {
-		if strings.TrimSpace(inv.Sections.Message.Text) == "" {
-			errs = append(errs, "message section: text is required")
-		}
-	}
-
-	// Validate static image section if present
-	if inv.Sections.Image != nil {
-		if strings.TrimSpace(inv.Sections.Image.URL) == "" {
-			errs = append(errs, "image section: url is required")
+		if err := sec.Validate(); err != nil {
+			errs = append(errs, fmt.Sprintf("section #%d (%s): %v", idx+1, sec.Type(), err))
 		}
 	}
 

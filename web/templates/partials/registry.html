@@ -1,14 +1,13 @@
 {{ define "partial_registry" }}
-{{ if .Sections.GiftRegistry }}
 <div class="inv-section" id="section-registry">
   <div class="inv-section-heading">Registry</div>
-  {{ if .Sections.GiftRegistry.Message }}
-    <p class="dress-code-desc">{{ .Sections.GiftRegistry.Message }}</p>
+  {{ if .Section.Message }}
+    <p class="dress-code-desc">{{ .Section.Message }}</p>
   {{ end }}
 
-  {{ if .Sections.GiftRegistry.Links }}
+  {{ if .Section.Links }}
     <div class="registry-chips">
-      {{ range .Sections.GiftRegistry.Links }}
+      {{ range .Section.Links }}
         <a href="{{ .URL }}" target="_blank" rel="noopener noreferrer" class="registry-chip">
           🎁 {{ .Label }} &rarr;
         </a>
@@ -16,5 +15,4 @@
     </div>
   {{ end }}
 </div>
-{{ end }}
 {{ end }}

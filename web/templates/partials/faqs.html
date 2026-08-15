@@ -1,10 +1,10 @@
 {{ define "partial_faqs" }}
-{{ if .Sections.FAQs }}
+{{ if .Section.Items }}
 <div class="inv-section" id="section-faqs">
-  <div class="inv-section-heading">Information</div>
+  <div class="inv-section-heading">{{ if .Section.Title }}{{ .Section.Title }}{{ else }}Information{{ end }}</div>
 
   <div class="faq-compact-list">
-    {{ range .Sections.FAQs }}
+    {{ range .Section.Items }}
       <div class="faq-compact-item">
         <span class="faq-compact-q">{{ .Question }}</span>
         <span class="faq-compact-a">{{ .Answer }}</span>

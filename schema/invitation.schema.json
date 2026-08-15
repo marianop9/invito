@@ -83,37 +83,101 @@
       }
     },
     "sections": {
-      "type": "object",
-      "properties": {
-        "hero": {
-          "type": "object",
-          "properties": {
-            "badge": { "type": "string", "description": "Eyebrow badge above headline (e.g. Save The Date)" },
-            "cover_image_url": { "type": "string", "description": "Full-width hero cover image or background photo" },
-            "banner_image_url": { "type": "string", "description": "Optional section banner or header accent image" },
-            "show_countdown": { "type": "boolean", "default": true }
+      "description": "Ordered list of modular invitation section building blocks",
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              { "$ref": "#/definitions/hero_section" },
+              { "$ref": "#/definitions/details_section" },
+              { "$ref": "#/definitions/message_section" },
+              { "$ref": "#/definitions/image_section" },
+              { "$ref": "#/definitions/carousel_section" },
+              { "$ref": "#/definitions/timeline_section" },
+              { "$ref": "#/definitions/dress_code_section" },
+              { "$ref": "#/definitions/rsvp_section" },
+              { "$ref": "#/definitions/faqs_section" },
+              { "$ref": "#/definitions/gift_registry_section" },
+              { "$ref": "#/definitions/closing_section" }
+            ]
           }
         },
-        "carousel": {
+        {
           "type": "object",
-          "properties": {
-            "title": { "type": "string", "description": "Optional heading for the gallery/carousel section" },
-            "images": {
-              "type": "array",
-              "description": "List of images displayed in the carousel",
-              "items": {
-                "type": "object",
-                "required": ["url"],
-                "properties": {
-                  "url": { "type": "string", "description": "Image URL or static asset path" },
-                  "caption": { "type": "string", "description": "Optional caption or story text" },
-                  "alt": { "type": "string", "description": "Accessible alt text for screen readers" }
-                }
-              }
+          "description": "Legacy map of section objects"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "hero_section": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "enum": ["hero"] },
+        "badge": { "type": "string", "description": "Eyebrow badge above headline (e.g. Save The Date)" },
+        "cover_image_url": { "type": "string", "description": "Full-width hero cover image or background photo" },
+        "banner_image_url": { "type": "string", "description": "Optional section banner or header accent image" },
+        "show_countdown": { "type": "boolean", "default": true }
+      }
+    },
+    "details_section": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "enum": ["details"] },
+        "show_map_link": { "type": "boolean", "default": true },
+        "show_calendar_button": { "type": "boolean", "default": true }
+      }
+    },
+    "message_section": {
+      "type": "object",
+      "required": ["type", "text"],
+      "properties": {
+        "type": { "type": "string", "enum": ["message"] },
+        "text": { "type": "string", "description": "Short statement, message, or quote" },
+        "author": { "type": "string", "description": "Optional author or attribution for quotes" }
+      }
+    },
+    "image_section": {
+      "type": "object",
+      "required": ["type", "url"],
+      "properties": {
+        "type": { "type": "string", "enum": ["image"] },
+        "url": { "type": "string", "description": "Image URL or static asset path" },
+        "caption": { "type": "string", "description": "Optional caption below image" },
+        "alt": { "type": "string", "description": "Accessible alt text for the image" }
+      }
+    },
+    "carousel_section": {
+      "type": "object",
+      "required": ["type", "images"],
+      "properties": {
+        "type": { "type": "string", "enum": ["carousel"] },
+        "title": { "type": "string", "description": "Optional heading for the gallery/carousel section" },
+        "images": {
+          "type": "array",
+          "description": "List of images displayed in the carousel",
+          "items": {
+            "type": "object",
+            "required": ["url"],
+            "properties": {
+              "url": { "type": "string", "description": "Image URL or static asset path" },
+              "caption": { "type": "string", "description": "Optional caption or story text" },
+              "alt": { "type": "string", "description": "Accessible alt text for screen readers" }
             }
           }
-        },
-        "timeline": {
+        }
+      }
+    },
+    "timeline_section": {
+      "type": "object",
+      "required": ["type", "items"],
+      "properties": {
+        "type": { "type": "string", "enum": ["timeline"] },
+        "title": { "type": "string", "description": "Timeline section heading" },
+        "items": {
           "type": "array",
           "items": {
             "type": "object",
@@ -122,34 +186,46 @@
               "time": { "type": "string", "description": "Display time (e.g. 4:00 PM)" },
               "title": { "type": "string", "description": "Event segment title" },
               "description": { "type": "string" },
-              "icon": { "type": "string", "description": "Optional icon keyword (ceremony, cocktail, dinner, party, speech, toast)" }
+              "icon": { "type": "string", "description": "Optional icon keyword" }
             }
           }
-        },
-        "dress_code": {
-          "type": "object",
-          "properties": {
-            "title": { "type": "string", "description": "Dress code title (e.g. Formal Black Tie, Cocktail Attire)" },
-            "description": { "type": "string" },
-            "palette_hints": {
-              "type": "array",
-              "items": { "type": "string" },
-              "description": "Hex color codes or color names suggested for guests"
-            }
-          }
-        },
-        "rsvp": {
-          "type": "object",
-          "properties": {
-            "enabled": { "type": "boolean", "default": true },
-            "deadline": { "type": "string", "format": "date-time" },
-            "max_party_size": { "type": "integer", "default": 2, "minimum": 1, "maximum": 10 },
-            "ask_dietary": { "type": "boolean", "default": true },
-            "ask_song_request": { "type": "boolean", "default": false },
-            "custom_note": { "type": "string" }
-          }
-        },
-        "faqs": {
+        }
+      }
+    },
+    "dress_code_section": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "enum": ["dress_code"] },
+        "title": { "type": "string", "description": "Dress code title (e.g. Formal Black Tie, Cocktail Attire)" },
+        "description": { "type": "string" },
+        "palette_hints": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Hex color codes or color names suggested for guests"
+        }
+      }
+    },
+    "rsvp_section": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "enum": ["rsvp"] },
+        "enabled": { "type": "boolean", "default": true },
+        "deadline": { "type": "string", "format": "date-time" },
+        "max_party_size": { "type": "integer", "default": 2, "minimum": 1, "maximum": 10 },
+        "ask_dietary": { "type": "boolean", "default": true },
+        "ask_song_request": { "type": "boolean", "default": false },
+        "custom_note": { "type": "string" }
+      }
+    },
+    "faqs_section": {
+      "type": "object",
+      "required": ["type", "items"],
+      "properties": {
+        "type": { "type": "string", "enum": ["faqs"] },
+        "title": { "type": "string", "description": "FAQs section heading" },
+        "items": {
           "type": "array",
           "items": {
             "type": "object",
@@ -159,49 +235,36 @@
               "answer": { "type": "string" }
             }
           }
-        },
-        "message": {
-          "type": "object",
-          "required": ["text"],
-          "properties": {
-            "text": { "type": "string", "description": "Short statement, message, or quote" },
-            "author": { "type": "string", "description": "Optional author or attribution for quotes" }
-          }
-        },
-        "image": {
-          "type": "object",
-          "required": ["url"],
-          "properties": {
-            "url": { "type": "string", "description": "Image URL or static asset path" },
-            "caption": { "type": "string", "description": "Optional caption below image" },
-            "alt": { "type": "string", "description": "Accessible alt text for the image" }
-          }
-        },
-        "gift_registry": {
-          "type": "object",
-          "properties": {
-            "message": { "type": "string" },
-            "links": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "required": ["label", "url"],
-                "properties": {
-                  "label": { "type": "string" },
-                  "url": { "type": "string" }
-                }
-              }
+        }
+      }
+    },
+    "gift_registry_section": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "enum": ["gift_registry"] },
+        "message": { "type": "string" },
+        "links": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["label", "url"],
+            "properties": {
+              "label": { "type": "string" },
+              "url": { "type": "string" }
             }
           }
-        },
-        "closing": {
-          "type": "object",
-          "properties": {
-            "message": { "type": "string", "description": "Warm farewell or excitement message (e.g. Can't wait to celebrate with you!)" },
-            "signoff": { "type": "string", "description": "Sign-off phrase (e.g. With love, Warmly, Cheers)" },
-            "hosts": { "type": "string", "description": "Custom host sign-off names (e.g. Sarah & Alex)" }
-          }
         }
+      }
+    },
+    "closing_section": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": { "type": "string", "enum": ["closing"] },
+        "message": { "type": "string", "description": "Warm farewell or excitement message" },
+        "signoff": { "type": "string", "description": "Sign-off phrase (e.g. With love, Warmly, Cheers)" },
+        "hosts": { "type": "string", "description": "Custom host sign-off names (e.g. Sarah & Alex)" }
       }
     }
   }

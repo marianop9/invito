@@ -1,12 +1,11 @@
 {{ define "partial_rsvp_form" }}
-{{ if .Sections.RSVP }}
-  {{ if .Sections.RSVP.Enabled }}
+{{ if .Section.Enabled }}
 <div class="inv-section" id="section-rsvp">
   <div id="rsvp-card-inner">
     <div class="inv-section-heading">RSVP</div>
 
-    {{ if .IsRSVPOpen }}
-      <form id="rsvp-form" action="/i/{{ .Slug }}/rsvp" method="POST" class="rsvp-compact-form">
+    {{ if .Invitation.IsRSVPOpen }}
+      <form id="rsvp-form" action="/i/{{ .Invitation.Slug }}/rsvp" method="POST" class="rsvp-compact-form">
         <!-- Attendance Toggle -->
         <div class="toggle-pair">
           <label class="toggle-option active" id="label-attending-yes">
@@ -32,14 +31,14 @@
         </div>
 
         <!-- Party Size -->
-        {{ if gt .Sections.RSVP.MaxPartySize 1 }}
+        {{ if gt .Section.MaxPartySize 1 }}
         <div class="form-field" id="rsvp-guests-group">
           <label for="input-guests" class="field-label">Guests</label>
           <select id="input-guests" name="guest_count" class="field-select">
             <option value="1">1 person</option>
             <option value="2" selected>2 people</option>
-            {{ if ge .Sections.RSVP.MaxPartySize 3 }}<option value="3">3 people</option>{{ end }}
-            {{ if ge .Sections.RSVP.MaxPartySize 4 }}<option value="4">4 people</option>{{ end }}
+            {{ if ge .Section.MaxPartySize 3 }}<option value="3">3 people</option>{{ end }}
+            {{ if ge .Section.MaxPartySize 4 }}<option value="4">4 people</option>{{ end }}
           </select>
         </div>
         {{ else }}
@@ -47,11 +46,18 @@
         {{ end }}
 
         <!-- Dietary Requirements -->
-        {{ if .Sections.RSVP.AskDietary }}
+        {{ if .Section.AskDietary }}
         <div class="form-field" id="rsvp-dietary-group">
           <label for="input-dietary" class="field-label">Dietary / Notes (Optional)</label>
           <input type="text" id="input-dietary" name="dietary_needs" class="field-input" placeholder="Vegetarian, allergies...">
         </div>
+        {{ end }}
+
+        <!-- Custom Note -->
+        {{ if .Section.CustomNote }}
+        <p style="font-size: 0.75rem; color: var(--inv-text-muted); margin-top: 0.25rem;">
+          {{ .Section.CustomNote }}
+        </p>
         {{ end }}
 
         <!-- Submit Button -->
@@ -68,6 +74,5 @@
     {{ end }}
   </div>
 </div>
-  {{ end }}
 {{ end }}
 {{ end }}
