@@ -28,7 +28,7 @@
       "show_countdown": true
     },
     {
-      "type": "message",
+      "type": "quote",
       "text": "Whatever our souls are made of, his and mine are the same.",
       "author": "Emily Brontë"
     },
@@ -57,6 +57,11 @@
       "type": "details",
       "show_map_link": true,
       "show_calendar_button": true
+    },
+    {
+      "type": "text",
+      "title": "Hope to see you there!",
+      "text": "as"
     },
     {
       "type": "timeline",
@@ -95,7 +100,8 @@
       "caption": "Willowbrook Botanical Pavilion & Conservatory"
     },
     {
-      "type": "message",
+      "type": "text",
+      "title": "Guest Transportation",
       "text": "Complimentary guest shuttles will depart from the Downtown Omni Hotel at 3:15 PM."
     },
     {

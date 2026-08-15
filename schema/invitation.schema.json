@@ -91,7 +91,8 @@
             "oneOf": [
               { "$ref": "#/definitions/hero_section" },
               { "$ref": "#/definitions/details_section" },
-              { "$ref": "#/definitions/message_section" },
+              { "$ref": "#/definitions/quote_section" },
+              { "$ref": "#/definitions/text_section" },
               { "$ref": "#/definitions/image_section" },
               { "$ref": "#/definitions/carousel_section" },
               { "$ref": "#/definitions/timeline_section" },
@@ -131,13 +132,23 @@
         "show_calendar_button": { "type": "boolean", "default": true }
       }
     },
-    "message_section": {
+    "quote_section": {
       "type": "object",
       "required": ["type", "text"],
       "properties": {
-        "type": { "type": "string", "enum": ["message"] },
-        "text": { "type": "string", "description": "Short statement, message, or quote" },
+        "type": { "type": "string", "enum": ["quote"] },
+        "text": { "type": "string", "description": "Quote or literary statement" },
         "author": { "type": "string", "description": "Optional author or attribution for quotes" }
+      }
+    },
+    "text_section": {
+      "type": "object",
+      "required": ["type", "text"],
+      "properties": {
+        "type": { "type": "string", "enum": ["text"] },
+        "title": { "type": "string", "description": "Optional announcement or note title" },
+        "text": { "type": "string", "description": "Plain text content or announcement" },
+        "align": { "type": "string", "enum": ["left", "center", "right"], "description": "Text alignment" }
       }
     },
     "image_section": {

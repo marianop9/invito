@@ -678,21 +678,21 @@ body.invitation-body {
 }
 
 /* ==========================================================================
-   Statement / Quote Message Section
+   Quote Section (Literary Statements & Special Formatting)
    ========================================================================== */
-.inv-message-section {
+.inv-quote-section {
   text-align: center;
   padding: 1.5rem 1.5rem;
   background-color: var(--inv-surface);
 }
 
-.inv-message-block {
+.inv-quote-block {
   max-width: 380px;
   margin: 0 auto;
   position: relative;
 }
 
-.inv-message-text {
+.inv-quote-text {
   font-family: var(--inv-font-heading);
   font-style: italic;
   font-size: 1.25rem;
@@ -701,7 +701,7 @@ body.invitation-body {
   font-weight: 500;
 }
 
-.inv-message-author {
+.inv-quote-author {
   display: block;
   font-family: var(--inv-font-body);
   font-style: normal;
@@ -711,6 +711,42 @@ body.invitation-body {
   letter-spacing: 0.08em;
   color: var(--inv-accent);
   margin-top: 0.5rem;
+}
+
+/* ==========================================================================
+   Plain Text / Announcement Section
+   ========================================================================== */
+.inv-text-section {
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+}
+
+.inv-text-section.text-align-left {
+  text-align: left;
+}
+
+.inv-text-section.text-align-right {
+  text-align: right;
+}
+
+.inv-text-content {
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.inv-text-heading {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--inv-accent);
+  margin-bottom: 0.35rem;
+}
+
+.inv-text-body {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--inv-text);
 }
 
 /* ==========================================================================

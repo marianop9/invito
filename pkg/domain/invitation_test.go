@@ -65,13 +65,22 @@ func TestInvitationValidation(t *testing.T) {
 		t.Errorf("expected error when carousel image url is empty, got nil")
 	}
 
-	// Test invalid message with empty text
-	invalidMsgInv := validInv
-	invalidMsgInv.Sections = []Section{
-		&MessageSection{SectionType: SectionMessage, Text: "   "},
+	// Test invalid quote with empty text
+	invalidQuoteInv := validInv
+	invalidQuoteInv.Sections = []Section{
+		&QuoteSection{SectionType: SectionQuote, Text: "   "},
 	}
-	if err := invalidMsgInv.Validate(); err == nil {
-		t.Errorf("expected error when message text is empty, got nil")
+	if err := invalidQuoteInv.Validate(); err == nil {
+		t.Errorf("expected error when quote text is empty, got nil")
+	}
+
+	// Test invalid text with empty text
+	invalidTextInv := validInv
+	invalidTextInv.Sections = []Section{
+		&TextSection{SectionType: SectionText, Text: "   "},
+	}
+	if err := invalidTextInv.Validate(); err == nil {
+		t.Errorf("expected error when text content is empty, got nil")
 	}
 
 	// Test invalid image with empty url
@@ -85,7 +94,7 @@ func TestInvitationValidation(t *testing.T) {
 }
 
 func TestInvitationJSONUnmarshaling(t *testing.T) {
-	t.Run("Polymorphic Array Unmarshaling with Multiple Messages and Images", func(t *testing.T) {
+	t.Run("Polymorphic Array Unmarshaling with Quote, Text, and Images", func(t *testing.T) {
 		jsonBlob := `{
 			"version": "1.0",
 			"slug": "custom-blocks-event",
@@ -98,12 +107,12 @@ func TestInvitationJSONUnmarshaling(t *testing.T) {
 			"theme": { "id": "botanical-elegance" },
 			"sections": [
 				{ "type": "hero", "badge": "Special Announcement", "cover_image_url": "/static/img/demo-hero.webp" },
-				{ "type": "message", "text": "First quote: Two lives, one path.", "author": "Poet" },
+				{ "type": "quote", "text": "Two lives, one path.", "author": "Poet" },
 				{ "type": "carousel", "title": "Photo Moments", "images": [{ "url": "/static/img/c1.webp" }, { "url": "/static/img/c2.webp" }] },
 				{ "type": "details", "show_map_link": true },
 				{ "type": "timeline", "title": "Schedule", "items": [{ "time": "4:00 PM", "title": "Ceremony" }] },
 				{ "type": "image", "url": "/static/img/venue.webp", "caption": "The Glasshouse Conservatory" },
-				{ "type": "message", "text": "Second message: Shuttle departs at 3:15 PM sharp." },
+				{ "type": "text", "title": "Guest Logistics", "text": "Shuttle departs at 3:15 PM sharp." },
 				{ "type": "dress_code", "title": "Garden Formal", "palette_hints": ["#2A4738", "#D4AF37"] },
 				{ "type": "image", "url": "/static/img/swatches.webp", "caption": "Color Swatches" },
 				{ "type": "rsvp", "enabled": true, "max_party_size": 2 },
@@ -125,12 +134,12 @@ func TestInvitationJSONUnmarshaling(t *testing.T) {
 		// Verify ordering and types
 		expectedTypes := []SectionType{
 			SectionHero,
-			SectionMessage,
+			SectionQuote,
 			SectionCarousel,
 			SectionDetails,
 			SectionTimeline,
 			SectionImage,
-			SectionMessage,
+			SectionText,
 			SectionDressCode,
 			SectionImage,
 			SectionRSVP,
@@ -145,14 +154,16 @@ func TestInvitationJSONUnmarshaling(t *testing.T) {
 			}
 		}
 
-		// Check multiple message contents
-		msg1, ok := inv.Sections[1].(*MessageSection)
-		if !ok || !strings.Contains(msg1.Text, "First quote") {
-			t.Errorf("unexpected msg1: %+v", inv.Sections[1])
+		// Check quote contents
+		quote, ok := inv.Sections[1].(*QuoteSection)
+		if !ok || !strings.Contains(quote.Text, "Two lives") || quote.Author != "Poet" {
+			t.Errorf("unexpected quote: %+v", inv.Sections[1])
 		}
-		msg2, ok := inv.Sections[6].(*MessageSection)
-		if !ok || !strings.Contains(msg2.Text, "Shuttle departs") {
-			t.Errorf("unexpected msg2: %+v", inv.Sections[6])
+
+		// Check text announcement contents
+		txt, ok := inv.Sections[6].(*TextSection)
+		if !ok || !strings.Contains(txt.Text, "Shuttle departs") || txt.Title != "Guest Logistics" {
+			t.Errorf("unexpected txt: %+v", inv.Sections[6])
 		}
 
 		// Check multiple image contents
@@ -180,7 +191,8 @@ func TestInvitationJSONUnmarshaling(t *testing.T) {
 			"theme": { "id": "golden-sunset" },
 			"sections": {
 				"hero": { "badge": "Legacy Eyebrow" },
-				"message": { "text": "Legacy statement" },
+				"quote": { "text": "Legacy statement", "author": "Host" },
+				"text": { "text": "Legacy announcement" },
 				"rsvp": { "enabled": true, "max_party_size": 2 }
 			}
 		}`
@@ -224,8 +236,8 @@ func TestInvitationHelpers(t *testing.T) {
 				CoverImageURL:  "/static/img/hero.webp",
 				BannerImageURL: "/static/img/banner.webp",
 			},
-			&MessageSection{
-				SectionType: SectionMessage,
+			&QuoteSection{
+				SectionType: SectionQuote,
 				Text:        "Two lives, one shared journey.",
 				Author:      "Poet",
 			},

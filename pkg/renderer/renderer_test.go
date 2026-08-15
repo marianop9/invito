@@ -119,15 +119,15 @@ func TestRenderer(t *testing.T) {
 		}
 	})
 
-	t.Run("RenderInvitation with Multiple Messages and Multiple Images in Custom Order", func(t *testing.T) {
+	t.Run("RenderInvitation with Quote, Text, and Multiple Images in Custom Order", func(t *testing.T) {
 		fullInv := *inv
 		fullInv.Sections = []domain.Section{
 			&domain.HeroSection{
 				SectionType: domain.SectionHero,
 				Badge:       "Welcome",
 			},
-			&domain.MessageSection{
-				SectionType: domain.SectionMessage,
+			&domain.QuoteSection{
+				SectionType: domain.SectionQuote,
 				Text:        "First quote: Two lives, one shared journey.",
 				Author:      "Rumi",
 			},
@@ -136,8 +136,9 @@ func TestRenderer(t *testing.T) {
 				URL:         "/static/img/venue.webp",
 				Caption:     "The Botanical Glasshouse",
 			},
-			&domain.MessageSection{
-				SectionType: domain.SectionMessage,
+			&domain.TextSection{
+				SectionType: domain.SectionText,
+				Title:       "Guest Notice",
 				Text:        "Second message: Complimentary shuttle departs from hotel lobby.",
 			},
 			&domain.ImageSection{
@@ -160,12 +161,14 @@ func TestRenderer(t *testing.T) {
 
 		html := buf.String()
 		expectedKeywords := []string{
-			"section-message",
+			"section-quote",
 			"First quote: Two lives, one shared journey.",
 			"Rumi",
 			"section-image",
 			"/static/img/venue.webp",
 			"The Botanical Glasshouse",
+			"section-text",
+			"Guest Notice",
 			"Second message: Complimentary shuttle departs from hotel lobby.",
 			"/static/img/swatches.webp",
 			"Attire Inspiration Swatches",
@@ -182,18 +185,18 @@ func TestRenderer(t *testing.T) {
 		}
 
 		// Verify ordering in output: First quote before Second message
-		idxFirstMsg := strings.Index(html, "First quote")
+		idxQuote := strings.Index(html, "First quote")
 		idxFirstImg := strings.Index(html, "/static/img/venue.webp")
-		idxSecondMsg := strings.Index(html, "Second message")
+		idxText := strings.Index(html, "Second message")
 		idxSecondImg := strings.Index(html, "/static/img/swatches.webp")
 		idxClosing := strings.Index(html, "section-closing")
 
-		if idxFirstMsg == -1 || idxFirstImg == -1 || idxSecondMsg == -1 || idxSecondImg == -1 || idxClosing == -1 {
+		if idxQuote == -1 || idxFirstImg == -1 || idxText == -1 || idxSecondImg == -1 || idxClosing == -1 {
 			t.Fatalf("missing expected elements in rendered output")
 		}
 
-		if !(idxFirstMsg < idxFirstImg && idxFirstImg < idxSecondMsg && idxSecondMsg < idxSecondImg && idxSecondImg < idxClosing) {
-			t.Errorf("expected blocks to render in exact configured sequence: first msg < first img < second msg < second img < closing")
+		if !(idxQuote < idxFirstImg && idxFirstImg < idxText && idxText < idxSecondImg && idxSecondImg < idxClosing) {
+			t.Errorf("expected blocks to render in exact configured sequence: quote < first img < text < second img < closing")
 		}
 	})
 

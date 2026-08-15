@@ -1,0 +1,10 @@
+{{ define "partial_text" }}
+<section class="inv-section inv-text-section{{ if .Section.Align }} text-align-{{ .Section.Align }}{{ end }}" id="section-text">
+  <div class="inv-text-content">
+    {{ if .Section.Title }}
+      <h3 class="inv-text-heading">{{ .Section.Title }}</h3>
+    {{ end }}
+    <p class="inv-text-body">{{ .Section.Text }}</p>
+  </div>
+</section>
+{{ end }}

@@ -52,7 +52,8 @@ type SectionType string
 const (
 	SectionHero         SectionType = "hero"
 	SectionDetails      SectionType = "details"
-	SectionMessage      SectionType = "message"
+	SectionQuote        SectionType = "quote"
+	SectionText         SectionType = "text"
 	SectionImage        SectionType = "image"
 	SectionCarousel     SectionType = "carousel"
 	SectionTimeline     SectionType = "timeline"
@@ -78,7 +79,8 @@ var sectionRegistry = map[SectionType]SectionFactory{
 	SectionDetails: func() Section {
 		return &DetailsSection{SectionType: SectionDetails, ShowMapLink: true, ShowCalendarButton: true}
 	},
-	SectionMessage:      func() Section { return &MessageSection{SectionType: SectionMessage} },
+	SectionQuote:        func() Section { return &QuoteSection{SectionType: SectionQuote} },
+	SectionText:         func() Section { return &TextSection{SectionType: SectionText} },
 	SectionImage:        func() Section { return &ImageSection{SectionType: SectionImage} },
 	SectionCarousel:     func() Section { return &CarouselSection{SectionType: SectionCarousel} },
 	SectionTimeline:     func() Section { return &TimelineSection{SectionType: SectionTimeline} },
@@ -119,18 +121,35 @@ func (d *DetailsSection) Type() SectionType    { return SectionDetails }
 func (d *DetailsSection) TemplateName() string { return "partial_details" }
 func (d *DetailsSection) Validate() error      { return nil }
 
-// MessageSection represents a simple statement, quote, or narrative highlight.
-type MessageSection struct {
+// QuoteSection represents an elegant quote or literary excerpt with quotation marks and author attribution.
+type QuoteSection struct {
 	SectionType SectionType `json:"type"`
 	Text        string      `json:"text"`
 	Author      string      `json:"author,omitempty"`
 }
 
-func (m *MessageSection) Type() SectionType    { return SectionMessage }
-func (m *MessageSection) TemplateName() string { return "partial_message" }
-func (m *MessageSection) Validate() error {
-	if strings.TrimSpace(m.Text) == "" {
-		return errors.New("message text is required")
+func (q *QuoteSection) Type() SectionType    { return SectionQuote }
+func (q *QuoteSection) TemplateName() string { return "partial_quote" }
+func (q *QuoteSection) Validate() error {
+	if strings.TrimSpace(q.Text) == "" {
+		return errors.New("quote text is required")
+	}
+	return nil
+}
+
+// TextSection represents a clean, plain text block for announcements, instructions, or notes.
+type TextSection struct {
+	SectionType SectionType `json:"type"`
+	Title       string      `json:"title,omitempty"`
+	Text        string      `json:"text"`
+	Align       string      `json:"align,omitempty"`
+}
+
+func (t *TextSection) Type() SectionType    { return SectionText }
+func (t *TextSection) TemplateName() string { return "partial_text" }
+func (t *TextSection) Validate() error {
+	if strings.TrimSpace(t.Text) == "" {
+		return errors.New("text content is required")
 	}
 	return nil
 }
@@ -428,7 +447,8 @@ func (inv *Invitation) UnmarshalJSON(data []byte) error {
 		// Legacy Object Map
 		var legacy struct {
 			Hero         *HeroSection         `json:"hero,omitempty"`
-			Message      *MessageSection      `json:"message,omitempty"`
+			Quote        *QuoteSection        `json:"quote,omitempty"`
+			Text         *TextSection         `json:"text,omitempty"`
 			Carousel     *CarouselSection     `json:"carousel,omitempty"`
 			Timeline     []TimelineItem       `json:"timeline,omitempty"`
 			Image        *ImageSection        `json:"image,omitempty"`
@@ -446,9 +466,13 @@ func (inv *Invitation) UnmarshalJSON(data []byte) error {
 			legacy.Hero.SectionType = SectionHero
 			inv.Sections = append(inv.Sections, legacy.Hero)
 		}
-		if legacy.Message != nil {
-			legacy.Message.SectionType = SectionMessage
-			inv.Sections = append(inv.Sections, legacy.Message)
+		if legacy.Quote != nil {
+			legacy.Quote.SectionType = SectionQuote
+			inv.Sections = append(inv.Sections, legacy.Quote)
+		}
+		if legacy.Text != nil {
+			legacy.Text.SectionType = SectionText
+			inv.Sections = append(inv.Sections, legacy.Text)
 		}
 		if legacy.Carousel != nil {
 			legacy.Carousel.SectionType = SectionCarousel
