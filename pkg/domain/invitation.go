@@ -46,9 +46,57 @@ type Location struct {
 
 // HeroSection configures the top introductory card.
 type HeroSection struct {
-	Badge         string `json:"badge,omitempty"`
-	CoverImageURL string `json:"cover_image_url,omitempty"`
-	ShowCountdown bool   `json:"show_countdown"`
+	Badge          string `json:"badge,omitempty"`
+	CoverImageURL  string `json:"cover_image_url,omitempty"`
+	BannerImageURL string `json:"banner_image_url,omitempty"`
+	ShowCountdown  bool   `json:"show_countdown"`
+}
+
+// HasCoverImage returns true if a hero cover image URL is present.
+func (h *HeroSection) HasCoverImage() bool {
+	return h != nil && strings.TrimSpace(h.CoverImageURL) != ""
+}
+
+// HasBannerImage returns true if a hero banner image URL is present.
+func (h *HeroSection) HasBannerImage() bool {
+	return h != nil && strings.TrimSpace(h.BannerImageURL) != ""
+}
+
+// CarouselImage represents an individual photo in a carousel or gallery.
+type CarouselImage struct {
+	URL     string `json:"url"`
+	Caption string `json:"caption,omitempty"`
+	Alt     string `json:"alt,omitempty"`
+}
+
+// AltText returns the configured Alt text, falling back to Caption, or defaultAlt.
+func (img *CarouselImage) AltText(defaultAlt string) string {
+	if strings.TrimSpace(img.Alt) != "" {
+		return img.Alt
+	}
+	if strings.TrimSpace(img.Caption) != "" {
+		return img.Caption
+	}
+	return defaultAlt
+}
+
+// CarouselSection configures an image gallery or carousel section.
+type CarouselSection struct {
+	Title  string          `json:"title,omitempty"`
+	Images []CarouselImage `json:"images,omitempty"`
+}
+
+// HasImages returns true if the carousel contains one or more images.
+func (c *CarouselSection) HasImages() bool {
+	return c != nil && len(c.Images) > 0
+}
+
+// ImageCount returns the total number of images in the carousel.
+func (c *CarouselSection) ImageCount() int {
+	if c == nil {
+		return 0
+	}
+	return len(c.Images)
 }
 
 // TimelineItem represents a milestone in the event schedule.
@@ -97,6 +145,7 @@ type GiftRegistrySection struct {
 // Sections holds the modular blocks of an invitation.
 type Sections struct {
 	Hero         *HeroSection         `json:"hero,omitempty"`
+	Carousel     *CarouselSection     `json:"carousel,omitempty"`
 	Timeline     []TimelineItem       `json:"timeline,omitempty"`
 	DressCode    *DressCodeSection    `json:"dress_code,omitempty"`
 	RSVP         *RSVPSection         `json:"rsvp,omitempty"`
@@ -172,6 +221,24 @@ func (inv *Invitation) GoogleCalendarURL() string {
 	return fmt.Sprintf("%s&text=%s&dates=%s&details=%s&location=%s", baseURL, title, dates, details, location)
 }
 
+// HasCoverImage returns true if the invitation has a hero cover image configured.
+func (inv *Invitation) HasCoverImage() bool {
+	return inv.Sections.Hero != nil && inv.Sections.Hero.HasCoverImage()
+}
+
+// CoverImage returns the cover image URL if set in hero.
+func (inv *Invitation) CoverImage() string {
+	if inv.Sections.Hero != nil {
+		return inv.Sections.Hero.CoverImageURL
+	}
+	return ""
+}
+
+// HasCarousel returns true if the invitation includes a carousel section with images.
+func (inv *Invitation) HasCarousel() bool {
+	return inv.Sections.Carousel != nil && inv.Sections.Carousel.HasImages()
+}
+
 // IsRSVPOpen checks if RSVP is enabled and if the deadline has not passed.
 func (inv *Invitation) IsRSVPOpen() bool {
 	if inv.Sections.RSVP == nil || !inv.Sections.RSVP.Enabled {
@@ -200,6 +267,10 @@ func (inv *Invitation) JSONLD() (string, error) {
 				"streetAddress": inv.Location.Address,
 			},
 		},
+	}
+
+	if inv.HasCoverImage() {
+		data["image"] = inv.CoverImage()
 	}
 
 	if inv.DateEnd != nil && !inv.DateEnd.IsZero() {

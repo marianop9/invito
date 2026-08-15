@@ -68,6 +68,43 @@ func TestRenderer(t *testing.T) {
 		}
 	})
 
+	t.Run("RenderInvitation with Hero Cover Image and Carousel", func(t *testing.T) {
+		weddingInv := *inv
+		weddingInv.Sections.Hero = &domain.HeroSection{
+			Badge:         "Wedding Celebration",
+			CoverImageURL: "/static/img/demo-hero.webp",
+		}
+		weddingInv.Sections.Carousel = &domain.CarouselSection{
+			Title: "Photo Moments",
+			Images: []domain.CarouselImage{
+				{URL: "/static/img/demo-carousel-1.webp", Caption: "Engagement at Big Sur"},
+				{URL: "/static/img/demo-carousel-2.webp", Caption: "Tuscany Trip"},
+			},
+		}
+
+		var buf bytes.Buffer
+		if err := r.RenderInvitation(&buf, &weddingInv); err != nil {
+			t.Fatalf("RenderInvitation with image/carousel error: %v", err)
+		}
+
+		html := buf.String()
+		expectedImgKeywords := []string{
+			"has-cover-image",
+			"/static/img/demo-hero.webp",
+			"section-gallery",
+			"carousel-track",
+			"carousel-dots",
+			"/static/img/demo-carousel-1.webp",
+			"Engagement at Big Sur",
+		}
+
+		for _, kw := range expectedImgKeywords {
+			if !strings.Contains(html, kw) {
+				t.Errorf("expected rendered HTML to contain %q, but missing", kw)
+			}
+		}
+	})
+
 	t.Run("RenderToHTMLString produces static SSG bundle", func(t *testing.T) {
 		htmlStr, err := r.RenderToHTMLString(inv)
 		if err != nil {

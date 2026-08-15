@@ -49,6 +49,19 @@ func TestInvitationValidation(t *testing.T) {
 	if err := invalidDates.Validate(); err == nil {
 		t.Errorf("expected error when date_end is before date_start, got nil")
 	}
+
+	// Test invalid carousel with empty image URL
+	invalidCarouselInv := validInv
+	invalidCarouselInv.Sections.Carousel = &CarouselSection{
+		Title: "Our Moments",
+		Images: []CarouselImage{
+			{URL: "/static/img/hero.webp", Caption: "Valid photo"},
+			{URL: "", Caption: "Missing URL photo"},
+		},
+	}
+	if err := invalidCarouselInv.Validate(); err == nil {
+		t.Errorf("expected error when carousel image url is empty, got nil")
+	}
 }
 
 func TestInvitationHelpers(t *testing.T) {
@@ -65,6 +78,20 @@ func TestInvitationHelpers(t *testing.T) {
 			Name:    "Botanical Gardens",
 			Address: "123 Flower Ave",
 		},
+		Sections: Sections{
+			Hero: &HeroSection{
+				Badge:          "Save The Date",
+				CoverImageURL:  "/static/img/hero.webp",
+				BannerImageURL: "/static/img/banner.webp",
+			},
+			Carousel: &CarouselSection{
+				Title: "Our Journey",
+				Images: []CarouselImage{
+					{URL: "/static/img/carousel-1.webp", Caption: "Engagement Day", Alt: "Sarah and Alex engagement"},
+					{URL: "/static/img/carousel-2.webp", Caption: "Summer in Italy"},
+				},
+			},
+		},
 	}
 
 	if inv.HostsDisplay() != "Sarah & Alex" {
@@ -73,6 +100,39 @@ func TestInvitationHelpers(t *testing.T) {
 
 	if inv.FormattedDateShort() != "Sep 19, 2026" {
 		t.Errorf("expected 'Sep 19, 2026', got %q", inv.FormattedDateShort())
+	}
+
+	if !inv.HasCoverImage() {
+		t.Errorf("expected HasCoverImage() to be true")
+	}
+	if inv.CoverImage() != "/static/img/hero.webp" {
+		t.Errorf("expected CoverImage() to return '/static/img/hero.webp', got %q", inv.CoverImage())
+	}
+	if !inv.Sections.Hero.HasCoverImage() || !inv.Sections.Hero.HasBannerImage() {
+		t.Errorf("expected HeroSection HasCoverImage and HasBannerImage to be true")
+	}
+
+	if !inv.HasCarousel() {
+		t.Errorf("expected HasCarousel() to be true")
+	}
+	if inv.Sections.Carousel.ImageCount() != 2 {
+		t.Errorf("expected ImageCount() == 2, got %d", inv.Sections.Carousel.ImageCount())
+	}
+	if !inv.Sections.Carousel.HasImages() {
+		t.Errorf("expected HasImages() to be true")
+	}
+
+	img1 := inv.Sections.Carousel.Images[0]
+	if img1.AltText("default") != "Sarah and Alex engagement" {
+		t.Errorf("expected alt text 'Sarah and Alex engagement', got %q", img1.AltText("default"))
+	}
+	img2 := inv.Sections.Carousel.Images[1]
+	if img2.AltText("default") != "Summer in Italy" {
+		t.Errorf("expected caption fallback for alt text 'Summer in Italy', got %q", img2.AltText("default"))
+	}
+	emptyImg := CarouselImage{}
+	if emptyImg.AltText("fallback") != "fallback" {
+		t.Errorf("expected fallback 'fallback', got %q", emptyImg.AltText("fallback"))
 	}
 
 	calURL := inv.GoogleCalendarURL()
@@ -86,6 +146,9 @@ func TestInvitationHelpers(t *testing.T) {
 	}
 	if !strings.Contains(jsonld, "EventScheduled") {
 		t.Errorf("expected JSON-LD to contain EventScheduled, got %s", jsonld)
+	}
+	if !strings.Contains(jsonld, "/static/img/hero.webp") {
+		t.Errorf("expected JSON-LD to contain cover image, got %s", jsonld)
 	}
 }
 

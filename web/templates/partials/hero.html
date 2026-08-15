@@ -1,29 +1,38 @@
 {{ define "partial_hero" }}
-<div class="inv-hero" id="section-hero">
-  {{ if .Sections.Hero }}
-    {{ if .Sections.Hero.Badge }}
-      <div class="inv-badge">{{ .Sections.Hero.Badge }}</div>
-    {{ end }}
-  {{ end }}
-
-  <h1 class="inv-title">{{ .Title }}</h1>
-
-  {{ if .Subtitle }}
-    <p class="inv-subtitle">{{ .Subtitle }}</p>
-  {{ end }}
-
-  {{ if .HostsDisplay }}
-    <p class="inv-hosts-line">Hosted by {{ .HostsDisplay }}</p>
-  {{ end }}
-
-  {{ if .Description }}
-    <p class="inv-intro-text">{{ .Description }}</p>
-  {{ end }}
-
-  {{ if and .Sections.Hero .Sections.Hero.ShowCountdown }}
-    <div class="inv-hero-countdown" id="inv-countdown" data-target-date="{{ .DateStart.Format "2006-01-02T15:04:05Z07:00" }}">
-      <span>⏳ In <strong id="cd-summary">-- days</strong></span>
+<div class="inv-hero{{ if and .Sections.Hero .Sections.Hero.CoverImageURL }} has-cover-image{{ end }}" id="section-hero">
+  {{ if and .Sections.Hero .Sections.Hero.CoverImageURL }}
+    <div class="inv-hero-media">
+      <img src="{{ .Sections.Hero.CoverImageURL }}" alt="{{ .Title }}" class="inv-hero-img" loading="eager" decoding="async">
+      <div class="inv-hero-overlay"></div>
     </div>
   {{ end }}
+
+  <div class="inv-hero-content">
+    {{ if .Sections.Hero }}
+      {{ if .Sections.Hero.Badge }}
+        <div class="inv-badge">{{ .Sections.Hero.Badge }}</div>
+      {{ end }}
+    {{ end }}
+
+    <h1 class="inv-title">{{ .Title }}</h1>
+
+    {{ if .Subtitle }}
+      <p class="inv-subtitle">{{ .Subtitle }}</p>
+    {{ end }}
+
+    {{ if .HostsDisplay }}
+      <p class="inv-hosts-line">Hosted by {{ .HostsDisplay }}</p>
+    {{ end }}
+
+    {{ if .Description }}
+      <p class="inv-intro-text">{{ .Description }}</p>
+    {{ end }}
+
+    {{ if and .Sections.Hero .Sections.Hero.ShowCountdown }}
+      <div class="inv-hero-countdown" id="inv-countdown" data-target-date="{{ .DateStart.Format "2006-01-02T15:04:05Z07:00" }}">
+        <span>⏳ In <strong id="cd-summary">-- days</strong></span>
+      </div>
+    {{ end }}
+  </div>
 </div>
 {{ end }}

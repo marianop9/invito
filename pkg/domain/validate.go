@@ -63,6 +63,15 @@ func (inv *Invitation) Validate() error {
 		}
 	}
 
+	// Validate carousel images if carousel section exists
+	if inv.Sections.Carousel != nil {
+		for i, img := range inv.Sections.Carousel.Images {
+			if strings.TrimSpace(img.URL) == "" {
+				errs = append(errs, fmt.Sprintf("carousel image #%d: url is required", i+1))
+			}
+		}
+	}
+
 	if len(errs) > 0 {
 		return errors.New(strings.Join(errs, "; "))
 	}

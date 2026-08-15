@@ -26,21 +26,21 @@
 
 ### 🎯 Immediate Priority: Working Demo Excellence (Focus on Wedding & Birthday)
 
-- [ ] **Image Support in Invitation Schema & Domain**:
-  - [ ] Add `cover_image_url` and section banner support to `sections.hero` and domain models.
-  - [ ] Add `carousel` section to JSON Schema (`title`, array of `{ url, caption, alt }`).
-  - [ ] Update `pkg/domain/invitation.go` with Carousel structs and helper methods.
-- [ ] **Static Asset Serving for Seed Images**:
-  - [ ] Make `seed/img/` (`hero.webp`, `carousel-1.webp`, `carousel-2.webp`, `carousel-3.webp`) accessible via `/static/img/` or embedded filesystem.
-- [ ] **Full-Width Hero Image & Section Images**:
-  - [ ] Render full-bleed/rounded hero cover image in `web/templates/partials/hero.html` with graceful fallback if omitted.
-- [ ] **Touch-Friendly Image Carousel**:
-  - [ ] Build `web/templates/partials/carousel.html` partial.
-  - [ ] Implement smooth CSS scroll-snap horizontal carousel with dot indicators and next/prev navigation in `web/static/css/invitation.css` and `web/static/js/invitation.js`.
-- [ ] **Refine & Showcase the 2 Core Softer Demos**:
-  - [ ] Update `seed/wedding.json` (Botanical Elegance) to integrate `hero.webp` and the 3 carousel images.
-  - [ ] Polish `seed/birthday.json` (Golden Sunset) with warm aesthetic accents.
-  - [ ] Update showcase landing page (`web/templates/index.html`) to focus exclusively on the Wedding and Birthday demos.
+- [x] **Image Support in Invitation Schema & Domain**:
+  - [x] Add `cover_image_url` and section banner support to `sections.hero` and domain models.
+  - [x] Add `carousel` section to JSON Schema (`title`, array of `{ url, caption, alt }`).
+  - [x] Update `pkg/domain/invitation.go` with Carousel structs and helper methods.
+- [x] **Static Asset Serving for Seed Images**:
+  - [x] Static images for demo (`demo-hero.webp`, `demo-carousel-1.webp`, `demo-carousel-2.webp`, `demo-carousel-3.webp`) are accessible under `web/static/img/`.
+- [x] **Full-Width Hero Image & Section Images**:
+  - [x] Render full-bleed/rounded hero cover image in `web/templates/partials/hero.html` with graceful fallback if omitted.
+- [x] **Auto-Scrolling Viewport-Aware Image Carousel**:
+  - [x] Build `web/templates/partials/carousel.html` partial (clean slide cards with indicator dots, no arrows or bottom captions).
+  - [x] Implement smooth viewport-triggered auto-scrolling with infinite wrap-around and dot indicators in `web/static/css/invitation.css` and `web/static/js/invitation.js`.
+- [x] **Refine & Showcase the 2 Core Softer Demos**:
+  - [x] Update `seed/wedding.json` (Botanical Elegance) to integrate `demo-hero.webp` and the 3 carousel images.
+  - [x] Polish `seed/birthday.json` (Golden Sunset) with warm aesthetic accents.
+  - [x] Update showcase landing page (`web/templates/index.html`) to focus exclusively on the Wedding and Birthday demos.
 
 ---
 
@@ -114,3 +114,5 @@ go run main.go --port 8080
 # Build standalone binary
 go build -o bin/invitation main.go
 ```
+
+NOTE: It is not necessary to run the build or tests. After implementing the code for the requested features and updating the test suite, I will manually verify the results and run the tests.  

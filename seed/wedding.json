@@ -23,7 +23,28 @@
   "sections": {
     "hero": {
       "badge": "Save The Date &bull; Sep 19, 2026",
+      "cover_image_url": "/static/img/demo-hero.webp",
       "show_countdown": true
+    },
+    "carousel": {
+      "title": "Our Story & Moments",
+      "images": [
+        {
+          "url": "/static/img/demo-carousel-1.webp",
+          "caption": "The sunset engagement at Big Sur",
+          "alt": "Sarah and Alex during golden hour engagement"
+        },
+        {
+          "url": "/static/img/demo-carousel-2.webp",
+          "caption": "Exploring the hills of Tuscany",
+          "alt": "Sarah and Alex walking through countryside"
+        },
+        {
+          "url": "/static/img/demo-carousel-3.webp",
+          "caption": "Floral arrangements at Willowbrook",
+          "alt": "Rose garden and glasshouse pavilion"
+        }
+      ]
     },
     "timeline": [
       {

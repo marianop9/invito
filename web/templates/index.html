@@ -6,16 +6,16 @@
 <div class="hero-card">
   <div class="status-badge">
     <span class="status-dot"></span>
-    <span>Prototype Engine Online &bull; Active Templates</span>
+    <span>Prototype Engine Online &bull; Live Image &amp; Carousel Support</span>
   </div>
   <h1 class="hero-title">Structured Event Invitations with Go</h1>
   <p class="hero-description">
-    Invito generates responsive, themeable event invitations from a single JSON schema. 
-    Complete with live countdowns, Google &amp; Apple Calendar sync, and interactive RSVP confirmations.
+    Invito generates responsive, single-sheet digital event invitations from a single JSON schema. 
+    Complete with full-bleed hero imagery, touch-friendly photo carousels, calendar sync, and interactive RSVP confirmations.
   </p>
 
   <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-    <a href="#showcase-templates" class="btn btn-primary" id="btn-browse-templates">Explore Starter Templates &darr;</a>
+    <a href="#showcase-templates" class="btn btn-primary" id="btn-browse-templates">Explore Featured Demos &darr;</a>
     <a href="/health" class="btn btn-secondary" id="btn-health-check">System Health</a>
   </div>
 </div>
@@ -23,47 +23,67 @@
 <section id="showcase-templates" style="margin-top: 2.5rem;">
   <div style="margin-bottom: 1.5rem;">
     <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">
-      Pre-Defined Invitation Templates
+      Featured Event Demos
     </h2>
     <p style="color: var(--text-secondary); font-size: 0.9375rem;">
-      Select a template below to experience dynamic server-side rendering, theme styling, and RSVP confirmation.
+      Explore our softer, elegant event showcases with full image support, warm palettes, and single-sheet canvas layouts.
     </p>
   </div>
 
-  <div class="feature-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+  <div class="feature-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
     {{ range .Invitations }}
-    <div class="feature-item" style="display: flex; flex-direction: column; justify-content: space-between; background: var(--bg-surface);">
-      <div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-          <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.08em; padding: 0.2rem 0.6rem; border-radius: 9999px; background: var(--bg-subtle); color: var(--text-secondary);">
-            {{ .Theme.ID }}
-          </span>
-          <span style="font-size: 0.8125rem; color: var(--text-muted);">{{ .FormattedDateShort }}</span>
-        </div>
-
-        <h3 class="feature-item-title" style="font-size: 1.125rem; line-height: 1.35; margin-bottom: 0.5rem;">
-          {{ .Title }}
-        </h3>
-        
-        <p class="feature-item-desc" style="margin-bottom: 1rem; font-size: 0.875rem;">
-          {{ .Description }}
-        </p>
-
-        <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.25rem;">
-          <div>📍 <strong>{{ .Location.Name }}</strong></div>
-          <div>🕒 {{ .FormattedTime }}</div>
-        </div>
+    {{ if or (eq .Slug "sarah-and-alex-wedding") (eq .Slug "lucas-30th-birthday-sunset-fiesta") }}
+    <div class="feature-item" style="display: flex; flex-direction: column; justify-content: space-between; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; padding: 0;">
+      {{ if .HasCoverImage }}
+      <div style="width: 100%; height: 160px; overflow: hidden; background: var(--bg-subtle); position: relative;">
+        <img src="{{ .CoverImage }}" alt="{{ .Title }}" style="width: 100%; height: 100%; object-fit: cover; display: block;" loading="lazy">
+        <span style="position: absolute; top: 0.75rem; right: 0.75rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.25rem 0.6rem; border-radius: 9999px; background: rgba(0, 0, 0, 0.65); color: #FFFFFF; backdrop-filter: blur(4px);">
+          {{ .Theme.ID }}
+        </span>
       </div>
+      {{ else }}
+      <div style="padding: 1.25rem 1.25rem 0; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.08em; padding: 0.2rem 0.6rem; border-radius: 9999px; background: var(--bg-subtle); color: var(--text-secondary);">
+          {{ .Theme.ID }}
+        </span>
+        <span style="font-size: 0.8125rem; color: var(--text-muted);">{{ .FormattedDateShort }}</span>
+      </div>
+      {{ end }}
 
-      <div style="display: flex; gap: 0.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
-        <a href="/i/{{ .Slug }}" class="btn btn-primary" style="flex: 1; font-size: 0.875rem; padding: 0.5rem;" target="_blank" rel="noopener noreferrer">
-          Open Invitation &nearr;
-        </a>
-        <a href="/i/{{ .Slug }}/calendar.ics" class="btn btn-secondary" style="font-size: 0.875rem; padding: 0.5rem;" title="Download iCal">
-          📅 .ics
-        </a>
+      <div style="padding: 1.25rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          {{ if .HasCoverImage }}
+          <div style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 0.35rem;">{{ .FormattedDateShort }}</div>
+          {{ end }}
+
+          <h3 class="feature-item-title" style="font-size: 1.25rem; line-height: 1.3; margin-bottom: 0.4rem;">
+            {{ .Title }}
+          </h3>
+          
+          <p class="feature-item-desc" style="margin-bottom: 1rem; font-size: 0.875rem; line-height: 1.45;">
+            {{ .Description }}
+          </p>
+
+          <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem;">
+            <div>📍 <strong>{{ .Location.Name }}</strong></div>
+            <div>🕒 {{ .FormattedTime }}</div>
+            {{ if .HasCarousel }}
+            <div>📸 <strong>{{ .Sections.Carousel.ImageCount }} Story Photos</strong> in Gallery</div>
+            {{ end }}
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+          <a href="/i/{{ .Slug }}" class="btn btn-primary" style="flex: 1; font-size: 0.875rem; padding: 0.55rem;" target="_blank" rel="noopener noreferrer">
+            Open Digital Invitation &nearr;
+          </a>
+          <a href="/i/{{ .Slug }}/calendar.ics" class="btn btn-secondary" style="font-size: 0.875rem; padding: 0.55rem;" title="Download iCal">
+            📅 .ics
+          </a>
+        </div>
       </div>
     </div>
+    {{ end }}
     {{ end }}
   </div>
 </section>
@@ -74,12 +94,12 @@
   </h3>
   <div class="feature-grid">
     <div class="feature-item">
-      <h4 class="feature-item-title">Type-Safe JSON Schema</h4>
-      <p class="feature-item-desc">Defines event metadata, timeline items, dress code hints, and RSVP constraints with Go validation.</p>
+      <h4 class="feature-item-title">Single-Sheet Continuous Canvas</h4>
+      <p class="feature-item-desc">Renders as a fluid digital event pass with hero imagery, horizontal story carousel, and compact detail strips.</p>
     </div>
     <div class="feature-item">
-      <h4 class="feature-item-title">Dynamic SSR Engine</h4>
-      <p class="feature-item-desc">Renders responsive HTML with OpenGraph cards, JSON-LD Schema.org Event data, and custom theme CSS.</p>
+      <h4 class="feature-item-title">Touch-Friendly CSS Carousel</h4>
+      <p class="feature-item-desc">Hardware-accelerated CSS scroll-snap horizontal carousel with dot indicators, keyboard controls, and zero external dependencies.</p>
     </div>
     <div class="feature-item">
       <h4 class="feature-item-title">Calendar &amp; RSVP Handlers</h4>

@@ -89,8 +89,28 @@
           "type": "object",
           "properties": {
             "badge": { "type": "string", "description": "Eyebrow badge above headline (e.g. Save The Date)" },
-            "cover_image_url": { "type": "string" },
+            "cover_image_url": { "type": "string", "description": "Full-width hero cover image or background photo" },
+            "banner_image_url": { "type": "string", "description": "Optional section banner or header accent image" },
             "show_countdown": { "type": "boolean", "default": true }
+          }
+        },
+        "carousel": {
+          "type": "object",
+          "properties": {
+            "title": { "type": "string", "description": "Optional heading for the gallery/carousel section" },
+            "images": {
+              "type": "array",
+              "description": "List of images displayed in the carousel",
+              "items": {
+                "type": "object",
+                "required": ["url"],
+                "properties": {
+                  "url": { "type": "string", "description": "Image URL or static asset path" },
+                  "caption": { "type": "string", "description": "Optional caption or story text" },
+                  "alt": { "type": "string", "description": "Accessible alt text for screen readers" }
+                }
+              }
+            }
           }
         },
         "timeline": {

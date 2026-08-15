@@ -5,6 +5,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   initCountdown();
   initRSVPForm();
+  initCarousel();
 });
 
 /* ==========================================================================
@@ -144,4 +145,144 @@ function escapeHTML(str) {
   const p = document.createElement('p');
   p.textContent = str;
   return p.innerHTML;
+}
+
+/* ==========================================================================
+   Auto-Scrolling Photo Carousel (Viewport-Aware & Infinite Wrap)
+   ========================================================================== */
+function initCarousel() {
+  const track = document.getElementById('carousel-track');
+  if (!track) return;
+
+  const slides = track.querySelectorAll('.inv-carousel-slide');
+  if (slides.length <= 1) return;
+
+  const dotsContainer = document.getElementById('carousel-dots');
+  const dots = dotsContainer ? dotsContainer.querySelectorAll('.inv-carousel-dot') : [];
+
+  let currentIndex = 0;
+  let autoScrollTimer = null;
+  let isVisible = false;
+  const INTERVAL_MS = 3200; // Briefly display each image
+
+  function getActiveIndex() {
+    const trackRect = track.getBoundingClientRect();
+    const trackCenter = trackRect.left + trackRect.width / 2;
+    let closestIndex = 0;
+    let minDistance = Infinity;
+
+    slides.forEach((slide, idx) => {
+      const slideRect = slide.getBoundingClientRect();
+      const slideCenter = slideRect.left + slideRect.width / 2;
+      const dist = Math.abs(trackCenter - slideCenter);
+      if (dist < minDistance) {
+        minDistance = dist;
+        closestIndex = idx;
+      }
+    });
+
+    return closestIndex;
+  }
+
+  function updateDots(activeIndex) {
+    dots.forEach((dot, idx) => {
+      if (idx === activeIndex) {
+        dot.classList.add('active');
+        dot.setAttribute('aria-selected', 'true');
+      } else {
+        dot.classList.remove('active');
+        dot.setAttribute('aria-selected', 'false');
+      }
+    });
+  }
+
+  function scrollToSlide(index, smooth = true) {
+    if (index < 0 || index >= slides.length) return;
+    currentIndex = index;
+    const targetSlide = slides[index];
+    const offset = targetSlide.offsetLeft - (track.clientWidth - targetSlide.clientWidth) / 2;
+    track.scrollTo({
+      left: Math.max(0, offset),
+      behavior: smooth ? 'smooth' : 'auto'
+    });
+    updateDots(index);
+  }
+
+  function nextSlide() {
+    const nextIndex = (currentIndex + 1) % slides.length; // Wrap around to first image
+    scrollToSlide(nextIndex);
+  }
+
+  function startAutoScroll() {
+    stopAutoScroll();
+    if (isVisible && !document.hidden) {
+      autoScrollTimer = setInterval(nextSlide, INTERVAL_MS);
+    }
+  }
+
+  function stopAutoScroll() {
+    if (autoScrollTimer) {
+      clearInterval(autoScrollTimer);
+      autoScrollTimer = null;
+    }
+  }
+
+  function resetAutoScroll() {
+    stopAutoScroll();
+    startAutoScroll();
+  }
+
+  // Dot button clicks
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      const targetIndex = parseInt(dot.getAttribute('data-dot-index'), 10);
+      if (!isNaN(targetIndex)) {
+        scrollToSlide(targetIndex);
+        resetAutoScroll();
+      }
+    });
+  });
+
+  // Track scroll synchronization
+  let scrollTimeout;
+  track.addEventListener('scroll', () => {
+    if (scrollTimeout) cancelAnimationFrame(scrollTimeout);
+    scrollTimeout = requestAnimationFrame(() => {
+      const activeIdx = getActiveIndex();
+      if (activeIdx !== currentIndex) {
+        currentIndex = activeIdx;
+        updateDots(activeIdx);
+      }
+    });
+  }, { passive: true });
+
+  // Pause when tab / window is hidden, resume when active
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      stopAutoScroll();
+    } else {
+      startAutoScroll();
+    }
+  });
+
+  // Observe visibility in viewport to trigger auto-scroll only when visible
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          isVisible = true;
+          startAutoScroll();
+        } else {
+          isVisible = false;
+          stopAutoScroll();
+        }
+      });
+    }, { threshold: 0.35 });
+
+    observer.observe(track);
+  } else {
+    // Fallback if IntersectionObserver not available
+    isVisible = true;
+    startAutoScroll();
+  }
 }

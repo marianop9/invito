@@ -6,7 +6,7 @@
   "hosts": [
     "Lucas Morales"
   ],
-  "description": "Celebrating chapter 30 with mezcal cocktails, woodfired pizza fresh from the oven, and sunset dancing.",
+  "description": "Celebrating chapter 30 with mezcal cocktails, woodfired pizza fresh from the oven, and sunset dancing overlooking the Pacific.",
   "date_start": "2026-08-22T17:30:00Z",
   "date_end": "2026-08-23T00:30:00Z",
   "timezone": "America/Los_Angeles",
@@ -14,7 +14,7 @@
     "name": "Cliffside Villa",
     "address": "1200 Pacific Coast Hwy, Malibu, CA",
     "map_url": "https://maps.google.com/?q=Malibu+Pacific+Coast+Highway",
-    "directions_note": "Rideshare drop-off at main gate."
+    "directions_note": "Rideshare drop-off at main gate. Heated pool & fire pit lounge."
   },
   "theme": {
     "id": "golden-sunset"
@@ -27,28 +27,28 @@
     "timeline": [
       {
         "time": "5:30 PM",
-        "title": "Spritz Bar",
-        "description": "Aperol & palomas by the pool"
+        "title": "Golden Hour Spritz Bar",
+        "description": "Aperol, mezcal palomas & passed tapas by the pool"
       },
       {
         "time": "7:00 PM",
-        "title": "Artisanal Pizza",
-        "description": "Woodfired sourdough & salads"
+        "title": "Woodfired Pizza",
+        "description": "Artisanal sourdough pies & summer garden salads"
       },
       {
         "time": "8:30 PM",
-        "title": "Cake & Toasts",
-        "description": "Dessert & champagne"
+        "title": "Cake & Sunset Toast",
+        "description": "Dessert, chilled prosecco & birthday toast"
       },
       {
         "time": "9:30 PM",
-        "title": "DJ & Fire Pit",
-        "description": "Late night beats & lounge"
+        "title": "DJ Beats & Fire Pit",
+        "description": "Late night dancing and poolside lounge"
       }
     ],
     "dress_code": {
-      "title": "Summer Chic",
-      "description": "Linen shirts, breezy dresses, and warm tones. Pool is heated!",
+      "title": "Summer Chic & Warm Sunset Tones",
+      "description": "Linen shirts, breezy dresses, and warm terracotta accents. Pool is heated!",
       "palette_hints": ["#D74E2A", "#F2A65A", "#FBF0E8", "#2A1C16"]
     },
     "rsvp": {
@@ -57,12 +57,16 @@
       "max_party_size": 2,
       "ask_dietary": true,
       "ask_song_request": true,
-      "custom_note": "RSVP before Aug 15th"
+      "custom_note": "Kindly RSVP by August 15th"
     },
     "faqs": [
       {
         "question": "Are gifts expected?",
-        "answer": "No gifts! Just bring good vibes and yourself."
+        "answer": "No boxed gifts! Your presence and good energy are all that's wanted."
+      },
+      {
+        "question": "Should I bring swimwear?",
+        "answer": "Yes! The pool and spa will be heated throughout the evening."
       }
     ]
   }

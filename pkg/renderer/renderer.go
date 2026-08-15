@@ -24,6 +24,9 @@ func New() (*Renderer, error) {
 		"safeCSS": func(s string) template.CSS {
 			return template.CSS(s)
 		},
+		"add": func(a, b int) int {
+			return a + b
+		},
 	})
 
 	// Parse all templates and sub-templates in partials
