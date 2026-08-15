@@ -1,0 +1,16 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Invito//Event Invitation Platform//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+BEGIN:VEVENT
+UID:ai-builders-summit-2026@invito.app
+DTSTAMP:20260815T204000Z
+DTSTART:20261112T140000Z
+DTEND:20261112T200000Z
+SUMMARY:AI Systems Summit
+DESCRIPTION:An intimate gathering of 150 systems engineers for technical keynotes\, architecture demos\, and rooftop networking.
+LOCATION:The Foundry\, 180 Townsend St\, San Francisco\, CA
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR

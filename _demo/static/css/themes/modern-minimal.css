@@ -1,0 +1,23 @@
+/* Theme: Modern Minimal */
+:root {
+  --inv-bg: #F3F5F8;
+  --inv-surface: #FFFFFF;
+  --inv-surface-alt: #EBF0F7;
+  --inv-text: #0B0E17;
+  --inv-text-muted: #566479;
+  --inv-accent: #0052FF;
+  --inv-accent-hover: #003ECC;
+  --inv-accent-light: #E8F0FE;
+  --inv-border: #DCE3EC;
+  --inv-border-light: #E6EDF5;
+  --inv-radius-sm: 4px;
+  --inv-radius-md: 8px;
+  --inv-radius-lg: 12px;
+  --inv-font-heading: 'Space Grotesk', -apple-system, sans-serif;
+  --inv-font-body: 'Inter', -apple-system, sans-serif;
+}
+
+.inv-title {
+  letter-spacing: -0.03em;
+  font-weight: 700;
+}

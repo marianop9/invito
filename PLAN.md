@@ -47,8 +47,12 @@
 
 ### Demo Implementation
 
-- [ ] **Standalone Static Site Exporter (SSG)**:
-  - [ ] Export invitation to standalone static HTML/CSS zip bundle. Used to upload to a static site hosting platform for easy access to the demos.
+- [x] **Standalone Static Site Exporter (SSG)**:
+  - [x] Export invitations and embedded static assets into a standalone static bundle (`_demo/`).
+  - [x] Generate RFC 5545 iCalendar (`.ics`) files in each invitation's static folder.
+  - [x] Render showcase landing page (`index.html`) at root.
+  - [x] Support optional ZIP archive creation (`-zip` flag / `CreateZipArchive`).
+  - [x] CLI integration in `main.go` with `-export`, `-zip`, `-seed`, `-slug`, and `-no-index` flags.
 - [ ] **Upload Demos to Static Site Hosting**
   - [ ] Host the generated static sites. Potential targets include GitHub Pages, which should already be setup for this project, configuration in `.github/workflows/static.yml`.
 - [ ] **Use Demo Feedback and Implement MVP**
@@ -97,6 +101,7 @@
 │   ├── calendar/                # RFC 5545 iCal generator
 │   ├── renderer/                # SSR template engine
 │   ├── storage/                 # MemoryStore seed loader
+│   ├── ssg/                     # Static Site Generator & ZIP bundler
 │   └── server/                  # Chi router & HTTP handlers
 └── web/
     ├── embed.go                 # Embedded asset bundle
@@ -120,6 +125,9 @@ go test ./... -v
 
 # Run the local server (listens on http://localhost:8080)
 go run main.go --port 8080
+
+# Export invitations to static directory (_demo) + create ZIP bundle
+go run main.go -export=_demo -zip
 
 # Build standalone binary
 go build -o bin/invitation main.go
