@@ -53,8 +53,8 @@
   - [x] Render showcase landing page (`index.html`) at root.
   - [x] Support optional ZIP archive creation (`-zip` flag / `CreateZipArchive`).
   - [x] CLI integration in `main.go` with `-export`, `-zip`, `-seed`, `-slug`, and `-no-index` flags.
-- [ ] **Upload Demos to Static Site Hosting**
-  - [ ] Host the generated static sites. Potential targets include GitHub Pages, which should already be setup for this project, configuration in `.github/workflows/static.yml`.
+- [x] **Upload Demos to Static Site Hosting**
+  - [x] Host the generated static sites. Potential targets include GitHub Pages, which should already be setup for this project, configuration in `.github/workflows/static.yml`.
 - [ ] **Use Demo Feedback and Implement MVP**
   - [ ] Once the initial demos and invitation sections are developed, a custom invitation will be developed based on the received feedback.
 
