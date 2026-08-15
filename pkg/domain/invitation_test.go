@@ -62,6 +62,20 @@ func TestInvitationValidation(t *testing.T) {
 	if err := invalidCarouselInv.Validate(); err == nil {
 		t.Errorf("expected error when carousel image url is empty, got nil")
 	}
+
+	// Test invalid message with empty text
+	invalidMsgInv := validInv
+	invalidMsgInv.Sections.Message = &MessageSection{Text: "   "}
+	if err := invalidMsgInv.Validate(); err == nil {
+		t.Errorf("expected error when message text is empty, got nil")
+	}
+
+	// Test invalid image with empty url
+	invalidImgInv := validInv
+	invalidImgInv.Sections.Image = &ImageSection{URL: "   "}
+	if err := invalidImgInv.Validate(); err == nil {
+		t.Errorf("expected error when image url is empty, got nil")
+	}
 }
 
 func TestInvitationHelpers(t *testing.T) {
@@ -84,12 +98,26 @@ func TestInvitationHelpers(t *testing.T) {
 				CoverImageURL:  "/static/img/hero.webp",
 				BannerImageURL: "/static/img/banner.webp",
 			},
+			Message: &MessageSection{
+				Text:   "Two lives, one shared journey.",
+				Author: "Poet",
+			},
 			Carousel: &CarouselSection{
 				Title: "Our Journey",
 				Images: []CarouselImage{
 					{URL: "/static/img/carousel-1.webp", Caption: "Engagement Day", Alt: "Sarah and Alex engagement"},
 					{URL: "/static/img/carousel-2.webp", Caption: "Summer in Italy"},
 				},
+			},
+			Image: &ImageSection{
+				URL:     "/static/img/venue.webp",
+				Caption: "The conservatory",
+				Alt:     "Glasshouse venue",
+			},
+			Closing: &ClosingSection{
+				Message: "See you soon!",
+				Signoff: "With love,",
+				Hosts:   "Sarah & Alex",
 			},
 		},
 	}
@@ -110,6 +138,22 @@ func TestInvitationHelpers(t *testing.T) {
 	}
 	if !inv.Sections.Hero.HasCoverImage() || !inv.Sections.Hero.HasBannerImage() {
 		t.Errorf("expected HeroSection HasCoverImage and HasBannerImage to be true")
+	}
+
+	if !inv.HasMessage() {
+		t.Errorf("expected HasMessage() to be true")
+	}
+	if !inv.HasImage() {
+		t.Errorf("expected HasImage() to be true")
+	}
+	if inv.Sections.Image.AltText("def") != "Glasshouse venue" {
+		t.Errorf("expected image alt text 'Glasshouse venue', got %q", inv.Sections.Image.AltText("def"))
+	}
+	if !inv.HasClosing() {
+		t.Errorf("expected HasClosing() to be true")
+	}
+	if inv.Sections.Closing.DisplayHosts("fallback") != "Sarah & Alex" {
+		t.Errorf("expected 'Sarah & Alex', got %q", inv.Sections.Closing.DisplayHosts("fallback"))
 	}
 
 	if !inv.HasCarousel() {

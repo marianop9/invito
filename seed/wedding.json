@@ -26,6 +26,10 @@
       "cover_image_url": "/static/img/demo-hero.webp",
       "show_countdown": true
     },
+    "message": {
+      "text": "Whatever our souls are made of, his and mine are the same.",
+      "author": "Emily Brontë"
+    },
     "carousel": {
       "title": "Our Story & Moments",
       "images": [
@@ -73,6 +77,9 @@
         "description": "Sparkler farewell at 11:30 PM"
       }
     ],
+    "image": {
+      "url": "/static/img/demo-hero.webp"
+    },
     "dress_code": {
       "title": "Garden Formal",
       "description": "Suits or cocktail attire. Block heels recommended for the lawn.",
@@ -108,6 +115,11 @@
           "url": "https://www.zola.com"
         }
       ]
+    },
+    "closing": {
+      "message": "We cannot wait to celebrate our special day with all of you!",
+      "signoff": "With love & gratitude,",
+      "hosts": "Sarah & Alexander"
     }
   }
 }

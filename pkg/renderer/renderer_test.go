@@ -105,6 +105,48 @@ func TestRenderer(t *testing.T) {
 		}
 	})
 
+	t.Run("RenderInvitation with Message, Static Image, and Closing", func(t *testing.T) {
+		fullInv := *inv
+		fullInv.Sections.Message = &domain.MessageSection{
+			Text:   "Two lives, one shared journey.",
+			Author: "Rumi",
+		}
+		fullInv.Sections.Image = &domain.ImageSection{
+			URL:     "/static/img/venue.webp",
+			Caption: "The Botanical Glasshouse",
+		}
+		fullInv.Sections.Closing = &domain.ClosingSection{
+			Message: "We can't wait to celebrate with you!",
+			Signoff: "With love,",
+			Hosts:   "Sarah & Alex",
+		}
+
+		var buf bytes.Buffer
+		if err := r.RenderInvitation(&buf, &fullInv); err != nil {
+			t.Fatalf("RenderInvitation error: %v", err)
+		}
+
+		html := buf.String()
+		expectedKeywords := []string{
+			"section-message",
+			"Two lives, one shared journey.",
+			"Rumi",
+			"section-image",
+			"/static/img/venue.webp",
+			"The Botanical Glasshouse",
+			"section-closing",
+			"We can&#39;t wait to celebrate with you!",
+			"With love,",
+			"Sarah &amp; Alex",
+		}
+
+		for _, kw := range expectedKeywords {
+			if !strings.Contains(html, kw) {
+				t.Errorf("expected rendered HTML to contain %q, but missing", kw)
+			}
+		}
+	})
+
 	t.Run("RenderToHTMLString produces static SSG bundle", func(t *testing.T) {
 		htmlStr, err := r.RenderToHTMLString(inv)
 		if err != nil {

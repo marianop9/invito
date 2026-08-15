@@ -24,6 +24,9 @@
       "badge": "Chapter 30 &bull; Aug 22, 2026",
       "show_countdown": true
     },
+    "message": {
+      "text": "The best memories are made with good friends, chilled mezcal, and ocean sunsets."
+    },
     "timeline": [
       {
         "time": "5:30 PM",
@@ -68,6 +71,11 @@
         "question": "Should I bring swimwear?",
         "answer": "Yes! The pool and spa will be heated throughout the evening."
       }
-    ]
+    ],
+    "closing": {
+      "message": "Bring your swimwear and good energy. See you at sunset!",
+      "signoff": "Cheers,",
+      "hosts": "Lucas"
+    }
   }
 }

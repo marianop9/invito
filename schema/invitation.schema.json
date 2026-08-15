@@ -160,6 +160,23 @@
             }
           }
         },
+        "message": {
+          "type": "object",
+          "required": ["text"],
+          "properties": {
+            "text": { "type": "string", "description": "Short statement, message, or quote" },
+            "author": { "type": "string", "description": "Optional author or attribution for quotes" }
+          }
+        },
+        "image": {
+          "type": "object",
+          "required": ["url"],
+          "properties": {
+            "url": { "type": "string", "description": "Image URL or static asset path" },
+            "caption": { "type": "string", "description": "Optional caption below image" },
+            "alt": { "type": "string", "description": "Accessible alt text for the image" }
+          }
+        },
         "gift_registry": {
           "type": "object",
           "properties": {
@@ -175,6 +192,14 @@
                 }
               }
             }
+          }
+        },
+        "closing": {
+          "type": "object",
+          "properties": {
+            "message": { "type": "string", "description": "Warm farewell or excitement message (e.g. Can't wait to celebrate with you!)" },
+            "signoff": { "type": "string", "description": "Sign-off phrase (e.g. With love, Warmly, Cheers)" },
+            "hosts": { "type": "string", "description": "Custom host sign-off names (e.g. Sarah & Alex)" }
           }
         }
       }

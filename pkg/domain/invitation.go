@@ -136,6 +136,45 @@ type RegistryLink struct {
 	URL   string `json:"url"`
 }
 
+// MessageSection represents a simple statement, quote, or narrative highlight.
+type MessageSection struct {
+	Text   string `json:"text"`
+	Author string `json:"author,omitempty"`
+}
+
+// ImageSection represents a standalone static image block.
+type ImageSection struct {
+	URL     string `json:"url"`
+	Caption string `json:"caption,omitempty"`
+	Alt     string `json:"alt,omitempty"`
+}
+
+// AltText returns the Alt text if present, or falls back to Caption, or defaultAlt.
+func (img *ImageSection) AltText(defaultAlt string) string {
+	if strings.TrimSpace(img.Alt) != "" {
+		return img.Alt
+	}
+	if strings.TrimSpace(img.Caption) != "" {
+		return img.Caption
+	}
+	return defaultAlt
+}
+
+// ClosingSection configures the final warm greeting and sign-off at the end of the invitation.
+type ClosingSection struct {
+	Message string `json:"message,omitempty"`
+	Signoff string `json:"signoff,omitempty"`
+	Hosts   string `json:"hosts,omitempty"`
+}
+
+// DisplayHosts returns the configured host sign-off or falls back to defaultHosts.
+func (c *ClosingSection) DisplayHosts(defaultHosts string) string {
+	if c != nil && strings.TrimSpace(c.Hosts) != "" {
+		return c.Hosts
+	}
+	return defaultHosts
+}
+
 // GiftRegistrySection describes gift registry instructions and URLs.
 type GiftRegistrySection struct {
 	Message string         `json:"message,omitempty"`
@@ -146,11 +185,14 @@ type GiftRegistrySection struct {
 type Sections struct {
 	Hero         *HeroSection         `json:"hero,omitempty"`
 	Carousel     *CarouselSection     `json:"carousel,omitempty"`
+	Message      *MessageSection      `json:"message,omitempty"`
+	Image        *ImageSection        `json:"image,omitempty"`
 	Timeline     []TimelineItem       `json:"timeline,omitempty"`
 	DressCode    *DressCodeSection    `json:"dress_code,omitempty"`
 	RSVP         *RSVPSection         `json:"rsvp,omitempty"`
 	FAQs         []FAQItem            `json:"faqs,omitempty"`
 	GiftRegistry *GiftRegistrySection `json:"gift_registry,omitempty"`
+	Closing      *ClosingSection      `json:"closing,omitempty"`
 }
 
 // Invitation is the top-level structured event invitation entity.
@@ -237,6 +279,25 @@ func (inv *Invitation) CoverImage() string {
 // HasCarousel returns true if the invitation includes a carousel section with images.
 func (inv *Invitation) HasCarousel() bool {
 	return inv.Sections.Carousel != nil && inv.Sections.Carousel.HasImages()
+}
+
+// HasMessage returns true if the invitation includes a message / quote section.
+func (inv *Invitation) HasMessage() bool {
+	return inv.Sections.Message != nil && strings.TrimSpace(inv.Sections.Message.Text) != ""
+}
+
+// HasImage returns true if the invitation includes a static image block.
+func (inv *Invitation) HasImage() bool {
+	return inv.Sections.Image != nil && strings.TrimSpace(inv.Sections.Image.URL) != ""
+}
+
+// HasClosing returns true if the invitation includes a closing greeting section.
+func (inv *Invitation) HasClosing() bool {
+	if inv.Sections.Closing == nil {
+		return false
+	}
+	c := inv.Sections.Closing
+	return strings.TrimSpace(c.Message) != "" || strings.TrimSpace(c.Signoff) != "" || strings.TrimSpace(c.Hosts) != ""
 }
 
 // IsRSVPOpen checks if RSVP is enabled and if the deadline has not passed.

@@ -677,9 +677,115 @@ body.invitation-body {
   transition: all 0.15s;
 }
 
-.registry-chip:hover {
-  border-color: var(--inv-accent);
+/* ==========================================================================
+   Statement / Quote Message Section
+   ========================================================================== */
+.inv-message-section {
+  text-align: center;
+  padding: 1.5rem 1.5rem;
+  background-color: var(--inv-surface);
+}
+
+.inv-message-block {
+  max-width: 380px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.inv-message-text {
+  font-family: var(--inv-font-heading);
+  font-style: italic;
+  font-size: 1.25rem;
+  line-height: 1.45;
+  color: var(--inv-text);
+  font-weight: 500;
+}
+
+.inv-message-author {
+  display: block;
+  font-family: var(--inv-font-body);
+  font-style: normal;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   color: var(--inv-accent);
+  margin-top: 0.5rem;
+}
+
+/* ==========================================================================
+   Static Image Block Section
+   ========================================================================== */
+.inv-image-section {
+  padding: 1.25rem 1.5rem;
+}
+
+.inv-static-image-wrap {
+  width: 100%;
+  border-radius: var(--inv-radius-md);
+  overflow: hidden;
+  background-color: var(--inv-surface-alt);
+  border: 1px solid var(--inv-border);
+  margin: 0;
+}
+
+.inv-static-img {
+  width: 100%;
+  height: auto;
+  max-height: 320px;
+  object-fit: cover;
+  display: block;
+}
+
+.inv-static-image-caption {
+  font-size: 0.75rem;
+  color: var(--inv-text-muted);
+  padding: 0.5rem 0.75rem;
+  text-align: center;
+  border-top: 1px solid var(--inv-border-light);
+  background-color: var(--inv-surface-alt);
+}
+
+/* ==========================================================================
+   Final Greeting Section
+   ========================================================================== */
+.inv-closing-section {
+  text-align: center;
+  padding: 2.25rem 1.5rem 2rem;
+  background-color: var(--inv-surface);
+  position: relative;
+}
+
+.inv-closing-content {
+  max-width: 360px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.inv-closing-message {
+  font-size: 0.9375rem;
+  color: var(--inv-text);
+  line-height: 1.45;
+}
+
+.inv-closing-signoff {
+  font-family: var(--inv-font-heading);
+  font-style: italic;
+  font-size: 1.0625rem;
+  color: var(--inv-text-muted);
+  margin-top: 0.25rem;
+}
+
+.inv-closing-hosts {
+  font-family: var(--inv-font-heading);
+  font-size: 1.625rem;
+  font-weight: 600;
+  color: var(--inv-accent);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
 /* Footer note */

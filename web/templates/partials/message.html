@@ -1,0 +1,12 @@
+{{ define "partial_message" }}
+{{ if .HasMessage }}
+<section class="inv-section inv-message-section" id="section-message">
+  <blockquote class="inv-message-block">
+    <p class="inv-message-text">&ldquo;{{ .Sections.Message.Text }}&rdquo;</p>
+    {{ if .Sections.Message.Author }}
+      <cite class="inv-message-author">&mdash; {{ .Sections.Message.Author }}</cite>
+    {{ end }}
+  </blockquote>
+</section>
+{{ end }}
+{{ end }}

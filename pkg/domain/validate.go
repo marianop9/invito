@@ -72,6 +72,20 @@ func (inv *Invitation) Validate() error {
 		}
 	}
 
+	// Validate message section if present
+	if inv.Sections.Message != nil {
+		if strings.TrimSpace(inv.Sections.Message.Text) == "" {
+			errs = append(errs, "message section: text is required")
+		}
+	}
+
+	// Validate static image section if present
+	if inv.Sections.Image != nil {
+		if strings.TrimSpace(inv.Sections.Image.URL) == "" {
+			errs = append(errs, "image section: url is required")
+		}
+	}
+
 	if len(errs) > 0 {
 		return errors.New(strings.Join(errs, "; "))
 	}

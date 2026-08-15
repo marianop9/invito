@@ -1,0 +1,12 @@
+{{ define "partial_image" }}
+{{ if .HasImage }}
+<section class="inv-section inv-image-section" id="section-image">
+  <figure class="inv-static-image-wrap">
+    <img src="{{ .Sections.Image.URL }}" alt="{{ .Sections.Image.AltText .Title }}" class="inv-static-img" loading="lazy" decoding="async">
+    {{ if .Sections.Image.Caption }}
+      <figcaption class="inv-static-image-caption">{{ .Sections.Image.Caption }}</figcaption>
+    {{ end }}
+  </figure>
+</section>
+{{ end }}
+{{ end }}
