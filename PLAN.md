@@ -45,6 +45,17 @@
 
 ---
 
+### Demo Implementation
+
+- [ ] **Standalone Static Site Exporter (SSG)**:
+  - [ ] Export invitation to standalone static HTML/CSS zip bundle. Used to upload to a static site hosting platform for easy access to the demos.
+- [ ] **Upload Demos to Static Site Hosting**
+  - [ ] Host the generated static sites. Potential targets include GitHub Pages, which should already be setup for this project, configuration in `.github/workflows/static.yml`.
+- [ ] **Use Demo Feedback and Implement MVP**
+  - [ ] Once the initial demos and invitation sections are developed, a custom invitation will be developed based on the received feedback.
+
+---
+
 ### 📦 Future Backlog (Post-Demo Features)
 
 - [ ] **Persistent SQLite Storage Layer (`pkg/storage/sqlite.go`)**:
@@ -56,8 +67,6 @@
 - [ ] **Host Admin Dashboard (`/admin/invitations/{slug}/rsvps`)**:
   - [ ] Guest list table with confirmed attendees, declines, and dietary requirements.
   - [ ] CSV export endpoint (`GET /api/invitations/{slug}/rsvps.csv`).
-- [ ] **Standalone Static Site Exporter (SSG)**:
-  - [ ] Export invitation to standalone static HTML/CSS zip bundle.
 - [ ] **Visual Iconography Enhancements**:
   - [ ] Inline SVG icons for timeline event types (rings, toast, dinner, music).
 
