@@ -1,154 +1,108 @@
-# Invito &mdash; Event Invitation Platform Plan & Context
+# Invito &mdash; Event Invitation Platform Plan & Roadmap
 
 ## 1. Purpose & Core Philosophy
 
 **Invito** is a lightweight, high-performance web platform built in **Go** to generate, preview, and share structured event invitations with attendance confirmation (RSVP).
 
-### Core Design Principles
-- **Schema-Driven**: Invitations are defined via a structured JSON Schema (`schema/invitation.schema.json`) specifying metadata, schedule/timeline, location, dress code, RSVP rules, and theme configuration.
+### Core Principles
+- **Schema-Driven**: Invitations are defined via a structured JSON Schema (`schema/invitation.schema.json`) specifying metadata, schedule/timeline, location, dress code, RSVP rules, images, and theme configuration.
 - **Mobile-First Continuous Canvas**: Invitations render as a single, fluid sheet / digital event pass (`.inv-sheet`), eliminating disjointed floating cards and excessive spacing.
-- **Concise & Scannable**: Copy is punchy and direct. Key event details (Date, Time, Venue, 1-click Map, Calendar Sync, RSVP) are immediately accessible.
-- **Single-Binary Deployment**: HTML templates, CSS themes, client scripts, database migrations, and seed templates compile into a single standalone binary using Go's `embed.FS` with zero external runtime dependencies—ideal for hosting on a low-cost VPS.
-- **Hybrid SSR + On-Demand SSG**: Server-Side Rendering (SSR) powers live RSVP submissions, dynamic OpenGraph meta previews, and `.ics` downloads, while an SSG exporter can generate standalone static HTML packages.
+- **Concise & Scannable**: Punchy copy, immediate access to Date, Time, Venue, 1-click Map, Calendar Sync, and RSVP.
+- **Softer, Elegant Aesthetics**: Focus on warm, inviting palettes (Botanical Elegance & Golden Sunset) over aggressive dark or high-contrast neon tones.
+- **Single-Binary Deployment**: HTML templates, CSS themes, client scripts, and images compile into a single standalone binary using Go's `embed.FS`.
 
 ---
 
-## 2. Technology Stack & Architecture
+## 2. Interactive Roadmap & Priority Checklist
 
-- **Language & Runtime**: Go 1.26+
-- **HTTP Router & Middleware**: `github.com/go-chi/chi/v5` with `RequestID`, `RealIP`, `Logger`, `Recoverer`, and `Compress` (gzip).
-- **Template Engine**: Go standard library `html/template` with embedded files (`embed.FS`).
-- **Data Storage**:
-  - *Current Prototype*: `pkg/storage/seed_store.go` (in-memory store initialized from `seed/*.json`).
-  - *Target Persistent Layer*: Pure-Go SQLite (`modernc.org/sqlite`) with WAL mode for zero-CGO portability.
-- **Styling**: Vanilla CSS with CSS Custom Properties, HSL color tokens, and Google Fonts (`Cormorant Garamond`, `Playfair Display`, `Space Grotesk`, `Outfit`, `Plus Jakarta Sans`, `Inter`).
-- **Calendar Standard**: RFC 5545 iCalendar (`.ics`) generator (`pkg/calendar/ics.go`) and Google Calendar deep links.
+### ✅ Completed Milestones
+- [x] **Go Server Foundation**: Chi router, production middlewares (Logger, Recoverer, Compress), and graceful shutdown.
+- [x] **Embedded Template System**: `embed.FS` configuration in `web/embed.go`.
+- [x] **JSON Schema & Domain Layer**: `schema/invitation.schema.json` and `pkg/domain` models with strict validation.
+- [x] **Calendar Sync**: Dynamic RFC 5545 iCalendar (`.ics`) generator and Google Calendar URL builder.
+- [x] **Streamlined Mobile Canvas**: Continuous single-sheet layout (`.inv-sheet`), compact quick details strip, inline time badges, and AJAX RSVP confirmation.
 
 ---
 
-## 3. Work Completed So Far
+### 🎯 Immediate Priority: Working Demo Excellence (Focus on Wedding & Birthday)
 
-### ✅ Phase 1: Server Foundation & Routing
-- Initialized Go module with Chi router in [`main.go`](file:///home/nano/projects/invitation/main.go) and [`pkg/server/server.go`](file:///home/nano/projects/invitation/pkg/server/server.go).
-- Configured embedded asset filesystem in [`web/embed.go`](file:///home/nano/projects/invitation/web/embed.go).
-- Implemented graceful server shutdown and logging.
-
-### ✅ Phase 2: JSON Schema & Domain Layer
-- Created [`schema/invitation.schema.json`](file:///home/nano/projects/invitation/schema/invitation.schema.json) specification.
-- Built strongly-typed domain structs and helper methods in [`pkg/domain/invitation.go`](file:///home/nano/projects/invitation/pkg/domain/invitation.go) (date formatters, Google Calendar links, Schema.org JSON-LD microdata).
-- Implemented strict validation in [`pkg/domain/validate.go`](file:///home/nano/projects/invitation/pkg/domain/validate.go).
-
-### ✅ Phase 3: 4 Pre-Defined Visual Themes
-1. **Botanical Elegance** ([`botanical-elegance.css`](file:///home/nano/projects/invitation/web/static/css/themes/botanical-elegance.css)) &mdash; Ivory, sage green, *Cormorant Garamond* (Weddings & formal dinners).
-2. **Midnight Soirée** ([`midnight-soiree.css`](file:///home/nano/projects/invitation/web/static/css/themes/midnight-soiree.css)) &mdash; Luxury slate dark palette, champagne gold, *Playfair Display* (Galas & evening events).
-3. **Modern Minimal** ([`modern-minimal.css`](file:///home/nano/projects/invitation/web/static/css/themes/modern-minimal.css)) &mdash; Monochromatic layout, cobalt blue, *Space Grotesk* (Tech summits & exhibitions).
-4. **Golden Sunset** ([`golden-sunset.css`](file:///home/nano/projects/invitation/web/static/css/themes/golden-sunset.css)) &mdash; Terracotta & apricot, *Plus Jakarta Sans* (Milestone birthdays & summer parties).
-
-### ✅ Phase 4: Streamlined Mobile-First Redesign
-- Consolidated all invitation sections into a single continuous sheet (`.inv-sheet`) in [`web/static/css/invitation.css`](file:///home/nano/projects/invitation/web/static/css/invitation.css).
-- Created a compact **Quick Details Strip** for Date, Time, Venue with 1-click Map, and action buttons.
-- Replaced verbose seed data with concise, clear copy in [`seed/*.json`](file:///home/nano/projects/invitation/seed/).
-- Compact timeline schedule, inline dress code swatches, and streamlined RSVP attendance form (`✓ Attending` / `✕ Decline`).
-
-### ✅ Phase 5: Calendar Integration & Interactivity
-- RFC 5545 iCalendar (`.ics`) generator in [`pkg/calendar/ics.go`](file:///home/nano/projects/invitation/pkg/calendar/ics.go) accessible at `GET /i/{slug}/calendar.ics`.
-- Interactive client script in [`web/static/js/invitation.js`](file:///home/nano/projects/invitation/web/static/js/invitation.js) providing countdown clocks and AJAX RSVP submissions with real-time feedback.
-- Automated unit and integration test coverage across all packages (`go test ./...` passes 100%).
+- [ ] **Image Support in Invitation Schema & Domain**:
+  - [ ] Add `cover_image_url` and section banner support to `sections.hero` and domain models.
+  - [ ] Add `carousel` section to JSON Schema (`title`, array of `{ url, caption, alt }`).
+  - [ ] Update `pkg/domain/invitation.go` with Carousel structs and helper methods.
+- [ ] **Static Asset Serving for Seed Images**:
+  - [ ] Make `seed/img/` (`hero.webp`, `carousel-1.webp`, `carousel-2.webp`, `carousel-3.webp`) accessible via `/static/img/` or embedded filesystem.
+- [ ] **Full-Width Hero Image & Section Images**:
+  - [ ] Render full-bleed/rounded hero cover image in `web/templates/partials/hero.html` with graceful fallback if omitted.
+- [ ] **Touch-Friendly Image Carousel**:
+  - [ ] Build `web/templates/partials/carousel.html` partial.
+  - [ ] Implement smooth CSS scroll-snap horizontal carousel with dot indicators and next/prev navigation in `web/static/css/invitation.css` and `web/static/js/invitation.js`.
+- [ ] **Refine & Showcase the 2 Core Softer Demos**:
+  - [ ] Update `seed/wedding.json` (Botanical Elegance) to integrate `hero.webp` and the 3 carousel images.
+  - [ ] Polish `seed/birthday.json` (Golden Sunset) with warm aesthetic accents.
+  - [ ] Update showcase landing page (`web/templates/index.html`) to focus exclusively on the Wedding and Birthday demos.
 
 ---
 
-## 4. Remaining Steps & Roadmap
+### 📦 Future Backlog (Post-Demo Features)
 
-### 🔄 Step 1: Persistent SQLite Storage Layer
-- Create `pkg/storage/sqlite.go` using pure-Go SQLite (`modernc.org/sqlite`).
-- Automatic table migration on startup:
-  - `invitations`: `id`, `slug` (UNIQUE), `title`, `data` (JSON document), `created_at`, `updated_at`.
-  - `rsvps`: `id`, `invitation_slug`, `name`, `email`, `attending`, `guest_count`, `dietary_needs`, `song_request`, `personal_message`, `created_at`.
-- Auto-seed default templates from `seed/*.json` if database is empty on first boot.
-
-### 🔄 Step 2: Interactive Invitation Preview & Sandbox (`/preview`)
-- Create a split-screen playground (`web/templates/sandbox.html`, `web/static/js/sandbox.js`, `web/static/css/sandbox.css`).
-- Left pane: Live form fields / raw JSON editor + Theme selector + Template loader.
-- Right pane: Real-time mobile/desktop simulated viewport preview.
-- "Save / Export" action buttons to test saving to SQLite or downloading JSON.
-
-### 🔄 Step 3: Host Admin Panel & RSVP Management (`/admin/invitations/{slug}/rsvps`)
-- Host dashboard template (`web/templates/admin_rsvps.html`) displaying confirmed guests, declines, party sizes, and dietary notes.
-- Summary attendance cards (Total Attending, Total Declines, Total Party Count).
-- CSV export endpoint: `GET /api/invitations/{slug}/rsvps.csv`.
-
-### 🔄 Step 4: Standalone Static Site Export (SSG)
-- Complete SSG exporter in `pkg/renderer/ssg.go`.
-- Endpoint `GET /api/invitations/{slug}/export` to download a self-contained static HTML/CSS zip bundle for static hosting.
-
-### 🔄 Step 5: Visual Enhancements (Icons & Refinements)
-- Integrate crisp inline SVG icons for timeline event types (ceremony, cocktail, dinner, party, speech).
-- Add subtle micro-animations for RSVP submission success.
+- [ ] **Persistent SQLite Storage Layer (`pkg/storage/sqlite.go`)**:
+  - [ ] Pure-Go SQLite driver (`modernc.org/sqlite`).
+  - [ ] Auto-migrations for `invitations` and `rsvps` tables.
+  - [ ] Auto-seed default templates on first boot.
+- [ ] **Interactive Split-Screen Preview / Sandbox (`/preview`)**:
+  - [ ] Live visual editor + raw JSON editor with simulated mobile viewport.
+- [ ] **Host Admin Dashboard (`/admin/invitations/{slug}/rsvps`)**:
+  - [ ] Guest list table with confirmed attendees, declines, and dietary requirements.
+  - [ ] CSV export endpoint (`GET /api/invitations/{slug}/rsvps.csv`).
+- [ ] **Standalone Static Site Exporter (SSG)**:
+  - [ ] Export invitation to standalone static HTML/CSS zip bundle.
+- [ ] **Visual Iconography Enhancements**:
+  - [ ] Inline SVG icons for timeline event types (rings, toast, dinner, music).
 
 ---
 
-## 5. Project File Map
+## 3. Active Demo Profiles
+
+| Demo | Theme | Palette & Style | Key Features |
+| :--- | :--- | :--- | :--- |
+| **Sarah & Alex's Wedding** (`/i/sarah-and-alex-wedding`) | `botanical-elegance` | Warm ivory, sage green, champagne gold (*Cormorant Garamond*) | Hero cover image, 3-image story carousel, ceremony & reception schedule, garden formal dress code, RSVP |
+| **Lucas is 30** (`/i/lucas-30th-birthday-sunset-fiesta`) | `golden-sunset` | Warm terracotta, apricot, soft cream (*Plus Jakarta Sans*) | Sunset party timeline, pizza & cocktail bar details, summer chic dress code, RSVP |
+
+---
+
+## 4. Key Files Map
 
 ```
 /home/nano/projects/invitation/
-├── go.mod                       # Go module definitions
-├── go.sum                       # Dependency checksums
-├── main.go                      # Application entry point & graceful shutdown
-├── plan.md                      # Architecture, context, and roadmap document
+├── plan.md                      # Roadmap, priority checklist & context
 ├── schema/
-│   └── invitation.schema.json   # JSON Schema definition
-├── seed/                        # Starter templates
-│   ├── wedding.json             # Botanical Elegance wedding template
-│   ├── gala.json                # Midnight Soirée charity gala template
-│   ├── tech_meetup.json         # Modern Minimal tech summit template
-│   └── birthday.json            # Golden Sunset birthday template
+│   └── invitation.schema.json   # JSON Schema definition (including images/carousel)
+├── seed/                        # Active demo templates & assets
+│   ├── wedding.json             # Botanical Elegance wedding demo
+│   ├── birthday.json            # Golden Sunset birthday demo
+│   └── img/                     # Demo images (hero.webp, carousel-1..3.webp)
 ├── pkg/
-│   ├── domain/                  # Domain models & validation logic
-│   │   ├── invitation.go
-│   │   ├── validate.go
-│   │   └── invitation_test.go
-│   ├── calendar/                # RFC 5545 iCalendar (.ics) generator
-│   │   ├── ics.go
-│   │   └── ics_test.go
-│   ├── renderer/                # SSR template engine & SSG exporter
-│   │   ├── renderer.go
-│   │   └── renderer_test.go
-│   ├── storage/                 # Storage layer (MemoryStore & SQLite)
-│   │   ├── seed_store.go
-│   │   └── seed_store_test.go
-│   └── server/                  # Chi HTTP server & route handlers
-│       ├── server.go
-│       └── server_test.go
+│   ├── domain/                  # Go domain models & validation
+│   ├── calendar/                # RFC 5545 iCal generator
+│   ├── renderer/                # SSR template engine
+│   ├── storage/                 # MemoryStore seed loader
+│   └── server/                  # Chi router & HTTP handlers
 └── web/
-    ├── embed.go                 # go:embed directive for templates and static files
-    ├── templates/               # Go HTML templates
-    │   ├── base.html            # Base shell layout for platform pages
-    │   ├── index.html           # Showcase landing page
-    │   ├── invitation.html      # Continuous single-sheet invitation layout
-    │   └── partials/            # Modular invitation components
-    │       ├── hero.html
-    │       ├── details.html
-    │       ├── timeline.html
-    │       ├── dress_code.html
-    │       ├── rsvp_form.html
-    │       ├── faqs.html
-    │       └── registry.html
-    └── static/                  # Static assets
-        ├── css/
-        │   ├── base.css         # Design tokens & platform styles
-        │   ├── invitation.css   # Mobile-first continuous sheet styles
-        │   └── themes/          # Pre-defined theme palettes
-        │       ├── botanical-elegance.css
-        │       ├── midnight-soiree.css
-        │       ├── modern-minimal.css
-        │       └── golden-sunset.css
-        └── js/
-            └── invitation.js    # Client countdown & AJAX RSVP handler
+    ├── embed.go                 # Embedded asset bundle
+    ├── templates/
+    │   ├── base.html
+    │   ├── index.html           # Showcase landing page (Wedding & Birthday)
+    │   ├── invitation.html      # Single-sheet canvas
+    │   └── partials/            # Hero, Details, Timeline, Carousel, RSVP, etc.
+    └── static/
+        ├── css/                 # Base, invitation, and theme stylesheets
+        └── js/                  # Carousel scroll, countdown, and AJAX RSVP
 ```
 
 ---
 
-## 6. Developer Commands
+## 5. Developer Commands
 
 ```bash
 # Run all automated tests
@@ -157,6 +111,6 @@ go test ./... -v
 # Run the local server (listens on http://localhost:8080)
 go run main.go --port 8080
 
-# Build standalone production binary
+# Build standalone binary
 go build -o bin/invitation main.go
 ```
