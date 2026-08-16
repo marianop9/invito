@@ -252,4 +252,25 @@ func TestRenderer(t *testing.T) {
 			t.Errorf("invalid static HTML generated: %s", htmlStr)
 		}
 	})
+
+	t.Run("Icon helper inlines embedded SVG files into details section", func(t *testing.T) {
+		var buf bytes.Buffer
+		if err := r.RenderInvitation(&buf, inv); err != nil {
+			t.Fatalf("RenderInvitation error: %v", err)
+		}
+
+		html := buf.String()
+		expectedIconStrings := []string{
+			"icon-tabler-calendar-week",
+			"icon-tabler-map-2",
+			"<svg",
+			"viewBox=\"0 0 24 24\"",
+		}
+
+		for _, s := range expectedIconStrings {
+			if !strings.Contains(html, s) {
+				t.Errorf("expected rendered HTML to contain icon markup %q, but was missing", s)
+			}
+		}
+	})
 }

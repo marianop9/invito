@@ -2,7 +2,7 @@
 <div class="inv-details-strip" id="section-details">
   <!-- Date & Time Row -->
   <div class="detail-row">
-    <span class="detail-row-icon">📅</span>
+    <span class="detail-row-icon" aria-hidden="true">{{ icon "calendar" }}</span>
     <div class="detail-row-content">
       <span class="detail-row-title">{{ .Invitation.FormattedFullDate }}</span>
       <span class="detail-row-sub">{{ .Invitation.FormattedTime }} ({{ .Invitation.Timezone }})</span>
@@ -18,7 +18,7 @@
 
   <!-- Location Row -->
   <div class="detail-row">
-    <span class="detail-row-icon">📍</span>
+    <span class="detail-row-icon" aria-hidden="true">{{ icon "map" }}</span>
     <div class="detail-row-content">
       <span class="detail-row-title">{{ .Invitation.Location.Name }}</span>
       <span class="detail-row-sub">{{ .Invitation.Location.Address }}</span>

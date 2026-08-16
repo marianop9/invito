@@ -29,6 +29,13 @@ func New() (*Renderer, error) {
 		"add": func(a, b int) int {
 			return a + b
 		},
+		"icon": func(name string) template.HTML {
+			data, err := web.Files.ReadFile("static/icons/" + name + ".svg")
+			if err != nil {
+				return ""
+			}
+			return template.HTML(data)
+		},
 		"renderSection": func(sec domain.Section, inv *domain.Invitation) (template.HTML, error) {
 			if sec == nil || rootTmpl == nil {
 				return "", nil

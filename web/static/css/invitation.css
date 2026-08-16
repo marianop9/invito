@@ -493,9 +493,20 @@ body.invitation-body {
 }
 
 .detail-row-icon {
-  font-size: 1.125rem;
-  line-height: 1.3;
-  opacity: 0.9;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.35rem;
+  height: 1.35rem;
+  color: var(--inv-accent);
+  margin-top: 0.05rem;
+}
+
+.detail-row-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
 }
 
 .detail-row-content {
