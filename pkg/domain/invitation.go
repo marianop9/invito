@@ -123,6 +123,8 @@ func (h *HeroSection) HasBannerImage() bool {
 // DetailsSection configures the Date, Time, and Venue quick strip.
 type DetailsSection struct {
 	SectionType        SectionType `json:"type"`
+	DateLabel          string      `json:"date_label,omitempty"`
+	LocationLabel      string      `json:"location_label,omitempty"`
 	ShowMapLink        bool        `json:"show_map_link"`
 	ShowCalendarButton bool        `json:"show_calendar_button"`
 }

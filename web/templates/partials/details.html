@@ -1,50 +1,54 @@
 {{ define "partial_details" }}
 <div class="inv-details-strip" id="section-details">
-  <!-- Date & Time Row -->
-  <div class="detail-row">
-    <span class="detail-row-icon" aria-hidden="true">{{ icon "calendar" }}</span>
-    <div class="detail-row-content">
-      <span class="detail-row-title">{{ .Invitation.FormattedFullDate }}</span>
-      <span class="detail-row-sub">{{ .Invitation.FormattedTime }} ({{ .Invitation.Timezone }})</span>
+  <!-- Date & Time Block -->
+  <div class="detail-block">
+    <div class="detail-icon-badge" aria-hidden="true">
+      {{ icon "calendar-week" }}
+    </div>
+    <div class="detail-body">
+      <div class="detail-label">{{ if .Section.DateLabel }}{{ .Section.DateLabel }}{{ else }}When{{ end }}</div>
+      <div class="detail-primary">{{ .Invitation.FormattedFullDate }}</div>
+      <div class="detail-secondary">{{ .Invitation.FormattedTime }} <span class="detail-tz">({{ .Invitation.Timezone }})</span></div>
+
       {{ if .Section.ShowCalendarButton }}
-      <div class="detail-row-actions">
-        <a href="{{ .Invitation.GoogleCalendarURL }}" target="_blank" rel="noopener noreferrer" class="quick-link" id="btn-add-google-calendar">
-          + Google Calendar
+      <div class="detail-chip-group">
+        <a href="{{ .Invitation.GoogleCalendarURL }}" target="_blank" rel="noopener noreferrer" class="detail-chip detail-chip-primary" id="btn-add-google-calendar">
+          {{ icon "calendar-plus" }}
+          <span>Google Calendar</span>
+        </a>
+        <a href="/i/{{ .Invitation.Slug }}/calendar.ics" class="detail-chip detail-chip-secondary" id="btn-download-ics">
+          {{ icon "download" }}
+          <span>.ics File</span>
         </a>
       </div>
       {{ end }}
     </div>
   </div>
 
-  <!-- Location Row -->
-  <div class="detail-row">
-    <span class="detail-row-icon" aria-hidden="true">{{ icon "map" }}</span>
-    <div class="detail-row-content">
-      <span class="detail-row-title">{{ .Invitation.Location.Name }}</span>
-      <span class="detail-row-sub">{{ .Invitation.Location.Address }}</span>
+  <div class="detail-divider" role="separator"></div>
+
+  <!-- Location Block -->
+  <div class="detail-block">
+    <div class="detail-icon-badge" aria-hidden="true">
+      {{ icon "map" }}
+    </div>
+    <div class="detail-body">
+      <div class="detail-label">{{ if .Section.LocationLabel }}{{ .Section.LocationLabel }}{{ else }}Where{{ end }}</div>
+      <div class="detail-primary">{{ .Invitation.Location.Name }}</div>
+      <div class="detail-secondary">{{ .Invitation.Location.Address }}</div>
       {{ if .Invitation.Location.DirectionsNote }}
-        <span class="detail-row-sub" style="font-style: italic;">{{ .Invitation.Location.DirectionsNote }}</span>
+        <div class="detail-note">{{ .Invitation.Location.DirectionsNote }}</div>
       {{ end }}
+
       {{ if and .Section.ShowMapLink .Invitation.Location.MapURL }}
-        <div class="detail-row-actions">
-          <a href="{{ .Invitation.Location.MapURL }}" target="_blank" rel="noopener noreferrer" class="quick-link" id="btn-view-map">
-            Open in Maps &rarr;
-          </a>
-        </div>
+      <div class="detail-chip-group">
+        <a href="{{ .Invitation.Location.MapURL }}" target="_blank" rel="noopener noreferrer" class="detail-chip detail-chip-primary" id="btn-view-map">
+          <span>Open in Maps</span>
+          {{ icon "arrow-up-right" }}
+        </a>
+      </div>
       {{ end }}
     </div>
-  </div>
-
-  <!-- Quick Action Buttons -->
-  <div class="inv-quick-actions">
-    <a href="/i/{{ .Invitation.Slug }}/calendar.ics" class="btn-pill btn-pill-secondary" id="btn-download-ics">
-      📥 Download .ics
-    </a>
-    {{ if .Invitation.IsRSVPOpen }}
-      <a href="#section-rsvp" class="btn-pill btn-pill-primary" id="btn-hero-rsvp">
-        ✍️ RSVP
-      </a>
-    {{ end }}
   </div>
 </div>
 {{ end }}

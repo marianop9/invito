@@ -136,6 +136,8 @@
       "required": ["type"],
       "properties": {
         "type": { "type": "string", "enum": ["details"] },
+        "date_label": { "type": "string", "description": "Optional custom header label for date/time (defaults to 'When')" },
+        "location_label": { "type": "string", "description": "Optional custom header label for location (defaults to 'Where')" },
         "show_map_link": { "type": "boolean", "default": true },
         "show_calendar_button": { "type": "boolean", "default": true }
       }

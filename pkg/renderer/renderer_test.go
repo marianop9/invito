@@ -26,6 +26,7 @@ func TestRenderer(t *testing.T) {
 		Location: domain.Location{
 			Name:    "The Observatory",
 			Address: "100 Skyline Blvd",
+			MapURL:  "https://maps.google.com/?q=The+Observatory",
 		},
 		Theme: domain.ThemeConfig{
 			ID: domain.ThemeMidnightSoiree,
@@ -263,8 +264,15 @@ func TestRenderer(t *testing.T) {
 		expectedIconStrings := []string{
 			"icon-tabler-calendar-week",
 			"icon-tabler-map-2",
+			"icon-tabler-calendar-plus",
+			"icon-tabler-download",
+			"icon-tabler-arrow-up-right",
 			"<svg",
 			"viewBox=\"0 0 24 24\"",
+			"detail-icon-badge",
+			"btn-add-google-calendar",
+			"btn-download-ics",
+			"btn-view-map",
 		}
 
 		for _, s := range expectedIconStrings {
