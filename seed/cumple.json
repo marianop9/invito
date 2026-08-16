@@ -1,0 +1,135 @@
+{
+  "version": "1.0",
+  "slug": "cari-45",
+  "title": "Carina",
+  "subtitle": "",
+  "hosts": [],
+  "description": "",
+  "date_start": "2026-08-30T12:00:00Z",
+  "date_end": "2026-08-30T12:00:00Z",
+  "timezone": "America/Los_Angeles",
+  "location": {
+    "name": "Cliffside Villa",
+    "address": "1200 Pacific Coast Hwy, Malibu, CA",
+    "map_url": "https://maps.google.com/?q=Malibu+Pacific+Coast+Highway",
+    "directions_note": "Rideshare drop-off at main gate. Heated pool & fire pit lounge."
+  },
+  "theme": {
+    "id": "botanical-elegance"
+  },
+  "sections": [
+    {
+      "type": "hero",
+      "eyebrow": "Mis 45",
+      "vibe": "Tarde de campo, fogón y buena música",
+      "cover_image_url": "/static/img/hero-portrait-dogs.webp",
+      "show_countdown": true
+    },
+    {
+      "type": "quote",
+      "text": "Que la vida nos encuentre siempre celebrando alrededor de un fuego y con una copa en mano.",
+      "author": ""
+    },
+    {
+      "type": "carousel",
+      "title": "Momentos",
+      "images": [
+        {
+          "url": "/static/img/landscape-horses-1.webp",
+          "caption": "",
+          "alt": "Sarah and Alex during golden hour engagement"
+        },
+        {
+          "url": "/static/img/portrait-couple.webp",
+          "caption": "",
+          "alt": "Rose garden and glasshouse pavilion"
+        },
+        {
+          "url": "/static/img/landscape-horses-2.webp",
+          "caption": "",
+          "alt": "Sarah and Alex walking through countryside"
+        }
+      ]
+    },
+    {
+      "type": "details",
+      "show_map_link": true,
+      "show_calendar_button": true
+    },
+    {
+      "type": "timeline",
+      "title": "Evening Schedule",
+      "items": [
+        {
+          "time": "5:30 PM",
+          "title": "Recepción",
+          "description": "Gin Bar al atardecer"
+        },
+        {
+          "time": "7:30 PM",
+          "title": "Asado Campestre",
+          "description": "Cortes tradicionales a dos fuegos"
+        },
+        {
+          "time": "9:30 PM",
+          "title": "Brindis & Torta",
+          "description": ""
+        },
+        {
+          "time": "10:00 PM",
+          "title": "Fogón, Música en Vivo y Baile",
+          "description": ""
+        }
+      ]
+    },
+    {
+      "type": "image",
+      "url": "/static/img/portrait-family.webp",
+      "caption": ""
+    },
+    {
+      "type": "text",
+      "title": "Una pausa para celebrar",
+      "text": "Cumplir años es la excusa perfecta para reunir a la gente que hace mi vida más linda. Quiero regalarme una tarde desconectada de la rutina, rodeada de verde, amigos y risas. ¡No faltes!"
+    },
+    {
+      "type": "dress_code",
+      "title": "Country Chic / Rústico Elegante",
+      "description": "Al ser un evento al aire libre (césped), recomendamos calzado cómodo o taco ancho, y llevar algo de abrigo para la noche junto al fogón",
+      "palette_hints": ["#2A4738", "#D4AF37", "#EFEBE4", "#8A9A86"]
+    },
+    {
+      "type": "rsvp",
+      "enabled": true,
+      "deadline": "2026-08-15T23:59:59Z",
+      "max_party_size": 2,
+      "ask_dietary": true,
+      "ask_song_request": true,
+      "custom_note": "Kindly RSVP by August 15th"
+    },
+    {
+      "type": "faqs",
+      "title": "Preguntas frecuentes",
+      "items": [
+        {
+          "question": "¿Se suspende por mal tiempo?",
+          "answer": "No. El lugar cuenta con una galería techada y salón rústico climatizado en caso de lluvia o frío."
+        },
+        {
+          "question": "¿Hay estacionamiento en el lugar?",
+          "answer": "Sí, el predio cuenta con estacionamiento privado y seguridad."
+        },
+        {
+          "question": "¿Puedo ir con niños?",
+          "answer": "Es un festejo pensado para que los adultos podamos distendernos y brindar tranquilos."
+        }
+      ]
+    },
+    {
+      "type": "closing",
+      "message": "¡Nos vemos en el campo para brindar!",
+      "signoff": "Saludos,",
+      "hosts": "Carina"
+    }
+  ]
+}

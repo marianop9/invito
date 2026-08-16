@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "slug": "sarah-and-alex-wedding",
+  "slug": "sarah-and-alex-wedding-banner",
   "title": "Sarah & Alex",
   "subtitle": "Request the pleasure of your company to celebrate their marriage",
   "hosts": [
@@ -23,7 +23,7 @@
   "sections": [
     {
       "type": "hero",
-      "layout": "full-bleed",
+      "layout": "banner",
       "eyebrow": "Wedding Celebration",
       "vibe": "An intimate evening of vows, seasonal dining, and dancing under the stars",
       "cover_image_url": "/static/img/demo-hero.webp",
