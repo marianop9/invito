@@ -4,9 +4,11 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   initCountdown();
+  initHeroScrollCue();
   initRSVPForm();
   initCarousel();
 });
+
 
 /* ==========================================================================
    Countdown & Meta Details Badge (Interactive Toggle & Live Timer)
@@ -70,6 +72,25 @@ function initCountdown() {
       }
     });
   }
+}
+
+/* ==========================================================================
+   Hero Micro Scroll Cue (Smooth Scroll to Next Content Block)
+   ========================================================================== */
+function initHeroScrollCue() {
+  const cue = document.getElementById('hero-scroll-cue');
+  if (!cue) return;
+
+  cue.addEventListener('click', (e) => {
+    e.preventDefault();
+    const hero = document.getElementById('section-hero');
+    if (hero && hero.nextElementSibling) {
+      hero.nextElementSibling.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      const details = document.getElementById('section-details');
+      if (details) details.scrollIntoView({ behavior: 'smooth' });
+    }
+  });
 }
 
 /* ==========================================================================

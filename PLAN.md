@@ -38,11 +38,14 @@
 - [x] **Auto-Scrolling Viewport-Aware Image Carousel**:
   - [x] Build `web/templates/partials/carousel.html` partial (clean slide cards with indicator dots, no arrows or bottom captions).
   - [x] Implement smooth viewport-triggered auto-scrolling with infinite wrap-around and dot indicators in `web/static/css/invitation.css` and `web/static/js/invitation.js`.
-- [x] **Streamlined Direct Hero Section**:
+- [x] **Streamlined Direct & Full-Bleed Hero Section (Option 2 Magazine / Atmospheric Canvas)**:
   - [x] Refactor `web/templates/partials/hero.html` into a direct 4-part visual hierarchy: `[Eyebrow]`, `[Title]`, `[Vibe]`, and `[Meta/Badge]` (with interactive countdown swap).
+  - [x] Implement full-viewport height (`100svh`) hero presentation with full-bleed cover image media and dual-gradient scrim overlay for photography-rich invitations.
+  - [x] Provide theme-specific radial/mesh gradients and atmospheric backgrounds for text-only invitations (`seed/birthday.json`).
+  - [x] Add floating micro-animated scroll cue (`.inv-hero-scroll-cue`) for smooth first-fold discovery.
   - [x] Update JSON Schema (`schema/invitation.schema.json`) and Go domain models (`pkg/domain/invitation.go`) with `eyebrow`, `vibe`, and `badge` properties on `HeroSection`.
   - [x] Update seed demos (`seed/wedding.json` and `seed/birthday.json`) to adopt the new concise hero structure.
-  - [x] Update stylesheet `web/static/css/invitation.css` and client script `web/static/js/invitation.js` for compact hero presentation and swappable countdown interaction.
+  - [x] Update stylesheet `web/static/css/invitation.css` and client script `web/static/js/invitation.js` for full-height hero presentation, glassmorphic meta badges, and scroll navigation.
 
 ---
 
