@@ -152,9 +152,8 @@ body.invitation-body {
 
 @media (min-width: 521px) {
   .inv-hero {
-    min-height: 640px;
-    height: 82vh;
-    max-height: 760px;
+    min-height: 580px;
+    height: calc(100vh - 4.5rem);
   }
 }
 
@@ -382,9 +381,8 @@ body.invitation-body {
 
 @media (min-width: 521px) {
   .inv-hero-banner {
-    min-height: 640px;
-    height: 85vh;
-    max-height: 780px;
+    min-height: 580px;
+    height: calc(100vh - 4.5rem);
   }
 }
 
@@ -404,8 +402,7 @@ body.invitation-body {
 @media (min-width: 521px) {
   .inv-hero-banner-media {
     height: 58%;
-    min-height: 340px;
-    max-height: 460px;
+    min-height: 300px;
   }
 }
 
