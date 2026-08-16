@@ -282,6 +282,14 @@ func TestInvitationHelpers(t *testing.T) {
 	if !hero.HasCoverImage() || !hero.HasBannerImage() {
 		t.Errorf("expected HeroSection HasCoverImage and HasBannerImage to be true")
 	}
+	if hero.TemplateName() != "partial_hero" {
+		t.Errorf("expected default hero TemplateName to be 'partial_hero', got %q", hero.TemplateName())
+	}
+
+	bannerHero := HeroSection{Layout: "banner"}
+	if bannerHero.TemplateName() != "partial_hero_banner" {
+		t.Errorf("expected banner hero TemplateName to be 'partial_hero_banner', got %q", bannerHero.TemplateName())
+	}
 
 	imgSec := inv.Sections[3].(*ImageSection)
 	if imgSec.AltText("def") != "Glasshouse venue" {

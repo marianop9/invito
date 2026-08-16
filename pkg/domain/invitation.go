@@ -91,9 +91,10 @@ var sectionRegistry = map[SectionType]SectionFactory{
 	SectionClosing:      func() Section { return &ClosingSection{SectionType: SectionClosing} },
 }
 
-// HeroSection configures the top introductory card.
+// HeroSection configures the top introductory card (supports full-bleed overlay and split banner layouts).
 type HeroSection struct {
 	SectionType    SectionType `json:"type"`
+	Layout         string      `json:"layout,omitempty"`
 	Eyebrow        string      `json:"eyebrow,omitempty"`
 	Vibe           string      `json:"vibe,omitempty"`
 	Badge          string      `json:"badge,omitempty"`
@@ -102,9 +103,16 @@ type HeroSection struct {
 	ShowCountdown  bool        `json:"show_countdown"`
 }
 
-func (h *HeroSection) Type() SectionType    { return SectionHero }
-func (h *HeroSection) TemplateName() string { return "partial_hero" }
-func (h *HeroSection) Validate() error      { return nil }
+func (h *HeroSection) Type() SectionType { return SectionHero }
+
+func (h *HeroSection) TemplateName() string {
+	if h != nil && h.Layout == "banner" {
+		return "partial_hero_banner"
+	}
+	return "partial_hero"
+}
+
+func (h *HeroSection) Validate() error { return nil }
 func (h *HeroSection) HasCoverImage() bool {
 	return h != nil && strings.TrimSpace(h.CoverImageURL) != ""
 }

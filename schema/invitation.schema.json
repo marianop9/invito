@@ -117,6 +117,12 @@
       "required": ["type"],
       "properties": {
         "type": { "type": "string", "enum": ["hero"] },
+        "layout": {
+          "type": "string",
+          "enum": ["full-bleed", "banner"],
+          "default": "full-bleed",
+          "description": "Visual hero layout variant: 'full-bleed' (magazine cover overlay, default) or 'banner' (split image banner on top + text below)"
+        },
         "eyebrow": { "type": "string", "description": "Short label or event context above title (e.g. Wedding Celebration, Chapter 30)" },
         "vibe": { "type": "string", "description": "One-liner describing the event atmosphere or spirit" },
         "badge": { "type": "string", "description": "Custom event details or meta badge text (defaults to date & time)" },

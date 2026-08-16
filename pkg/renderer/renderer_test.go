@@ -123,6 +123,44 @@ func TestRenderer(t *testing.T) {
 		}
 	})
 
+	t.Run("RenderInvitation with Alternative Hero Banner Layout", func(t *testing.T) {
+		bannerInv := *inv
+		bannerInv.Sections = []domain.Section{
+			&domain.HeroSection{
+				SectionType:   domain.SectionHero,
+				Layout:        "banner",
+				Eyebrow:       "Wedding Celebration",
+				Vibe:          "An intimate evening under the stars",
+				Badge:         "Sep 19, 2026",
+				CoverImageURL: "/static/img/demo-hero.webp",
+				ShowCountdown: true,
+			},
+		}
+
+		var buf bytes.Buffer
+		if err := r.RenderInvitation(&buf, &bannerInv); err != nil {
+			t.Fatalf("RenderInvitation with hero banner error: %v", err)
+		}
+
+		html := buf.String()
+		expectedKeywords := []string{
+			"inv-hero-banner",
+			"inv-hero-banner-media",
+			"inv-hero-banner-img",
+			"inv-hero-banner-content",
+			"Wedding Celebration",
+			"An intimate evening under the stars",
+			"Sep 19, 2026",
+			"inv-hero-banner-scroll-cue",
+		}
+
+		for _, kw := range expectedKeywords {
+			if !strings.Contains(html, kw) {
+				t.Errorf("expected hero banner HTML to contain %q, but missing", kw)
+			}
+		}
+	})
+
 	t.Run("RenderInvitation with Quote, Text, and Multiple Images in Custom Order", func(t *testing.T) {
 		fullInv := *inv
 		fullInv.Sections = []domain.Section{

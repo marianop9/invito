@@ -46,6 +46,10 @@
   - [x] Update JSON Schema (`schema/invitation.schema.json`) and Go domain models (`pkg/domain/invitation.go`) with `eyebrow`, `vibe`, and `badge` properties on `HeroSection`.
   - [x] Update seed demos (`seed/wedding.json` and `seed/birthday.json`) to adopt the new concise hero structure.
   - [x] Update stylesheet `web/static/css/invitation.css` and client script `web/static/js/invitation.js` for full-height hero presentation, glassmorphic meta badges, and scroll navigation.
+- [x] **Alternative Split Banner Hero Layout**:
+  - [x] Create dedicated `web/templates/partials/hero_banner.html` partial (`partial_hero_banner`) rendering a distinct top image banner followed by hero text content below.
+  - [x] Ensure the combined banner + content occupies the full initial viewport (`100svh` / `100dvh`) with the animated scroll cue anchored at the bottom.
+  - [x] Support `layout: "banner"` (vs default `"full-bleed"`) on `"type": "hero"` in JSON Schema and Go domain layer with automatic template routing.
 
 ---
 

@@ -1,0 +1,49 @@
+{{ define "partial_hero_banner" }}
+<div class="inv-hero-banner{{ if .Section.HasCoverImage }} has-cover-image{{ end }}" id="section-hero">
+  {{ if .Section.HasCoverImage }}
+    <div class="inv-hero-banner-media">
+      <img src="{{ .Section.CoverImageURL }}" alt="{{ .Invitation.Title }}" class="inv-hero-banner-img" loading="eager" decoding="async">
+    </div>
+  {{ else if .Section.HasBannerImage }}
+    <div class="inv-hero-banner-media">
+      <img src="{{ .Section.BannerImageURL }}" alt="{{ .Invitation.Title }}" class="inv-hero-banner-img" loading="eager" decoding="async">
+    </div>
+  {{ else }}
+    <div class="inv-hero-banner-media inv-hero-banner-placeholder">
+      <div class="inv-hero-banner-pattern"></div>
+    </div>
+  {{ end }}
+
+  <div class="inv-hero-banner-content">
+    {{ if .Section.Eyebrow }}
+      <div class="inv-eyebrow">{{ .Section.Eyebrow }}</div>
+    {{ end }}
+
+    <h1 class="inv-title">{{ .Invitation.Title }}</h1>
+
+    {{ if .Section.Vibe }}
+      <p class="inv-vibe">{{ .Section.Vibe }}</p>
+    {{ end }}
+
+    <div class="inv-hero-meta" id="inv-hero-meta" data-target-date="{{ .Invitation.DateStart.Format "2006-01-02T15:04:05Z07:00" }}"{{ if .Section.ShowCountdown }} data-countdown="true"{{ end }}>
+      <span class="inv-meta-label" id="inv-meta-label">
+        {{- if .Section.Badge -}}
+          {{ .Section.Badge }}
+        {{- else -}}
+          {{ .Invitation.FormattedDateShort }} &bull; {{ .Invitation.FormattedTime }}
+        {{- end -}}
+      </span>
+      {{ if .Section.ShowCountdown }}
+        <span class="inv-meta-countdown" id="inv-meta-countdown" style="display: none;">
+          ⏳ In <strong id="cd-summary">--</strong>
+        </span>
+      {{ end }}
+    </div>
+  </div>
+
+  <a href="#section-details" class="inv-hero-scroll-cue inv-hero-banner-scroll-cue" id="hero-scroll-cue" aria-label="Scroll to event details">
+    <span class="inv-scroll-text">Scroll to explore</span>
+    <span class="inv-scroll-arrow">&darr;</span>
+  </a>
+</div>
+{{ end }}
