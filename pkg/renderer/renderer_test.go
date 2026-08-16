@@ -33,6 +33,8 @@ func TestRenderer(t *testing.T) {
 		Sections: []domain.Section{
 			&domain.HeroSection{
 				SectionType:   domain.SectionHero,
+				Eyebrow:       "Black Tie Gala",
+				Vibe:          "An evening of elegance",
 				Badge:         "Black Tie Only",
 				ShowCountdown: true,
 			},
@@ -66,9 +68,11 @@ func TestRenderer(t *testing.T) {
 			"Annual Charity Gala",
 			"The Observatory",
 			"theme-midnight-soiree",
+			"Black Tie Gala",
+			"An evening of elegance",
 			"Black Tie Only",
 			"RSVP",
-			"inv-countdown",
+			"inv-hero-meta",
 		}
 
 		for _, kw := range expectedKeywords {

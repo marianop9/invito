@@ -23,7 +23,8 @@
   "sections": [
     {
       "type": "hero",
-      "badge": "Save The Date &bull; Sep 19, 2026",
+      "eyebrow": "Wedding Celebration",
+      "vibe": "An intimate evening of vows, seasonal dining, and dancing under the stars",
       "cover_image_url": "/static/img/demo-hero.webp",
       "show_countdown": true
     },

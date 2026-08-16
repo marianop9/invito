@@ -9,10 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ==========================================================================
-   Countdown Timer (Compact Summary)
+   Countdown & Meta Details Badge (Interactive Toggle & Live Timer)
    ========================================================================== */
 function initCountdown() {
-  const container = document.getElementById('inv-countdown');
+  const container = document.getElementById('inv-hero-meta') || document.getElementById('inv-countdown');
   if (!container) return;
 
   const targetDateStr = container.getAttribute('data-target-date');
@@ -22,13 +22,17 @@ function initCountdown() {
   if (isNaN(targetDate)) return;
 
   const summaryEl = document.getElementById('cd-summary');
+  const metaLabel = document.getElementById('inv-meta-label');
+  const countdownWrap = document.getElementById('inv-meta-countdown');
+  const hasCountdown = container.getAttribute('data-countdown') === 'true';
 
   function update() {
     const now = new Date().getTime();
     const distance = targetDate - now;
 
     if (distance <= 0) {
-      container.innerHTML = '<span>🎉 Today is the day!</span>';
+      if (summaryEl) summaryEl.textContent = 'Today!';
+      if (countdownWrap) countdownWrap.innerHTML = '🎉 <strong>Today is the day!</strong>';
       return;
     }
 
@@ -47,6 +51,25 @@ function initCountdown() {
 
   update();
   setInterval(update, 60000);
+
+  // If countdown is enabled, allow clicking/tapping the badge to toggle between Date/Time and Countdown
+  if (hasCountdown && metaLabel && countdownWrap) {
+    let showingCountdown = false;
+    container.setAttribute('title', 'Click to view countdown');
+
+    container.addEventListener('click', () => {
+      showingCountdown = !showingCountdown;
+      if (showingCountdown) {
+        metaLabel.style.display = 'none';
+        countdownWrap.style.display = 'inline-flex';
+        container.setAttribute('title', 'Click to view event date');
+      } else {
+        metaLabel.style.display = 'inline-flex';
+        countdownWrap.style.display = 'none';
+        container.setAttribute('title', 'Click to view countdown');
+      }
+    });
+  }
 }
 
 /* ==========================================================================

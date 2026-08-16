@@ -22,7 +22,8 @@
   "sections": [
     {
       "type": "hero",
-      "badge": "Chapter 30 &bull; Aug 22, 2026",
+      "eyebrow": "Chapter 30 Fiesta",
+      "vibe": "Golden hour spritzes, artisanal sourdough pizza, and sunset dancing by the Pacific",
       "show_countdown": true
     },
     {

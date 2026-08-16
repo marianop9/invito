@@ -8,29 +8,30 @@
   {{ end }}
 
   <div class="inv-hero-content">
-    {{ if .Section.Badge }}
-      <div class="inv-badge">{{ .Section.Badge }}</div>
+    {{ if .Section.Eyebrow }}
+      <div class="inv-eyebrow">{{ .Section.Eyebrow }}</div>
     {{ end }}
 
     <h1 class="inv-title">{{ .Invitation.Title }}</h1>
 
-    {{ if .Invitation.Subtitle }}
-      <p class="inv-subtitle">{{ .Invitation.Subtitle }}</p>
+    {{ if .Section.Vibe }}
+      <p class="inv-vibe">{{ .Section.Vibe }}</p>
     {{ end }}
 
-    {{ if .Invitation.HostsDisplay }}
-      <p class="inv-hosts-line">Hosted by {{ .Invitation.HostsDisplay }}</p>
-    {{ end }}
-
-    {{ if .Invitation.Description }}
-      <p class="inv-intro-text">{{ .Invitation.Description }}</p>
-    {{ end }}
-
-    {{ if .Section.ShowCountdown }}
-      <div class="inv-hero-countdown" id="inv-countdown" data-target-date="{{ .Invitation.DateStart.Format "2006-01-02T15:04:05Z07:00" }}">
-        <span>⏳ In <strong id="cd-summary">-- days</strong></span>
-      </div>
-    {{ end }}
+    <div class="inv-hero-meta" id="inv-hero-meta" data-target-date="{{ .Invitation.DateStart.Format "2006-01-02T15:04:05Z07:00" }}"{{ if .Section.ShowCountdown }} data-countdown="true"{{ end }}>
+      <span class="inv-meta-label" id="inv-meta-label">
+        {{- if .Section.Badge -}}
+          {{ .Section.Badge }}
+        {{- else -}}
+          {{ .Invitation.FormattedDateShort }} &bull; {{ .Invitation.FormattedTime }}
+        {{- end -}}
+      </span>
+      {{ if .Section.ShowCountdown }}
+        <span class="inv-meta-countdown" id="inv-meta-countdown" style="display: none;">
+          ⏳ In <strong id="cd-summary">--</strong>
+        </span>
+      {{ end }}
+    </div>
   </div>
 </div>
 {{ end }}

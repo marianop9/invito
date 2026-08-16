@@ -122,8 +122,8 @@ func TestServerEndpoints(t *testing.T) {
 			t.Fatalf("failed to decode JSON list: %v", err)
 		}
 
-		if len(list) < 4 {
-			t.Errorf("expected at least 4 starter templates, got %d", len(list))
+		if len(list) < 2 {
+			t.Errorf("expected at least 2 starter templates, got %d", len(list))
 		}
 	})
 }

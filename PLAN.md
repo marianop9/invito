@@ -38,10 +38,11 @@
 - [x] **Auto-Scrolling Viewport-Aware Image Carousel**:
   - [x] Build `web/templates/partials/carousel.html` partial (clean slide cards with indicator dots, no arrows or bottom captions).
   - [x] Implement smooth viewport-triggered auto-scrolling with infinite wrap-around and dot indicators in `web/static/css/invitation.css` and `web/static/js/invitation.js`.
-- [x] **Refine & Showcase the 2 Core Softer Demos**:
-  - [x] Update `seed/wedding.json` (Botanical Elegance) to integrate `demo-hero.webp` and the 3 carousel images.
-  - [x] Polish `seed/birthday.json` (Golden Sunset) with warm aesthetic accents.
-  - [x] Update showcase landing page (`web/templates/index.html`) to focus exclusively on the Wedding and Birthday demos.
+- [x] **Streamlined Direct Hero Section**:
+  - [x] Refactor `web/templates/partials/hero.html` into a direct 4-part visual hierarchy: `[Eyebrow]`, `[Title]`, `[Vibe]`, and `[Meta/Badge]` (with interactive countdown swap).
+  - [x] Update JSON Schema (`schema/invitation.schema.json`) and Go domain models (`pkg/domain/invitation.go`) with `eyebrow`, `vibe`, and `badge` properties on `HeroSection`.
+  - [x] Update seed demos (`seed/wedding.json` and `seed/birthday.json`) to adopt the new concise hero structure.
+  - [x] Update stylesheet `web/static/css/invitation.css` and client script `web/static/js/invitation.js` for compact hero presentation and swappable countdown interaction.
 
 ---
 

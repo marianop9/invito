@@ -14,8 +14,8 @@ func TestMemoryStore(t *testing.T) {
 	}
 
 	invs := store.ListInvitations()
-	if len(invs) < 4 {
-		t.Fatalf("expected at least 4 invitations, got %d", len(invs))
+	if len(invs) < 2 {
+		t.Fatalf("expected at least 2 invitations, got %d", len(invs))
 	}
 
 	inv, err := store.GetInvitation("sarah-and-alex-wedding")

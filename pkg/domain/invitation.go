@@ -94,6 +94,8 @@ var sectionRegistry = map[SectionType]SectionFactory{
 // HeroSection configures the top introductory card.
 type HeroSection struct {
 	SectionType    SectionType `json:"type"`
+	Eyebrow        string      `json:"eyebrow,omitempty"`
+	Vibe           string      `json:"vibe,omitempty"`
 	Badge          string      `json:"badge,omitempty"`
 	CoverImageURL  string      `json:"cover_image_url,omitempty"`
 	BannerImageURL string      `json:"banner_image_url,omitempty"`

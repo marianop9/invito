@@ -117,7 +117,9 @@
       "required": ["type"],
       "properties": {
         "type": { "type": "string", "enum": ["hero"] },
-        "badge": { "type": "string", "description": "Eyebrow badge above headline (e.g. Save The Date)" },
+        "eyebrow": { "type": "string", "description": "Short label or event context above title (e.g. Wedding Celebration, Chapter 30)" },
+        "vibe": { "type": "string", "description": "One-liner describing the event atmosphere or spirit" },
+        "badge": { "type": "string", "description": "Custom event details or meta badge text (defaults to date & time)" },
         "cover_image_url": { "type": "string", "description": "Full-width hero cover image or background photo" },
         "banner_image_url": { "type": "string", "description": "Optional section banner or header accent image" },
         "show_countdown": { "type": "boolean", "default": true }
