@@ -349,9 +349,9 @@ body.invitation-body {
   color: rgba(255, 255, 255, 0.8);
 }
 
-.inv-scroll-arrow {
-  font-size: 0.875rem;
-  line-height: 1;
+.inv-scroll-arrow svg {
+  width: 1em;
+  height: 1em;
 }
 
 @keyframes invBounceCue {

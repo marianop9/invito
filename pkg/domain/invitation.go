@@ -634,7 +634,7 @@ func (inv *Invitation) FormattedFullDate() string {
 	// return inv.DateStart.Format("Monday, January 2, 2006")
 }
 
-// FormattedDateShort returns a compact date string like "Sep 19, 2026".
+// FormattedDateShort returns a compact date string.
 func (inv *Invitation) FormattedDateShort() string {
 	return inv.DateStart.Format("02/01/06")
 }

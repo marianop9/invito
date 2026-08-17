@@ -230,7 +230,8 @@
       "required": ["type"],
       "properties": {
         "type": { "type": "string", "enum": ["dress_code"] },
-        "title": { "type": "string", "description": "Dress code title (e.g. Formal Black Tie, Cocktail Attire)" },
+        "title": { "type": "string", "description": "Section title (e.g. Dress Code)" },
+        "name": { "type": "string", "description": "Dress code label/name (e.g. Formal Black Tie, Cocktail Attire)" },
         "description": { "type": "string" },
         "palette_hints": {
           "type": "array",
