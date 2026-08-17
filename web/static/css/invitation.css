@@ -24,6 +24,10 @@
   --inv-font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -412,6 +416,7 @@ body.invitation-body {
   object-fit: cover;
   object-position: center 35%;
   display: block;
+  animation: invHeroImgEnter 1.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .inv-hero-banner-placeholder {
@@ -707,11 +712,10 @@ body.invitation-body {
   gap: 0.75rem;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  scroll-behavior: smooth;
   scrollbar-width: none;
   -ms-overflow-style: none;
   -webkit-overflow-scrolling: touch;
-  padding: 0.25rem 0.05rem;
+  padding: 0.35rem 0.1rem;
   outline: none;
 }
 
@@ -731,6 +735,18 @@ body.invitation-body {
   flex-direction: column;
   margin: 0;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.45s ease;
+  opacity: 0.8;
+  transform: scale(0.975);
+}
+
+.inv-carousel-slide.is-active {
+  opacity: 1;
+  transform: scale(1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07);
 }
 
 .inv-carousel-img-wrap {
@@ -770,6 +786,13 @@ body.invitation-body {
   transform: scale(1.15);
   opacity: 0.65;
   display: block;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 0.6s ease;
+}
+
+.inv-carousel-slide:hover .inv-carousel-backdrop {
+  transform: scale(1.22);
+  opacity: 0.75;
 }
 
 /* Layer 2: Sharp Foreground Image (Never Cropped) */
@@ -783,12 +806,23 @@ body.invitation-body {
   object-fit: contain;
   display: block;
   filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.18));
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.5s ease;
+}
+
+.inv-carousel-slide:hover .inv-carousel-img {
+  transform: scale(1.02);
+  filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.22));
 }
 
 /* Cover mode fallback (if user explicitly chooses edge-to-edge cover) */
 .inv-carousel-fit-cover .inv-carousel-img {
   object-fit: cover;
   filter: none;
+}
+
+.inv-carousel-fit-cover .inv-carousel-slide:hover .inv-carousel-img {
+  transform: scale(1.03);
 }
 
 /* Layer 3: Glassmorphic Caption Badge */
@@ -801,6 +835,7 @@ body.invitation-body {
   pointer-events: none;
   display: flex;
   justify-content: center;
+  transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .inv-carousel-caption span {
@@ -819,6 +854,7 @@ body.invitation-body {
   text-overflow: ellipsis;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.18);
+  transition: transform 0.25s ease, background-color 0.25s ease;
 }
 
 .inv-carousel-dots {
@@ -837,13 +873,22 @@ body.invitation-body {
   border: none;
   padding: 0;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: width 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.25s ease,
+              transform 0.2s ease,
+              box-shadow 0.25s ease;
+}
+
+.inv-carousel-dot:not(.active):hover {
+  background-color: var(--inv-text-muted);
+  transform: scale(1.25);
 }
 
 .inv-carousel-dot.active {
-  width: 20px;
+  width: 22px;
   background-color: var(--inv-accent);
   border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
 /* ==========================================================================
@@ -1266,4 +1311,16 @@ body.invitation-body {
   font-size: 0.6875rem;
   color: var(--inv-text-muted);
   background-color: var(--inv-surface-alt);
+}
+
+/* ==========================================================================
+   Accessibility: Reduced Motion Preference
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

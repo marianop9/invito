@@ -8,7 +8,7 @@
   <div class="inv-carousel{{ if .Section.AspectRatio }} inv-carousel-aspect-{{ .Section.AspectRatioClass }}{{ end }}{{ if .Section.IsCoverFit }} inv-carousel-fit-cover{{ end }}" data-carousel="inv-carousel">
     <div class="inv-carousel-track" id="carousel-track" tabindex="0" role="region" aria-label="Photo gallery">
       {{ range $i, $img := .Section.Images }}
-      <figure class="inv-carousel-slide" data-slide-index="{{ $i }}">
+      <figure class="inv-carousel-slide{{ if eq $i 0 }} is-active{{ end }}" data-slide-index="{{ $i }}">
         <div class="inv-carousel-img-wrap">
           {{ if not $.Section.IsCoverFit }}
           <div class="inv-carousel-backdrop-wrap" aria-hidden="true">

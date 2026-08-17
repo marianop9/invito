@@ -84,13 +84,43 @@ function initHeroScrollCue() {
   cue.addEventListener('click', (e) => {
     e.preventDefault();
     const hero = document.getElementById('section-hero');
-    if (hero && hero.nextElementSibling) {
-      hero.nextElementSibling.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      const details = document.getElementById('section-details');
-      if (details) details.scrollIntoView({ behavior: 'smooth' });
+    const target = (hero && hero.nextElementSibling) ? hero.nextElementSibling : document.getElementById('section-details');
+    if (target) {
+      const targetTop = target.getBoundingClientRect().top + window.pageYOffset;
+      smoothWindowScrollTo(targetTop, 650);
     }
   });
+}
+
+function smoothWindowScrollTo(targetY, duration = 650) {
+  const startY = window.pageYOffset || document.documentElement.scrollTop;
+  const change = targetY - startY;
+  if (Math.abs(change) < 2) {
+    window.scrollTo(0, targetY);
+    return;
+  }
+
+  const startTime = performance.now();
+
+  function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function step(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = easeInOutCubic(progress);
+
+    window.scrollTo(0, startY + change * ease);
+
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    } else {
+      window.scrollTo(0, targetY);
+    }
+  }
+
+  requestAnimationFrame(step);
 }
 
 /* ==========================================================================
@@ -228,7 +258,14 @@ function initCarousel() {
     return closestIndex;
   }
 
-  function updateDots(activeIndex) {
+  function updateActiveSlide(activeIndex) {
+    slides.forEach((slide, idx) => {
+      if (idx === activeIndex) {
+        slide.classList.add('is-active');
+      } else {
+        slide.classList.remove('is-active');
+      }
+    });
     dots.forEach((dot, idx) => {
       if (idx === activeIndex) {
         dot.classList.add('active');
@@ -240,21 +277,70 @@ function initCarousel() {
     });
   }
 
-  function scrollToSlide(index, smooth = true) {
+  function smoothTrackScrollTo(element, targetX, duration = 550) {
+    const startX = element.scrollLeft;
+    const change = targetX - startX;
+    if (Math.abs(change) < 2) {
+      element.scrollLeft = targetX;
+      return;
+    }
+
+    if (element._scrollAnimId) {
+      cancelAnimationFrame(element._scrollAnimId);
+      element._scrollAnimId = null;
+    }
+
+    // Disable CSS scroll-snap during programmatic slide animation so browser snap doesn't pop
+    element.style.scrollSnapType = 'none';
+
+    const startTime = performance.now();
+
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function step(currentTime) {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease = easeOutCubic(progress);
+
+      element.scrollLeft = startX + change * ease;
+
+      if (progress < 1) {
+        element._scrollAnimId = requestAnimationFrame(step);
+      } else {
+        element.scrollLeft = targetX;
+        element._scrollAnimId = null;
+        // Re-enable scroll-snap for touch gestures
+        setTimeout(() => {
+          if (!element._scrollAnimId) {
+            element.style.scrollSnapType = '';
+          }
+        }, 30);
+      }
+    }
+
+    element._scrollAnimId = requestAnimationFrame(step);
+  }
+
+  function scrollToSlide(index, animated = true) {
     if (index < 0 || index >= slides.length) return;
     currentIndex = index;
     const targetSlide = slides[index];
     const offset = targetSlide.offsetLeft - (track.clientWidth - targetSlide.clientWidth) / 2;
-    track.scrollTo({
-      left: Math.max(0, offset),
-      behavior: smooth ? 'smooth' : 'auto'
-    });
-    updateDots(index);
+    const targetLeft = Math.max(0, offset);
+
+    if (animated) {
+      smoothTrackScrollTo(track, targetLeft, 550);
+    } else {
+      track.scrollLeft = targetLeft;
+    }
+    updateActiveSlide(index);
   }
 
   function nextSlide() {
     const nextIndex = (currentIndex + 1) % slides.length; // Wrap around to first image
-    scrollToSlide(nextIndex);
+    scrollToSlide(nextIndex, true);
   }
 
   function startAutoScroll() {
@@ -281,7 +367,7 @@ function initCarousel() {
     dot.addEventListener('click', () => {
       const targetIndex = parseInt(dot.getAttribute('data-dot-index'), 10);
       if (!isNaN(targetIndex)) {
-        scrollToSlide(targetIndex);
+        scrollToSlide(targetIndex, true);
         resetAutoScroll();
       }
     });
@@ -290,14 +376,36 @@ function initCarousel() {
   // Track scroll synchronization
   let scrollTimeout;
   track.addEventListener('scroll', () => {
+    // If programmatic smooth scroll is active, ignore to avoid interrupting
+    if (track._scrollAnimId) return;
+
     if (scrollTimeout) cancelAnimationFrame(scrollTimeout);
     scrollTimeout = requestAnimationFrame(() => {
       const activeIdx = getActiveIndex();
       if (activeIdx !== currentIndex) {
         currentIndex = activeIdx;
-        updateDots(activeIdx);
+        updateActiveSlide(activeIdx);
       }
     });
+  }, { passive: true });
+
+  // Pause on user interaction (hover or touch)
+  track.addEventListener('mouseenter', stopAutoScroll);
+  track.addEventListener('mouseleave', () => {
+    if (isVisible && !document.hidden) startAutoScroll();
+  });
+  track.addEventListener('touchstart', () => {
+    if (track._scrollAnimId) {
+      cancelAnimationFrame(track._scrollAnimId);
+      track._scrollAnimId = null;
+      track.style.scrollSnapType = '';
+    }
+    stopAutoScroll();
+  }, { passive: true });
+  track.addEventListener('touchend', () => {
+    setTimeout(() => {
+      if (isVisible && !document.hidden) startAutoScroll();
+    }, 1200);
   }, { passive: true });
 
   // Pause when tab / window is hidden, resume when active
