@@ -5,14 +5,14 @@
   "subtitle": "",
   "hosts": [],
   "description": "",
-  "date_start": "2026-08-30T12:00:00Z",
-  "date_end": "2026-08-30T12:00:00Z",
-  "timezone": "America/Los_Angeles",
+  "date_start": "2026-08-30T12:30:00Z",
+  "date_end": null,
+  "timezone": "America/Argentina/Buenos_Aires",
   "location": {
-    "name": "Cliffside Villa",
-    "address": "1200 Pacific Coast Hwy, Malibu, CA",
+    "name": "Matera La Soñada",
+    "address": "Manuel Tribole 4350, Plaza San Francisco",
     "map_url": "https://maps.google.com/?q=Malibu+Pacific+Coast+Highway",
-    "directions_note": "Rideshare drop-off at main gate. Heated pool & fire pit lounge."
+    "directions_note": "Los autos entran por el portón de los corrales."
   },
   "theme": {
     "id": "botanical-elegance"
@@ -22,80 +22,143 @@
       "type": "hero",
       "eyebrow": "Mis 45",
       "vibe": "Tarde de campo, fogón y buena música",
-      "cover_image_url": "/static/img/hero-portrait-dogs.webp",
+      "cover_image_url": "/static/img/hero-cumple2.webp",
       "show_countdown": true
     },
     {
       "type": "quote",
-      "text": "Que la vida nos encuentre siempre celebrando alrededor de un fuego y con una copa en mano.",
+      "text": "Que la vida nos encuentre siempre celebrando, rodeados de gente querida y motivos para brindar.",
       "author": ""
     },
     {
       "type": "carousel",
-      "title": "Momentos",
+      "title": "Algo de este último año",
       "images": [
         {
-          "url": "/static/img/landscape-horses-1.webp",
+          "url": "/static/img/cumple/photo_01.webp",
           "caption": "",
-          "alt": "Sarah and Alex during golden hour engagement"
+          "alt": ""
         },
         {
-          "url": "/static/img/portrait-couple.webp",
+          "url": "/static/img/cumple/photo_02.webp",
           "caption": "",
-          "alt": "Rose garden and glasshouse pavilion"
+          "alt": ""
         },
         {
-          "url": "/static/img/landscape-horses-2.webp",
+          "url": "/static/img/cumple/photo_03.webp",
           "caption": "",
-          "alt": "Sarah and Alex walking through countryside"
+          "alt": ""
+        },
+        {
+          "url": "/static/img/cumple/photo_04.webp",
+          "caption": "",
+          "alt": ""
+        },
+        {
+          "url": "/static/img/cumple/photo_05.webp",
+          "caption": "",
+          "alt": ""
+        },
+        {
+          "url": "/static/img/cumple/photo_07.webp",
+          "caption": "",
+          "alt": ""
+        },
+        {
+          "url": "/static/img/cumple/photo_08.webp",
+          "caption": "",
+          "alt": ""
+        },
+        {
+          "url": "/static/img/cumple/photo_09.webp",
+          "caption": "",
+          "alt": ""
+        },
+        {
+          "url": "/static/img/cumple/photo_10.webp",
+          "caption": "",
+          "alt": ""
+        },
+        {
+          "url": "/static/img/cumple/photo_11.webp",
+          "caption": "",
+          "alt": ""
+        },
+        {
+          "url": "/static/img/cumple/photo_12.webp",
+          "caption": "",
+          "alt": ""
+        },
+        {
+          "url": "/static/img/cumple/photo_13.webp",
+          "caption": "",
+          "alt": ""
+        },
+        {
+          "url": "/static/img/cumple/photo_14.webp",
+          "caption": "",
+          "alt": ""
+        },
+        {
+          "url": "/static/img/cumple/photo_15.webp",
+          "caption": "",
+          "alt": ""
         }
       ]
     },
     {
       "type": "details",
       "show_map_link": true,
+      "date_label": "¿Cuándo?",
+      "location_label": "¿Dónde?",
       "show_calendar_button": true
     },
     {
       "type": "timeline",
-      "title": "Evening Schedule",
+      "title": "Cronograma",
       "items": [
         {
-          "time": "5:30 PM",
-          "title": "Recepción",
-          "description": "Gin Bar al atardecer"
+          "time": "12:00",
+          "title": "Bienvenida",
+          "description": "Recepción con aperitivos en la pulpería"
         },
         {
-          "time": "7:30 PM",
-          "title": "Asado Campestre",
-          "description": "Cortes tradicionales a dos fuegos"
+          "time": "13:00",
+          "title": "Almuerzo Criollo",
+          "description": "Empanadas de la Ilda y costillar a la estaca con ensaladas"
         },
         {
-          "time": "9:30 PM",
-          "title": "Brindis & Torta",
-          "description": ""
+          "time": "14:00",
+          "title": "Mesa Dulce",
+          "description": "Momento de la torta y cosas ricas"
         },
         {
-          "time": "10:00 PM",
-          "title": "Fogón, Música en Vivo y Baile",
-          "description": ""
+          "time": "14:30",
+          "title": "Música y Sobremesa",
+          "description": "Show en vivo y mateada"
         }
       ]
     },
     {
+      "type": "text",
+      "title": "Importante",
+      "text": "Recordar traer cubiertos y bebidas."
+    },
+    {
       "type": "image",
-      "url": "/static/img/portrait-family.webp",
+      "url": "/static/img/cumple-static.webp",
       "caption": ""
     },
     {
       "type": "text",
       "title": "Una pausa para celebrar",
-      "text": "Cumplir años es la excusa perfecta para reunir a la gente que hace mi vida más linda. Quiero regalarme una tarde desconectada de la rutina, rodeada de verde, amigos y risas. ¡No faltes!"
+      "text": "Cumplir 45 es una linda excusa para juntar a la gente que quiero y agradecer un año más compartido. Es mi regalo, una tarde para celebrar la vida con quienes quiero tener cerca.\n¡No faltes!"
     },
     {
       "type": "dress_code",
-      "title": "Country Chic / Rústico Elegante",
-      "description": "Al ser un evento al aire libre (césped), recomendamos calzado cómodo o taco ancho, y llevar algo de abrigo para la noche junto al fogón",
+      "title": "Vestimenta Sugerida",
+      "name": "Casual de Campo",
+      "description": "Ropa casual para pasar el día en el patio de la matera y una prenda de abrigo para el atardecer",
       "palette_hints": ["#2A4738", "#D4AF37", "#EFEBE4", "#8A9A86"]
     },
     {
@@ -113,21 +176,21 @@
       "items": [
         {
           "question": "¿Se suspende por mal tiempo?",
-          "answer": "No. El lugar cuenta con una galería techada y salón rústico climatizado en caso de lluvia o frío."
+          "answer": "Si, en caso de mal clima se reprograma el evento."
         },
         {
           "question": "¿Hay estacionamiento en el lugar?",
-          "answer": "Sí, el predio cuenta con estacionamiento privado y seguridad."
+          "answer": "Sí, el predio cuenta con estacionamiento privado."
         },
         {
           "question": "¿Puedo ir con niños?",
-          "answer": "Es un festejo pensado para que los adultos podamos distendernos y brindar tranquilos."
+          "answer": "Si, es un festejo para toda la familia."
         }
       ]
     },
     {
       "type": "closing",
-      "message": "¡Nos vemos en el campo para brindar!",
+      "message": "¡Te espero en La Soñada!\n Podés traer tu equipo de mate",
       "signoff": "Saludos,",
       "hosts": "Carina"
     }

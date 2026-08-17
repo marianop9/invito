@@ -7,8 +7,8 @@
     </div>
     <div class="detail-body">
       <div class="detail-label">{{ if .Section.DateLabel }}{{ .Section.DateLabel }}{{ else }}When{{ end }}</div>
-      <div class="detail-primary">{{ .Invitation.FormattedFullDate }}</div>
-      <div class="detail-secondary">{{ .Invitation.FormattedTime }} <span class="detail-tz">({{ .Invitation.Timezone }})</span></div>
+      <div class="detail-primary">{{ capitalizeFirst .Invitation.FormattedFullDate }}</div>
+      <div class="detail-secondary">{{ .Invitation.FormattedTime }}</div>
 
       {{ if .Section.ShowCalendarButton }}
       <div class="detail-chip-group">
@@ -18,7 +18,7 @@
         </a>
         <a href="/i/{{ .Invitation.Slug }}/calendar.ics" class="detail-chip detail-chip-secondary" id="btn-download-ics">
           {{ icon "download" }}
-          <span>.ics File</span>
+          <span>Archivo .ics</span>
         </a>
       </div>
       {{ end }}
@@ -43,7 +43,7 @@
       {{ if and .Section.ShowMapLink .Invitation.Location.MapURL }}
       <div class="detail-chip-group">
         <a href="{{ .Invitation.Location.MapURL }}" target="_blank" rel="noopener noreferrer" class="detail-chip detail-chip-primary" id="btn-view-map">
-          <span>Open in Maps</span>
+          <span>Abrir en Maps</span>
           {{ icon "arrow-up-right" }}
         </a>
       </div>

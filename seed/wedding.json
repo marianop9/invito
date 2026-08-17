@@ -108,7 +108,8 @@
     },
     {
       "type": "dress_code",
-      "title": "Garden Formal",
+      "title": "Dress Code",
+      "name": "Garden Formal",
       "description": "Suits or cocktail attire. Block heels recommended for the lawn.",
       "palette_hints": ["#2A4738", "#D4AF37", "#EFEBE4", "#8A9A86"]
     },

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"unicode"
 
 	"invitation/pkg/domain"
 	"invitation/web"
@@ -53,6 +54,15 @@ func New() (*Renderer, error) {
 				return "", fmt.Errorf("failed to render section %q with template %q: %w", sec.Type(), tmplName, err)
 			}
 			return template.HTML(buf.String()), nil
+		},
+		"capitalizeFirst": func(s string) string {
+			if s == "" {
+				return s
+			}
+			r := []rune(s)
+			r[0] = unicode.ToUpper(r[0])
+
+			return string(r)
 		},
 	}
 

@@ -63,7 +63,8 @@
     },
     {
       "type": "dress_code",
-      "title": "Summer Chic & Warm Sunset Tones",
+      "title": "Dress Code",
+      "name": "Summer Chic & Warm Sunset Tones",
       "description": "Linen shirts, breezy dresses, and warm terracotta accents. Pool is heated!",
       "palette_hints": ["#D74E2A", "#F2A65A", "#FBF0E8", "#2A1C16"]
     },

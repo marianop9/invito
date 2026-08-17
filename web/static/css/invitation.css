@@ -1106,6 +1106,7 @@ body.invitation-body {
   font-size: 0.875rem;
   line-height: 1.5;
   color: var(--inv-text);
+  white-space: pre-line;
 }
 
 /* ==========================================================================
@@ -1164,6 +1165,7 @@ body.invitation-body {
   font-size: 0.9375rem;
   color: var(--inv-text);
   line-height: 1.45;
+  white-space: pre-line;
 }
 
 .inv-closing-signoff {

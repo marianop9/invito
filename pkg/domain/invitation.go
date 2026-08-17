@@ -8,6 +8,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/goodsign/monday"
 )
 
 // ThemeID identifies one of the pre-defined visual themes.
@@ -274,6 +276,7 @@ func (t *TimelineSection) Validate() error {
 type DressCodeSection struct {
 	SectionType  SectionType `json:"type"`
 	Title        string      `json:"title,omitempty"`
+	Name         string      `json:"name,omitempty"`
 	Description  string      `json:"description,omitempty"`
 	PaletteHints []string    `json:"palette_hints,omitempty"`
 }
@@ -603,12 +606,13 @@ func (inv *Invitation) HostsDisplay() string {
 
 // FormattedFullDate returns a human-friendly date string like "Saturday, September 19, 2026".
 func (inv *Invitation) FormattedFullDate() string {
-	return inv.DateStart.Format("Monday, January 2, 2006")
+	return monday.Format(inv.DateStart, "Monday, 2 de January de 2006", monday.LocaleEsES)
+	// return inv.DateStart.Format("Monday, January 2, 2006")
 }
 
 // FormattedDateShort returns a compact date string like "Sep 19, 2026".
 func (inv *Invitation) FormattedDateShort() string {
-	return inv.DateStart.Format("Jan 2, 2006")
+	return inv.DateStart.Format("02/01/06")
 }
 
 // FormattedTime returns a time string like "4:00 PM" or "4:00 PM – 11:30 PM".
