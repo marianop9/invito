@@ -5,12 +5,22 @@
     <h2 class="inv-section-heading">{{ .Section.Title }}</h2>
   {{ end }}
 
-  <div class="inv-carousel" data-carousel="inv-carousel">
+  <div class="inv-carousel{{ if .Section.AspectRatio }} inv-carousel-aspect-{{ .Section.AspectRatioClass }}{{ end }}{{ if .Section.IsCoverFit }} inv-carousel-fit-cover{{ end }}" data-carousel="inv-carousel">
     <div class="inv-carousel-track" id="carousel-track" tabindex="0" role="region" aria-label="Photo gallery">
       {{ range $i, $img := .Section.Images }}
       <figure class="inv-carousel-slide" data-slide-index="{{ $i }}">
         <div class="inv-carousel-img-wrap">
+          {{ if not $.Section.IsCoverFit }}
+          <div class="inv-carousel-backdrop-wrap" aria-hidden="true">
+            <img src="{{ $img.URL }}" alt="" class="inv-carousel-backdrop" loading="lazy" decoding="async">
+          </div>
+          {{ end }}
           <img src="{{ $img.URL }}" alt="{{ $img.AltText $.Invitation.Title }}" class="inv-carousel-img" loading="lazy" decoding="async">
+          {{ if $img.Caption }}
+          <figcaption class="inv-carousel-caption">
+            <span>{{ $img.Caption }}</span>
+          </figcaption>
+          {{ end }}
         </div>
       </figure>
       {{ end }}

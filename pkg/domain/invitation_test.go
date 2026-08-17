@@ -268,8 +268,8 @@ func TestInvitationHelpers(t *testing.T) {
 		t.Errorf("expected 'Sarah & Alex', got %q", inv.HostsDisplay())
 	}
 
-	if inv.FormattedDateShort() != "Sep 19, 2026" {
-		t.Errorf("expected 'Sep 19, 2026', got %q", inv.FormattedDateShort())
+	if inv.FormattedDateShort() != "19/09/26" {
+		t.Errorf("expected '19/09/26', got %q", inv.FormattedDateShort())
 	}
 
 	if !inv.HasCoverImage() {
@@ -363,5 +363,56 @@ func TestRSVPValidation(t *testing.T) {
 	sub.Email = "invalid-email"
 	if err := sub.Validate(2); err == nil {
 		t.Errorf("expected error for invalid email, got nil")
+	}
+}
+
+func TestCarouselSectionHelperMethods(t *testing.T) {
+	c := &CarouselSection{
+		SectionType: SectionCarousel,
+		Title:       "Test Gallery",
+		Images: []CarouselImage{
+			{URL: "/static/img/photo1.webp"},
+		},
+	}
+
+	// Default aspect ratio
+	if c.AspectRatioClass() != "4-3" {
+		t.Errorf("expected default aspect ratio class '4-3', got %q", c.AspectRatioClass())
+	}
+	if c.IsCoverFit() {
+		t.Errorf("expected default IsCoverFit to be false, got true")
+	}
+
+	// 16:9
+	c.AspectRatio = "16:9"
+	if c.AspectRatioClass() != "16-9" {
+		t.Errorf("expected aspect ratio class '16-9', got %q", c.AspectRatioClass())
+	}
+
+	// Square 1:1
+	c.AspectRatio = "1:1"
+	if c.AspectRatioClass() != "1-1" {
+		t.Errorf("expected aspect ratio class '1-1', got %q", c.AspectRatioClass())
+	}
+
+	// 4:5 Portrait
+	c.AspectRatio = "4:5"
+	if c.AspectRatioClass() != "4-5" {
+		t.Errorf("expected aspect ratio class '4-5', got %q", c.AspectRatioClass())
+	}
+
+	// Fit cover
+	c.Fit = "cover"
+	if !c.IsCoverFit() {
+		t.Errorf("expected IsCoverFit to be true when Fit is 'cover', got false")
+	}
+
+	// Nil safety
+	var nilCarousel *CarouselSection
+	if nilCarousel.AspectRatioClass() != "4-3" {
+		t.Errorf("expected nil carousel AspectRatioClass to return '4-3', got %q", nilCarousel.AspectRatioClass())
+	}
+	if nilCarousel.IsCoverFit() {
+		t.Errorf("expected nil carousel IsCoverFit to return false, got true")
 	}
 }

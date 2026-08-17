@@ -1,4 +1,5 @@
 {
+  "$schema": "../schema/invitation.schema.json",
   "version": "1.0",
   "slug": "cari-45",
   "title": "Carina",

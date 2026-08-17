@@ -216,6 +216,8 @@ func (img *CarouselImage) AltText(defaultAlt string) string {
 type CarouselSection struct {
 	SectionType SectionType     `json:"type"`
 	Title       string          `json:"title,omitempty"`
+	AspectRatio string          `json:"aspect_ratio,omitempty"`
+	Fit         string          `json:"fit,omitempty"`
 	Images      []CarouselImage `json:"images,omitempty"`
 }
 
@@ -238,6 +240,28 @@ func (c *CarouselSection) ImageCount() int {
 		return 0
 	}
 	return len(c.Images)
+}
+
+func (c *CarouselSection) AspectRatioClass() string {
+	if c == nil {
+		return "4-3"
+	}
+	switch strings.TrimSpace(c.AspectRatio) {
+	case "1:1", "1/1", "square":
+		return "1-1"
+	case "16:9", "16/9", "video":
+		return "16-9"
+	case "4:5", "4/5", "portrait":
+		return "4-5"
+	case "4:3", "4/3":
+		return "4-3"
+	default:
+		return "4-3"
+	}
+}
+
+func (c *CarouselSection) IsCoverFit() bool {
+	return c != nil && strings.EqualFold(strings.TrimSpace(c.Fit), "cover")
 }
 
 // TimelineItem represents a milestone in the event schedule.

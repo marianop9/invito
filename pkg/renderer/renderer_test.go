@@ -114,6 +114,8 @@ func TestRenderer(t *testing.T) {
 			"carousel-track",
 			"carousel-dots",
 			"/static/img/demo-carousel-1.webp",
+			"inv-carousel-backdrop",
+			"inv-carousel-caption",
 			"Engagement at Big Sur",
 		}
 
@@ -121,6 +123,38 @@ func TestRenderer(t *testing.T) {
 			if !strings.Contains(html, kw) {
 				t.Errorf("expected rendered HTML to contain %q, but missing", kw)
 			}
+		}
+	})
+
+	t.Run("RenderInvitation with Carousel AspectRatio and Cover Fit", func(t *testing.T) {
+		customCarouselInv := *inv
+		customCarouselInv.Sections = []domain.Section{
+			&domain.CarouselSection{
+				SectionType: domain.SectionCarousel,
+				Title:       "Custom Frame Gallery",
+				AspectRatio: "16:9",
+				Fit:         "cover",
+				Images: []domain.CarouselImage{
+					{URL: "/static/img/demo-carousel-1.webp", Caption: "Wide Photo"},
+				},
+			},
+		}
+
+		var buf bytes.Buffer
+		if err := r.RenderInvitation(&buf, &customCarouselInv); err != nil {
+			t.Fatalf("RenderInvitation error: %v", err)
+		}
+
+		html := buf.String()
+		if !strings.Contains(html, "inv-carousel-aspect-16-9") {
+			t.Errorf("expected HTML to contain 'inv-carousel-aspect-16-9', got:\n%s", html)
+		}
+		if !strings.Contains(html, "inv-carousel-fit-cover") {
+			t.Errorf("expected HTML to contain 'inv-carousel-fit-cover', got:\n%s", html)
+		}
+		// In cover fit mode, backdrop layer should be skipped
+		if strings.Contains(html, "inv-carousel-backdrop-wrap") {
+			t.Errorf("expected cover fit carousel not to contain backdrop wrap")
 		}
 	})
 

@@ -177,6 +177,18 @@
       "properties": {
         "type": { "type": "string", "enum": ["carousel"] },
         "title": { "type": "string", "description": "Optional heading for the gallery/carousel section" },
+        "aspect_ratio": {
+          "type": "string",
+          "enum": ["4:3", "16:9", "1:1", "4:5"],
+          "default": "4:3",
+          "description": "Aspect ratio of the carousel slide frame"
+        },
+        "fit": {
+          "type": "string",
+          "enum": ["contain", "cover"],
+          "default": "contain",
+          "description": "Image fit strategy ('contain' uses atmospheric ambient backdrop, 'cover' crops edge-to-edge)"
+        },
         "images": {
           "type": "array",
           "description": "List of images displayed in the carousel",
