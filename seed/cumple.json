@@ -22,13 +22,13 @@
     {
       "type": "hero",
       "eyebrow": "Mis 45",
-      "vibe": "Tarde de campo, fogón y buena música",
+      "vibe": "La Soñada se viste de fiesta",
       "cover_image_url": "/static/img/hero-cumple2.webp",
       "show_countdown": true
     },
     {
       "type": "quote",
-      "text": "Que la vida nos encuentre siempre celebrando, rodeados de gente querida y motivos para brindar.",
+      "text": "Que la vida nos encuentre rodeados de gente querida y motivos para brindar.",
       "author": ""
     },
     {
