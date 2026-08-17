@@ -315,4 +315,77 @@ func TestRenderer(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("RenderInvitation with RSVPExternalSection in open state", func(t *testing.T) {
+		extInv := *inv
+		extInv.Sections = []domain.Section{
+			&domain.RSVPExternalSection{
+				SectionType:      domain.SectionRSVPExternal,
+				Enabled:          true,
+				Title:            "Confirmación de Asistencia",
+				Prompt:           "Por favor confirmá tu asistencia:",
+				FormURL:          "https://tally.so/r/demo-form",
+				ButtonLabel:      "Abrir Formulario",
+				ContributionNote: "Seña de $10.000 para la reserva (Alias: cumple.fiesta)",
+				ReceiptNote:      "Enviá el comprobante de transferencia al anfitrión por WhatsApp",
+				CustomNote:       "Fecha límite: 15 de Agosto",
+			},
+		}
+
+		var buf bytes.Buffer
+		if err := r.RenderInvitation(&buf, &extInv); err != nil {
+			t.Fatalf("RenderInvitation with external RSVP error: %v", err)
+		}
+
+		html := buf.String()
+		expectedKeywords := []string{
+			"section-rsvp-external",
+			"Confirmación de Asistencia",
+			"Por favor confirmá tu asistencia:",
+			"https://tally.so/r/demo-form",
+			"Abrir Formulario",
+			"btn-rsvp-external",
+			"rsvp-contribution-box",
+			"Reserva de lugar",
+			"Seña de $10.000 para la reserva (Alias: cumple.fiesta)",
+			"rsvp-whatsapp-box",
+			"Comprobante de reserva",
+			"Enviá el comprobante de transferencia al anfitrión por WhatsApp",
+			"Fecha límite: 15 de Agosto",
+		}
+
+		for _, kw := range expectedKeywords {
+			if !strings.Contains(html, kw) {
+				t.Errorf("expected rendered HTML to contain %q, but was missing", kw)
+			}
+		}
+	})
+
+	t.Run("RenderInvitation with RSVPExternalSection in closed state", func(t *testing.T) {
+		past := time.Now().Add(-48 * time.Hour)
+		closedInv := *inv
+		closedInv.Sections = []domain.Section{
+			&domain.RSVPExternalSection{
+				SectionType: domain.SectionRSVPExternal,
+				Enabled:     true,
+				Title:       "Confirmación de Asistencia",
+				FormURL:     "https://tally.so/r/demo-form",
+				Deadline:    &past,
+				CustomNote:  "El evento ya no recibe nuevas confirmaciones.",
+			},
+		}
+
+		var buf bytes.Buffer
+		if err := r.RenderInvitation(&buf, &closedInv); err != nil {
+			t.Fatalf("RenderInvitation with closed external RSVP error: %v", err)
+		}
+
+		html := buf.String()
+		if !strings.Contains(html, "rsvp-closed-badge") || !strings.Contains(html, "Plazo Finalizado") {
+			t.Errorf("expected closed badge in output, got:\n%s", html)
+		}
+		if strings.Contains(html, "btn-rsvp-external") {
+			t.Errorf("expected closed RSVP not to display active CTA button")
+		}
+	})
 }

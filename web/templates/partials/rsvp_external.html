@@ -1,0 +1,72 @@
+{{ define "partial_rsvp_external" }}
+{{ if .Section.Enabled }}
+<div class="inv-section" id="section-rsvp-external">
+  <div class="rsvp-card-wrapper" id="rsvp-external-card-inner">
+    <div class="inv-section-heading">
+      {{ if .Section.Title }}{{ .Section.Title }}{{ else }}Confirmación de Asistencia{{ end }}
+    </div>
+
+    {{ if .Section.IsOpen }}
+      <!-- Prompt -->
+      {{ if .Section.Prompt }}
+      <p class="rsvp-prompt">
+        {{ .Section.Prompt }}
+      </p>
+      {{ end }}
+
+      <!-- External Form CTA Button -->
+      {{ if .Section.FormURL }}
+      <div class="rsvp-action-wrap">
+        <a href="{{ .Section.FormURL }}" target="_blank" rel="noopener noreferrer" class="btn-rsvp-external" id="btn-rsvp-external">
+          <span>{{ if .Section.ButtonLabel }}{{ .Section.ButtonLabel }}{{ else }}Completar Formulario{{ end }}</span>
+          {{ icon "arrow-up-right" }}
+        </a>
+      </div>
+      {{ end }}
+
+      <!-- Contribution / Reservation Notice -->
+      {{ if .Section.HasContributionNote }}
+      <div class="rsvp-notice-box rsvp-contribution-box">
+        <div class="rsvp-notice-icon" aria-hidden="true">💳</div>
+        <div class="rsvp-notice-content">
+          <div class="rsvp-notice-title">Reserva de lugar</div>
+          <div class="rsvp-notice-text">{{ safeHTML .Section.ContributionNote }}</div>
+        </div>
+      </div>
+      {{ end }}
+
+      <!-- WhatsApp Receipt Confirmation Notice -->
+      {{ if .Section.HasReceiptNote }}
+      <div class="rsvp-notice-box rsvp-whatsapp-box">
+        <!-- <div class="rsvp-notice-icon" aria-hidden="true">💬</div> -->
+        {{icon "brand-whatsapp"}}
+        <div class="rsvp-notice-content">
+          <div class="rsvp-notice-title">Comprobante</div>
+          <div class="rsvp-notice-text">{{ safeHTML .Section.ReceiptNote }}</div>
+        </div>
+      </div>
+      {{ end }}
+
+      <!-- Additional Custom Note -->
+      {{ if .Section.HasCustomNote }}
+      <p class="rsvp-custom-note">
+        {{ .Section.CustomNote }}
+      </p>
+      {{ end }}
+
+    {{ else }}
+      <!-- Closed State -->
+      <div class="rsvp-closed-state">
+        <div class="rsvp-closed-badge">Plazo Finalizado</div>
+        <p class="rsvp-closed-text">
+          El plazo para confirmar asistencia para este evento ha finalizado.
+        </p>
+        {{ if .Section.HasCustomNote }}
+        <p class="rsvp-custom-note">{{ .Section.CustomNote }}</p>
+        {{ end }}
+      </div>
+    {{ end }}
+  </div>
+</div>
+{{ end }}
+{{ end }}

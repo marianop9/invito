@@ -32,6 +32,29 @@
       "author": ""
     },
     {
+      "type": "details",
+      "show_map_link": true,
+      "date_label": "¿Cuándo?",
+      "location_label": "¿Dónde?",
+      "show_calendar_button": true
+    },
+    {
+      "type": "rsvp_external",
+      "enabled": true,
+      "title": "Confirmá tu Asistencia",
+      "prompt": "",
+      "form_url": "https://forms.gle/your-google-form-id",
+      "button_label": "Confirmá acá",
+      "contribution_note": "",
+      "receipt_note": "Una vez completado el formulario, por favor envianos el comprobante de transferencia por WhatsApp.",
+      "custom_note": "Confirmar antes del 20 de Agosto"
+    },
+    {
+      "type": "text",
+      "title": "Importante",
+      "text": "Recordar traer cubiertos y bebidas."
+    },
+    {
       "type": "carousel",
       "title": "Algo de este último año",
       "images": [
@@ -108,13 +131,6 @@
       ]
     },
     {
-      "type": "details",
-      "show_map_link": true,
-      "date_label": "¿Cuándo?",
-      "location_label": "¿Dónde?",
-      "show_calendar_button": true
-    },
-    {
       "type": "timeline",
       "title": "Cronograma",
       "items": [
@@ -141,11 +157,6 @@
       ]
     },
     {
-      "type": "text",
-      "title": "Importante",
-      "text": "Recordar traer cubiertos y bebidas."
-    },
-    {
       "type": "image",
       "url": "/static/img/cumple-static.webp",
       "caption": ""
@@ -160,7 +171,12 @@
       "title": "Vestimenta Sugerida",
       "name": "Casual de Campo",
       "description": "Ropa casual para pasar el día en el patio de la matera y una prenda de abrigo para el atardecer",
-      "palette_hints": ["#2A4738", "#D4AF37", "#EFEBE4", "#8A9A86"]
+      "palette_hints": [
+        "#2A4738",
+        "#D4AF37",
+        "#EFEBE4",
+        "#8A9A86"
+      ]
     },
     {
       "type": "rsvp",

@@ -98,6 +98,7 @@
               { "$ref": "#/definitions/timeline_section" },
               { "$ref": "#/definitions/dress_code_section" },
               { "$ref": "#/definitions/rsvp_section" },
+              { "$ref": "#/definitions/rsvp_external_section" },
               { "$ref": "#/definitions/faqs_section" },
               { "$ref": "#/definitions/gift_registry_section" },
               { "$ref": "#/definitions/closing_section" }
@@ -251,6 +252,22 @@
         "ask_dietary": { "type": "boolean", "default": true },
         "ask_song_request": { "type": "boolean", "default": false },
         "custom_note": { "type": "string" }
+      }
+    },
+    "rsvp_external_section": {
+      "type": "object",
+      "required": ["type", "form_url"],
+      "properties": {
+        "type": { "type": "string", "enum": ["rsvp_external"] },
+        "enabled": { "type": "boolean", "default": true },
+        "title": { "type": "string", "description": "RSVP section heading" },
+        "prompt": { "type": "string", "description": "Prompt text inviting guests to confirm attendance" },
+        "form_url": { "type": "string", "description": "URL to external form (e.g. Google Forms, Tally, Typeform)" },
+        "button_label": { "type": "string", "description": "CTA button label (e.g. Completar Formulario)" },
+        "deadline": { "type": "string", "format": "date-time" },
+        "contribution_note": { "type": "string", "description": "Note regarding reservation contribution / deposit / bank transfer" },
+        "receipt_note": { "type": "string", "description": "Note instructing guests to send payment receipt via WhatsApp" },
+        "custom_note": { "type": "string", "description": "Additional optional note" }
       }
     },
     "faqs_section": {

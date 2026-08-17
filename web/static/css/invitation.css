@@ -1107,6 +1107,144 @@ body.invitation-body {
 }
 
 /* ==========================================================================
+   External RSVP Section (Google Forms / Tally Delegation & WhatsApp Flow)
+   ========================================================================== */
+.rsvp-card-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.rsvp-prompt {
+  font-size: 0.875rem;
+  color: var(--inv-text);
+  line-height: 1.5;
+}
+
+.rsvp-action-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.btn-rsvp-external {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.8rem 1.25rem;
+  border-radius: var(--inv-radius-pill);
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  background-color: var(--inv-accent);
+  color: #FFFFFF;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.btn-rsvp-external:hover {
+  background-color: var(--inv-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  color: #FFFFFF;
+}
+
+.btn-rsvp-external:active {
+  transform: translateY(0);
+}
+
+.btn-rsvp-external svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  transition: transform 0.15s ease;
+}
+
+.btn-rsvp-external:hover svg {
+  transform: translate(2px, -2px);
+}
+
+.rsvp-notice-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background-color: var(--inv-surface-alt);
+  border: 1px solid var(--inv-border);
+  border-radius: var(--inv-radius-sm);
+  transition: border-color 0.15s ease;
+}
+
+.rsvp-notice-icon {
+  font-size: 1.2rem;
+  line-height: 1.3;
+  flex-shrink: 0;
+}
+
+.rsvp-notice-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.rsvp-notice-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--inv-text);
+}
+
+.rsvp-notice-text {
+  font-size: 0.8125rem;
+  color: var(--inv-text-muted);
+  line-height: 1.45;
+  white-space: pre-line;
+  word-break: break-word;
+}
+
+.rsvp-custom-note {
+  font-size: 0.75rem;
+  color: var(--inv-text-muted);
+  text-align: center;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+.rsvp-closed-state {
+  text-align: center;
+  padding: 1.25rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rsvp-closed-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--inv-radius-pill);
+  background-color: var(--inv-border-light);
+  color: var(--inv-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rsvp-closed-text {
+  font-size: 0.8125rem;
+  color: var(--inv-text-muted);
+  line-height: 1.4;
+}
+
+/* ==========================================================================
    Compact FAQs & Registry
    ========================================================================== */
 .faq-compact-list {

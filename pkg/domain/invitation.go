@@ -61,6 +61,7 @@ const (
 	SectionTimeline     SectionType = "timeline"
 	SectionDressCode    SectionType = "dress_code"
 	SectionRSVP         SectionType = "rsvp"
+	SectionRSVPExternal SectionType = "rsvp_external"
 	SectionFAQs         SectionType = "faqs"
 	SectionGiftRegistry SectionType = "gift_registry"
 	SectionClosing      SectionType = "closing"
@@ -88,6 +89,7 @@ var sectionRegistry = map[SectionType]SectionFactory{
 	SectionTimeline:     func() Section { return &TimelineSection{SectionType: SectionTimeline} },
 	SectionDressCode:    func() Section { return &DressCodeSection{SectionType: SectionDressCode} },
 	SectionRSVP:         func() Section { return &RSVPSection{SectionType: SectionRSVP, Enabled: true, MaxPartySize: 2} },
+	SectionRSVPExternal: func() Section { return &RSVPExternalSection{SectionType: SectionRSVPExternal, Enabled: true} },
 	SectionFAQs:         func() Section { return &FAQsSection{SectionType: SectionFAQs} },
 	SectionGiftRegistry: func() Section { return &GiftRegistrySection{SectionType: SectionGiftRegistry} },
 	SectionClosing:      func() Section { return &ClosingSection{SectionType: SectionClosing} },
@@ -327,6 +329,47 @@ func (r *RSVPSection) Validate() error {
 		r.MaxPartySize = 2
 	}
 	return nil
+}
+
+// RSVPExternalSection configures RSVP delegation to an external platform (Google Forms, Tally, etc.)
+type RSVPExternalSection struct {
+	SectionType      SectionType `json:"type"`
+	Enabled          bool        `json:"enabled"`
+	Title            string      `json:"title,omitempty"`
+	Prompt           string      `json:"prompt,omitempty"`
+	FormURL          string      `json:"form_url"`
+	ButtonLabel      string      `json:"button_label,omitempty"`
+	Deadline         *time.Time  `json:"deadline,omitempty"`
+	ContributionNote string      `json:"contribution_note,omitempty"`
+	ReceiptNote      string      `json:"receipt_note,omitempty"`
+	CustomNote       string      `json:"custom_note,omitempty"`
+}
+
+func (r *RSVPExternalSection) Type() SectionType    { return SectionRSVPExternal }
+func (r *RSVPExternalSection) TemplateName() string { return "partial_rsvp_external" }
+func (r *RSVPExternalSection) Validate() error {
+	if strings.TrimSpace(r.FormURL) == "" {
+		return fmt.Errorf("rsvp_external section: form_url is required")
+	}
+	return nil
+}
+func (r *RSVPExternalSection) IsOpen() bool {
+	if !r.Enabled {
+		return false
+	}
+	if r.Deadline != nil && !r.Deadline.IsZero() {
+		return time.Now().Before(*r.Deadline)
+	}
+	return true
+}
+func (r *RSVPExternalSection) HasContributionNote() bool {
+	return strings.TrimSpace(r.ContributionNote) != ""
+}
+func (r *RSVPExternalSection) HasReceiptNote() bool {
+	return strings.TrimSpace(r.ReceiptNote) != ""
+}
+func (r *RSVPExternalSection) HasCustomNote() bool {
+	return strings.TrimSpace(r.CustomNote) != ""
 }
 
 // FAQItem represents a frequently asked question and answer.
@@ -571,6 +614,16 @@ func (inv *Invitation) RSVPSection() *RSVPSection {
 	return nil
 }
 
+// RSVPExternalSection returns the first RSVPExternalSection configured in the invitation, or nil.
+func (inv *Invitation) RSVPExternalSection() *RSVPExternalSection {
+	for _, sec := range inv.Sections {
+		if r, ok := sec.(*RSVPExternalSection); ok {
+			return r
+		}
+	}
+	return nil
+}
+
 // CarouselSection returns the first CarouselSection configured in the invitation, or nil.
 func (inv *Invitation) CarouselSection() *CarouselSection {
 	for _, sec := range inv.Sections {
@@ -604,14 +657,16 @@ func (inv *Invitation) HasCarousel() bool {
 
 // IsRSVPOpen checks if RSVP is enabled and if the deadline has not passed.
 func (inv *Invitation) IsRSVPOpen() bool {
-	r := inv.RSVPSection()
-	if r == nil || !r.Enabled {
-		return false
+	if r := inv.RSVPSection(); r != nil && r.Enabled {
+		if r.Deadline != nil && !r.Deadline.IsZero() {
+			return time.Now().Before(*r.Deadline)
+		}
+		return true
 	}
-	if r.Deadline != nil && !r.Deadline.IsZero() {
-		return time.Now().Before(*r.Deadline)
+	if re := inv.RSVPExternalSection(); re != nil && re.Enabled {
+		return re.IsOpen()
 	}
-	return true
+	return false
 }
 
 // HostsDisplay returns a formatted string of hosts.

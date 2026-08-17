@@ -416,3 +416,82 @@ func TestCarouselSectionHelperMethods(t *testing.T) {
 		t.Errorf("expected nil carousel IsCoverFit to return false, got true")
 	}
 }
+
+func TestRSVPExternalSection(t *testing.T) {
+	future := time.Now().Add(24 * time.Hour)
+	past := time.Now().Add(-24 * time.Hour)
+
+	ext := &RSVPExternalSection{
+		SectionType:      SectionRSVPExternal,
+		Enabled:          true,
+		Title:            "Confirmación de Asistencia",
+		Prompt:           "Completá el formulario para confirmar tu lugar:",
+		FormURL:          "https://forms.gle/demo-link",
+		ButtonLabel:      "Completar Formulario",
+		ContributionNote: "Seña de $15.000 (Alias: cari.cumple45)",
+		ReceiptNote:      "Enviá el comprobante por WhatsApp al anfitrión",
+		CustomNote:       "Hasta el 20 de Agosto",
+		Deadline:         &future,
+	}
+
+	if ext.Type() != SectionRSVPExternal {
+		t.Errorf("expected type 'rsvp_external', got %s", ext.Type())
+	}
+
+	if ext.TemplateName() != "partial_rsvp_external" {
+		t.Errorf("expected TemplateName 'partial_rsvp_external', got %s", ext.TemplateName())
+	}
+
+	if err := ext.Validate(); err != nil {
+		t.Fatalf("expected valid rsvp_external section, got error: %v", err)
+	}
+
+	if !ext.IsOpen() {
+		t.Errorf("expected rsvp_external to be open with future deadline")
+	}
+
+	if !ext.HasContributionNote() {
+		t.Errorf("expected HasContributionNote to be true")
+	}
+
+	if !ext.HasReceiptNote() {
+		t.Errorf("expected HasReceiptNote to be true")
+	}
+
+	if !ext.HasCustomNote() {
+		t.Errorf("expected HasCustomNote to be true")
+	}
+
+	// Missing form_url validation error
+	invalidExt := &RSVPExternalSection{
+		SectionType: SectionRSVPExternal,
+		Enabled:     true,
+	}
+	if err := invalidExt.Validate(); err == nil {
+		t.Errorf("expected error when form_url is empty, got nil")
+	}
+
+	// Past deadline
+	ext.Deadline = &past
+	if ext.IsOpen() {
+		t.Errorf("expected IsOpen to be false with past deadline")
+	}
+
+	// Disabled
+	ext.Enabled = false
+	ext.Deadline = nil
+	if ext.IsOpen() {
+		t.Errorf("expected IsOpen to be false when disabled")
+	}
+
+	// Invitation helper methods
+	inv := &Invitation{
+		Slug: "test-rsvp-ext",
+		Sections: []Section{
+			ext,
+		},
+	}
+	if inv.RSVPExternalSection() != ext {
+		t.Errorf("expected inv.RSVPExternalSection() to return ext")
+	}
+}
