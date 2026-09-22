@@ -6,13 +6,13 @@
   "subtitle": "",
   "hosts": [],
   "description": "",
-  "date_start": "2026-08-30T12:30:00Z",
+  "date_start": "2026-08-30T12:00:00Z",
   "date_end": null,
   "timezone": "America/Argentina/Buenos_Aires",
   "location": {
     "name": "Matera La Soñada",
     "address": "Manuel Tribole 4350, Plaza San Francisco",
-    "map_url": "https://maps.google.com/?q=Malibu+Pacific+Coast+Highway",
+    "map_url": "https://maps.app.goo.gl/m8ZGpJLNARdBLkF99",
     "directions_note": "Los autos entran por el portón de los corrales."
   },
   "theme": {
@@ -36,18 +36,18 @@
       "show_map_link": true,
       "date_label": "¿Cuándo?",
       "location_label": "¿Dónde?",
-      "show_calendar_button": true
+      "show_calendar_button": false
     },
     {
       "type": "rsvp_external",
       "enabled": true,
       "title": "Confirmá tu Asistencia",
       "prompt": "",
-      "form_url": "https://forms.gle/your-google-form-id",
+      "form_url": "https://tally.so/r/81bqzo",
       "button_label": "Confirmá acá",
       "contribution_note": "",
       "receipt_note": "Una vez completado el formulario, por favor envianos el comprobante de transferencia por WhatsApp.",
-      "custom_note": "Confirmar antes del 20 de Agosto"
+      "custom_note": "Confirmar antes del 25 de Agosto"
     },
     {
       "type": "text",
@@ -177,15 +177,6 @@
         "#EFEBE4",
         "#8A9A86"
       ]
-    },
-    {
-      "type": "rsvp",
-      "enabled": true,
-      "deadline": "2026-08-15T23:59:59Z",
-      "max_party_size": 2,
-      "ask_dietary": true,
-      "ask_song_request": true,
-      "custom_note": "Kindly RSVP by August 15th"
     },
     {
       "type": "faqs",
