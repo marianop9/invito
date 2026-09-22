@@ -117,7 +117,7 @@
     {
       "type": "rsvp",
       "enabled": true,
-      "deadline": "2026-08-25T23:59:59Z",
+      "deadline": "2999-08-25T23:59:59Z",
       "max_party_size": 2,
       "ask_dietary": true,
       "ask_song_request": false,

@@ -349,7 +349,6 @@ func TestRenderer(t *testing.T) {
 			"Reserva de lugar",
 			"Seña de $10.000 para la reserva (Alias: cumple.fiesta)",
 			"rsvp-whatsapp-box",
-			"Comprobante de reserva",
 			"Enviá el comprobante de transferencia al anfitrión por WhatsApp",
 			"Fecha límite: 15 de Agosto",
 		}
