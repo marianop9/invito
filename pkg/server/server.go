@@ -20,15 +20,17 @@ import (
 
 // Config holds configuration options for the HTTP server.
 type Config struct {
-	Port    string
-	SeedDir string
+	Port         string
+	SeedDir      string
+	DatabasePath string
+	Store        storage.Store
 }
 
 // Server wraps the chi router, template renderer, and storage engine.
 type Server struct {
 	router   *chi.Mux
 	renderer *renderer.Renderer
-	store    *storage.MemoryStore
+	store    storage.Store
 	config   Config
 }
 
@@ -46,9 +48,15 @@ func New(cfg Config) (*Server, error) {
 		return nil, fmt.Errorf("failed to initialize renderer: %w", err)
 	}
 
-	store, err := storage.NewMemoryStore(cfg.SeedDir)
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize seed store: %w", err)
+	var store storage.Store
+	if cfg.Store != nil {
+		store = cfg.Store
+	} else {
+		s, err := storage.NewSQLiteStore(cfg.DatabasePath, cfg.SeedDir)
+		if err != nil {
+			return nil, fmt.Errorf("failed to initialize sqlite store: %w", err)
+		}
+		store = s
 	}
 
 	s := &Server{
@@ -100,7 +108,11 @@ func (s *Server) setupRoutes() {
 
 // handleIndex renders the showcase platform home page.
 func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
-	invitations := s.store.ListInvitations()
+	invitations, err := s.store.ListInvitations()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to list invitations: %v", err), http.StatusInternalServerError)
+		return
+	}
 
 	data := map[string]any{
 		"Invitations": invitations,
@@ -228,8 +240,14 @@ func (s *Server) handleRSVPSubmit(w http.ResponseWriter, r *http.Request) {
 
 // handleAPIListInvitations returns all invitations in JSON format.
 func (s *Server) handleAPIListInvitations(w http.ResponseWriter, r *http.Request) {
+	invitations, err := s.store.ListInvitations()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to list invitations: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(s.store.ListInvitations())
+	_ = json.NewEncoder(w).Encode(invitations)
 }
 
 // handleAPIGetInvitation returns a single invitation JSON document.
@@ -256,17 +274,28 @@ func (s *Server) handleAPIListRSVPs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	rsvps, err := s.store.ListRSVPs(slug)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to list RSVPs: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(s.store.ListRSVPs(slug))
+	_ = json.NewEncoder(w).Encode(rsvps)
 }
 
 // handleHealth returns system status.
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
+	templateCount := 0
+	if invs, err := s.store.ListInvitations(); err == nil {
+		templateCount = len(invs)
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(map[string]any{
 		"status":      "ok",
 		"timestamp":   time.Now().UTC().Format(time.RFC3339),
-		"templates":   len(s.store.ListInvitations()),
+		"templates":   templateCount,
 		"environment": "prototype",
 	})
 }

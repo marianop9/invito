@@ -13,6 +13,7 @@ import (
 
 	"invitation/pkg/server"
 	"invitation/pkg/ssg"
+	"invitation/pkg/storage"
 )
 
 func main() {
@@ -22,6 +23,7 @@ func main() {
 	}
 
 	port := flag.String("port", defaultPort, "HTTP server port")
+	dbPath := flag.String("db", "invito.db", "Path to SQLite database file")
 	exportDir := flag.String("export", "", "Export invitations to static HTML/CSS bundle in specified directory (e.g. '_demo')")
 	createZip := flag.Bool("zip", false, "When exporting, also bundle the static files into a .zip archive")
 	seedDir := flag.String("seed", "seed", "Path to seed directory containing invitation JSON files")
@@ -35,10 +37,19 @@ func main() {
 		return
 	}
 
+	// Initialize SQLite persistent storage
+	sqliteStore, err := storage.NewSQLiteStore(*dbPath, *seedDir)
+	if err != nil {
+		log.Fatalf("Failed to initialize SQLite store: %v", err)
+	}
+	defer sqliteStore.Close()
+
 	// Normal server mode
 	srv, err := server.New(server.Config{
-		Port:    *port,
-		SeedDir: *seedDir,
+		Port:         *port,
+		SeedDir:      *seedDir,
+		DatabasePath: *dbPath,
+		Store:        sqliteStore,
 	})
 	if err != nil {
 		log.Fatalf("Failed to initialize server: %v", err)

@@ -70,10 +70,11 @@
 
 ### 📦 Future Backlog (Post-Demo Features)
 
-- [ ] **Persistent SQLite Storage Layer (`pkg/storage/sqlite.go`)**:
-  - [ ] Pure-Go SQLite driver (`modernc.org/sqlite`).
-  - [ ] Auto-migrations for `invitations` and `rsvps` tables.
-  - [ ] Auto-seed default templates on first boot.
+- [x] **Persistent SQLite Storage Layer (`pkg/storage/sqlite.go`)**:
+  - [x] Pure-Go SQLite driver (`modernc.org/sqlite`).
+  - [x] Auto-migrations for `invitations` and `rsvps` tables.
+  - [x] Auto-seed default templates on first boot.
+  - [x] Deprecate and remove volatile `MemoryStore`.
 - [ ] **Interactive Split-Screen Preview / Sandbox (`/preview`)**:
   - [ ] Live visual editor + raw JSON editor with simulated mobile viewport.
 - [ ] **Host Admin Dashboard (`/admin/invitations/{slug}/rsvps`)**:

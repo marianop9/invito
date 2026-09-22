@@ -40,7 +40,7 @@ type Result struct {
 type Generator struct {
 	config   Config
 	renderer *renderer.Renderer
-	store    *storage.MemoryStore
+	store    storage.Store
 }
 
 // New creates a new static site Generator with the given configuration.
@@ -57,7 +57,7 @@ func New(cfg Config) (*Generator, error) {
 		return nil, fmt.Errorf("failed to initialize renderer: %w", err)
 	}
 
-	store, err := storage.NewMemoryStore(cfg.SeedDir)
+	store, err := storage.NewSQLiteStore(":memory:", cfg.SeedDir)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load seed invitations from %s: %w", cfg.SeedDir, err)
 	}
@@ -70,7 +70,7 @@ func New(cfg Config) (*Generator, error) {
 }
 
 // NewWithComponents creates a Generator with pre-configured store and renderer.
-func NewWithComponents(cfg Config, store *storage.MemoryStore, rnd *renderer.Renderer) *Generator {
+func NewWithComponents(cfg Config, store storage.Store, rnd *renderer.Renderer) *Generator {
 	if cfg.OutputDir == "" {
 		cfg.OutputDir = "_demo"
 	}
@@ -106,7 +106,10 @@ func (g *Generator) ExportAll() (*Result, error) {
 	}
 
 	// 3. Render and export each invitation
-	invitations := g.store.ListInvitations()
+	invitations, err := g.store.ListInvitations()
+	if err != nil {
+		return nil, fmt.Errorf("failed to list invitations: %w", err)
+	}
 	for _, inv := range invitations {
 		if err := g.exportSingleInvitation(inv, res); err != nil {
 			return nil, fmt.Errorf("failed to export invitation %s: %w", inv.Slug, err)
