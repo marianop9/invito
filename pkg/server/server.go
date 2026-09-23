@@ -1,10 +1,12 @@
 package server
 
 import (
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io/fs"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -103,6 +105,15 @@ func (s *Server) setupRoutes() {
 		r.Get("/invitations", s.handleAPIListInvitations)
 		r.Get("/invitations/{slug}", s.handleAPIGetInvitation)
 		r.Get("/invitations/{slug}/rsvps", s.handleAPIListRSVPs)
+	})
+
+	// Admin Planner Dashboard Routes
+	s.router.Route("/admin", func(r chi.Router) {
+		r.Get("/", s.handleAdminIndex)
+		r.Route("/invitations/{slug}", func(r chi.Router) {
+			r.Get("/rsvps", s.handleAdminRSVPs)
+			r.Get("/rsvps.csv", s.handleAdminExportRSVPsCSV)
+		})
 	})
 }
 
@@ -303,4 +314,147 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 // Router returns the configured chi.Mux.
 func (s *Server) Router() *chi.Mux {
 	return s.router
+}
+
+// AdminEventItem bundles an invitation with its aggregated RSVP metrics for the admin overview.
+type AdminEventItem struct {
+	Invitation *domain.Invitation
+	Stats      storage.RSVPStats
+}
+
+// handleAdminIndex renders the events management list.
+func (s *Server) handleAdminIndex(w http.ResponseWriter, r *http.Request) {
+	invitations, err := s.store.ListInvitations()
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to list invitations: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	var events []AdminEventItem
+	totalConfirmedGuests := 0
+
+	for _, inv := range invitations {
+		stats, err := s.store.GetRSVPStats(inv.Slug)
+		if err != nil {
+			stats = storage.RSVPStats{}
+		}
+		events = append(events, AdminEventItem{
+			Invitation: inv,
+			Stats:      stats,
+		})
+		totalConfirmedGuests += stats.TotalGuests
+	}
+
+	data := map[string]any{
+		"Title":                "Events Management",
+		"Events":               events,
+		"TotalEvents":          len(events),
+		"TotalConfirmedGuests": totalConfirmedGuests,
+		"CurrentYear":          time.Now().Year(),
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := s.renderer.RenderAdminIndex(w, data); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to render admin index: %v", err), http.StatusInternalServerError)
+	}
+}
+
+// handleAdminRSVPs displays the RSVP tracking dashboard and guest table for a single event.
+func (s *Server) handleAdminRSVPs(w http.ResponseWriter, r *http.Request) {
+	slug := chi.URLParam(r, "slug")
+
+	inv, err := s.store.GetInvitation(slug)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	rsvps, err := s.store.ListRSVPs(slug)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to list RSVPs: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	stats, err := s.store.GetRSVPStats(slug)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to get RSVP stats: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	data := map[string]any{
+		"Title":       "RSVPs: " + inv.Title,
+		"Invitation":  inv,
+		"RSVPs":       rsvps,
+		"Stats":       stats,
+		"CurrentYear": time.Now().Year(),
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := s.renderer.RenderAdminRSVPs(w, data); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to render admin RSVPs: %v", err), http.StatusInternalServerError)
+	}
+}
+
+// handleAdminExportRSVPsCSV streams an RFC 4180 CSV export of all guest RSVP responses.
+func (s *Server) handleAdminExportRSVPsCSV(w http.ResponseWriter, r *http.Request) {
+	slug := chi.URLParam(r, "slug")
+
+	inv, err := s.store.GetInvitation(slug)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	rsvps, err := s.store.ListRSVPs(slug)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to list RSVPs: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=\"%s-rsvps.csv\"", inv.Slug))
+
+	writer := csv.NewWriter(w)
+
+	header := []string{
+		"Name",
+		"Email",
+		"Attending",
+		"Guests",
+		"Dietary Needs",
+		"Song Request",
+		"Personal Message",
+		"Submitted At",
+	}
+	if err := writer.Write(header); err != nil {
+		return
+	}
+
+	for _, sub := range rsvps {
+		attendingStr := "No"
+		if sub.Attending {
+			attendingStr = "Yes"
+		}
+
+		submittedAtStr := ""
+		if !sub.SubmittedAt.IsZero() {
+			submittedAtStr = sub.SubmittedAt.UTC().Format("2006-01-02 15:04:05 UTC")
+		}
+
+		row := []string{
+			sub.Name,
+			sub.Email,
+			attendingStr,
+			strconv.Itoa(sub.GuestCount),
+			sub.DietaryNeeds,
+			sub.SongRequest,
+			sub.PersonalMessage,
+			submittedAtStr,
+		}
+		if err := writer.Write(row); err != nil {
+			return
+		}
+	}
+
+	writer.Flush()
 }

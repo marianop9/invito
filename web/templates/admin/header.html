@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ if .Title }}{{ .Title }} &mdash; {{ end }}Invito Planner</title>
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+</head>
+<body class="admin-body">
+  <header class="admin-header">
+    <div class="container admin-header-content">
+      <div class="admin-brand">
+        <a href="/admin" class="brand-link" id="admin-brand-link">
+          <span class="brand-icon">✦</span>
+          <span>Invito</span>
+          <span class="admin-tag">Planner</span>
+        </a>
+      </div>
+      <nav class="admin-nav">
+        <a href="/admin" class="admin-nav-link" id="nav-admin-events">Events</a>
+        <a href="/" class="admin-nav-link" id="nav-admin-public" target="_blank" rel="noopener noreferrer">Public Site &nearr;</a>
+        <a href="/health" class="admin-nav-link" id="nav-admin-health">Status</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="admin-main">
+    <div class="container">

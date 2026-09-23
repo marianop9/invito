@@ -1,0 +1,161 @@
+{{ template "header.html" . }}
+
+<div class="admin-breadcrumb">
+  <a href="/admin" class="back-link" id="link-back-events">&larr; Back to Events Overview</a>
+</div>
+
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-title">{{ .Invitation.Title }} &mdash; RSVPs</h1>
+    <div class="admin-subtitle">
+      <span>📅 {{ .Invitation.FormattedDateShort }}</span>
+      <span>&bull;</span>
+      <span>📍 {{ .Invitation.Location.Name }}</span>
+      <span>&bull;</span>
+      <span class="badge badge-theme">{{ .Invitation.Theme.ID }}</span>
+    </div>
+  </div>
+  <div class="admin-header-actions">
+    <a href="/admin/invitations/{{ .Invitation.Slug }}/rsvps.csv" class="btn btn-secondary" id="btn-export-csv" download>
+      📥 Download CSV
+    </a>
+    <a href="/i/{{ .Invitation.Slug }}" class="btn btn-primary" id="btn-view-pass" target="_blank" rel="noopener noreferrer">
+      View Live Pass &nearr;
+    </a>
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi-card kpi-primary">
+    <div class="kpi-label">Total Responses</div>
+    <div class="kpi-value">{{ .Stats.TotalResponses }}</div>
+    <div class="kpi-subtext">RSVP submissions received</div>
+  </div>
+
+  <div class="kpi-card kpi-attending">
+    <div class="kpi-label">Attending Guests</div>
+    <div class="kpi-value">{{ .Stats.AttendingCount }}</div>
+    <div class="kpi-subtext">Total headcount: <strong>{{ .Stats.TotalGuests }}</strong></div>
+  </div>
+
+  <div class="kpi-card kpi-declined">
+    <div class="kpi-label">Declined</div>
+    <div class="kpi-value">{{ .Stats.DeclinedCount }}</div>
+    <div class="kpi-subtext">Unable to attend</div>
+  </div>
+
+  <div class="kpi-card kpi-dietary">
+    <div class="kpi-label">Dietary Alerts</div>
+    <div class="kpi-value" style="{{ if gt .Stats.DietaryCount 0 }}color: hsl(38, 92%, 40%);{{ end }}">
+      {{ .Stats.DietaryCount }}
+    </div>
+    <div class="kpi-subtext">Special dietary requirements</div>
+  </div>
+</div>
+
+{{ if eq (len .RSVPs) 0 }}
+<div class="admin-table-container">
+  <div class="empty-state">
+    <div class="empty-state-icon">📬</div>
+    <h3>No Responses Yet</h3>
+    <p>Share your digital invitation pass with your guests to begin collecting RSVPs.</p>
+    <a href="/i/{{ .Invitation.Slug }}" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+      Open Invitation Pass &nearr;
+    </a>
+  </div>
+</div>
+{{ else }}
+<div class="admin-toolbar">
+  <div class="search-box">
+    <span class="search-box-icon">🔍</span>
+    <input type="text" id="rsvp-search-input" class="search-input" placeholder="Search by guest name or email..." autocomplete="off">
+    <button type="button" id="rsvp-search-clear" class="search-clear-btn" aria-label="Clear search">&times;</button>
+  </div>
+
+  <div class="filter-pills" role="tablist">
+    <button type="button" class="filter-pill active" data-filter="all">All ({{ .Stats.TotalResponses }})</button>
+    <button type="button" class="filter-pill" data-filter="attending">Attending ({{ .Stats.AttendingCount }})</button>
+    <button type="button" class="filter-pill" data-filter="declined">Declined ({{ .Stats.DeclinedCount }})</button>
+    <button type="button" class="filter-pill" data-filter="dietary">Dietary Needs ({{ .Stats.DietaryCount }})</button>
+  </div>
+
+  <span id="rsvp-count-indicator" class="table-count-indicator">{{ len .RSVPs }} total guests</span>
+</div>
+
+<div class="admin-table-container">
+  <table class="admin-table" id="rsvp-attendee-table">
+    <thead>
+      <tr>
+        <th>Guest</th>
+        <th>Status</th>
+        <th>Party Size</th>
+        <th>Dietary Needs</th>
+        <th>Song Request</th>
+        <th>Personal Message</th>
+        <th>Submitted</th>
+      </tr>
+    </thead>
+    <tbody id="rsvp-table-body">
+      {{ range .RSVPs }}
+      <tr class="rsvp-row"
+          data-name="{{ .Name | lower }}"
+          data-email="{{ .Email | lower }}"
+          data-attending="{{ if .Attending }}true{{ else }}false{{ end }}"
+          data-has-dietary="{{ if .DietaryNeeds }}true{{ else }}false{{ end }}">
+        <td>
+          <div class="guest-name">{{ .Name }}</div>
+          <div class="guest-email">{{ .Email }}</div>
+        </td>
+        <td>
+          {{ if .Attending }}
+            <span class="badge badge-success">✓ Attending</span>
+          {{ else }}
+            <span class="badge badge-declined">✕ Declined</span>
+          {{ end }}
+        </td>
+        <td>
+          {{ if .Attending }}
+            <strong>{{ .GuestCount }}</strong>
+          {{ else }}
+            <span style="color: var(--text-muted);">&mdash;</span>
+          {{ end }}
+        </td>
+        <td>
+          {{ if .DietaryNeeds }}
+            <span class="badge badge-warning" title="{{ .DietaryNeeds }}">⚠️ {{ .DietaryNeeds }}</span>
+          {{ else }}
+            <span style="color: var(--text-muted);">&mdash;</span>
+          {{ end }}
+        </td>
+        <td class="admin-note-cell">
+          {{ if .SongRequest }}
+            🎵 {{ .SongRequest }}
+          {{ else }}
+            <span style="color: var(--text-muted);">&mdash;</span>
+          {{ end }}
+        </td>
+        <td class="admin-note-cell">
+          {{ if .PersonalMessage }}
+            💬 {{ .PersonalMessage }}
+          {{ else }}
+            <span style="color: var(--text-muted);">&mdash;</span>
+          {{ end }}
+        </td>
+        <td style="color: var(--text-muted); font-size: 0.8125rem; white-space: nowrap;">
+          {{ formatDateTime .SubmittedAt }}
+        </td>
+      </tr>
+      {{ end }}
+      <tr id="no-matching-rsvps" style="display: none;">
+        <td colspan="7">
+          <div class="empty-state" style="padding: 2.5rem 1rem;">
+            <p style="margin: 0; color: var(--text-muted);">No attendees match the active search and filter criteria.</p>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{{ end }}
+
+{{ template "footer.html" . }}

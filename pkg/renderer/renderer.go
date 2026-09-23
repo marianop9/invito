@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"strings"
+	"time"
 	"unicode"
 
 	"invitation/pkg/domain"
@@ -13,7 +15,8 @@ import (
 
 // Renderer manages parsed HTML templates and handles SSR and SSG output.
 type Renderer struct {
-	tmpl *template.Template
+	tmpl      *template.Template
+	adminTmpl *template.Template
 }
 
 // New creates a new Renderer and parses all embedded templates and partials.
@@ -64,11 +67,20 @@ func New() (*Renderer, error) {
 
 			return string(r)
 		},
+		"formatDateTime": func(t time.Time) string {
+			if t.IsZero() {
+				return "-"
+			}
+			return t.Format("Jan 02, 2006 3:04 PM")
+		},
+		"lower": func(s string) string {
+			return strings.ToLower(s)
+		},
 	}
 
 	tmpl := template.New("invito").Funcs(funcs)
 
-	// Parse all templates and sub-templates in partials
+	// Parse all public templates and sub-templates in partials
 	parsed, err := tmpl.ParseFS(web.Files,
 		"templates/*.html",
 		"templates/partials/*.html",
@@ -78,7 +90,20 @@ func New() (*Renderer, error) {
 	}
 
 	rootTmpl = parsed
-	return &Renderer{tmpl: parsed}, nil
+
+	// Parse admin dashboard views
+	adminTmpl := template.New("admin").Funcs(funcs)
+	adminParsed, err := adminTmpl.ParseFS(web.Files,
+		"templates/admin/*.html",
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse admin templates from embed.FS: %w", err)
+	}
+
+	return &Renderer{
+		tmpl:      parsed,
+		adminTmpl: adminParsed,
+	}, nil
 }
 
 // RenderInvitation renders a dynamic invitation page to the given writer.
@@ -89,6 +114,16 @@ func (r *Renderer) RenderInvitation(w io.Writer, inv *domain.Invitation) error {
 // RenderIndex renders the landing page.
 func (r *Renderer) RenderIndex(w io.Writer, data any) error {
 	return r.tmpl.ExecuteTemplate(w, "index.html", data)
+}
+
+// RenderAdminIndex renders the events overview dashboard.
+func (r *Renderer) RenderAdminIndex(w io.Writer, data any) error {
+	return r.adminTmpl.ExecuteTemplate(w, "index.html", data)
+}
+
+// RenderAdminRSVPs renders the RSVP tracking dashboard for a single event.
+func (r *Renderer) RenderAdminRSVPs(w io.Writer, data any) error {
+	return r.adminTmpl.ExecuteTemplate(w, "rsvps.html", data)
 }
 
 // RenderToHTMLString performs Static Site Generation (SSG) for a single invitation.

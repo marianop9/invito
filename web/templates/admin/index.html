@@ -1,0 +1,89 @@
+{{ template "header.html" . }}
+
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-title">Events Management</h1>
+    <p class="admin-subtitle">
+      <span>Overview of active digital invitations, guest confirmations, and attendee headcounts.</span>
+    </p>
+  </div>
+  <div class="admin-header-actions">
+    <a href="/admin/invitations/new" class="btn btn-primary" id="btn-create-invitation" title="Create a new event invitation (Coming in Iteration 4)">
+      + Create Invitation
+    </a>
+  </div>
+</div>
+
+<div class="admin-stats-summary">
+  <div class="kpi-card kpi-primary">
+    <div class="kpi-label">Active Events</div>
+    <div class="kpi-value">{{ .TotalEvents }}</div>
+    <div class="kpi-subtext">Configured invitations in database</div>
+  </div>
+  <div class="kpi-card kpi-attending">
+    <div class="kpi-label">Total Confirmed Headcount</div>
+    <div class="kpi-value">{{ .TotalConfirmedGuests }}</div>
+    <div class="kpi-subtext">Attending guests across all events</div>
+  </div>
+</div>
+
+{{ if eq (len .Events) 0 }}
+<div class="admin-table-container">
+  <div class="empty-state">
+    <div class="empty-state-icon">📂</div>
+    <h3>No Events Configured Yet</h3>
+    <p>Get started by creating your first digital invitation.</p>
+    <a href="/admin/invitations/new" class="btn btn-primary">+ Create Invitation</a>
+  </div>
+</div>
+{{ else }}
+<div class="admin-events-grid">
+  {{ range .Events }}
+  <div class="admin-event-card">
+    <div class="admin-event-card-header">
+      {{ if .Invitation.HasCoverImage }}
+        <img src="{{ .Invitation.CoverImage }}" alt="{{ .Invitation.Title }}" loading="lazy">
+      {{ else }}
+        <div class="admin-event-card-placeholder">✦</div>
+      {{ end }}
+      <span class="admin-event-theme-badge">{{ .Invitation.Theme.ID }}</span>
+    </div>
+
+    <div class="admin-event-card-body">
+      <div>
+        <h2 class="admin-event-card-title">{{ .Invitation.Title }}</h2>
+        <div class="admin-event-card-meta">
+          <div>📅 <strong>{{ .Invitation.FormattedDateShort }}</strong> &bull; {{ .Invitation.FormattedTime }}</div>
+          <div>📍 {{ .Invitation.Location.Name }}</div>
+        </div>
+
+        <div class="admin-event-metrics-strip">
+          {{ if gt .Stats.TotalResponses 0 }}
+            <span>✅ <strong>{{ .Stats.AttendingCount }}</strong> attending ({{ .Stats.TotalGuests }} headcount)</span>
+            {{ if gt .Stats.DeclinedCount 0 }}
+              <span>&bull; {{ .Stats.DeclinedCount }} declined</span>
+            {{ end }}
+            {{ if gt .Stats.DietaryCount 0 }}
+              <span class="badge badge-warning" style="margin-left: auto;">⚠️ {{ .Stats.DietaryCount }} dietary</span>
+            {{ end }}
+          {{ else }}
+            <span style="color: var(--text-muted);">No responses received yet</span>
+          {{ end }}
+        </div>
+      </div>
+
+      <div class="admin-event-card-actions">
+        <a href="/admin/invitations/{{ .Invitation.Slug }}/rsvps" class="btn btn-primary" style="flex: 1; font-size: 0.875rem;">
+          Manage RSVPs &rarr;
+        </a>
+        <a href="/i/{{ .Invitation.Slug }}" class="btn btn-secondary" style="font-size: 0.875rem;" target="_blank" rel="noopener noreferrer" title="Preview public invitation pass">
+          Pass &nearr;
+        </a>
+      </div>
+    </div>
+  </div>
+  {{ end }}
+</div>
+{{ end }}
+
+{{ template "footer.html" . }}
