@@ -283,3 +283,60 @@ func TestSSG_CleanOutputDir(t *testing.T) {
 		t.Errorf("expected stale file to be removed when CleanOutputDir=true")
 	}
 }
+
+func TestSSG_ExportWithUploads(t *testing.T) {
+	tempOutDir, err := os.MkdirTemp("", "invito-ssg-out-*")
+	if err != nil {
+		t.Fatalf("failed to create temp out dir: %v", err)
+	}
+	defer os.RemoveAll(tempOutDir)
+
+	tempUploadsDir, err := os.MkdirTemp("", "invito-ssg-uploads-*")
+	if err != nil {
+		t.Fatalf("failed to create temp uploads dir: %v", err)
+	}
+	defer os.RemoveAll(tempUploadsDir)
+
+	// Create a dummy uploaded image in tempUploadsDir
+	sampleUploadName := "wedding-photo-123.jpg"
+	sampleContent := []byte("fake-jpeg-content")
+	if err := os.WriteFile(filepath.Join(tempUploadsDir, sampleUploadName), sampleContent, 0644); err != nil {
+		t.Fatalf("failed to create sample upload: %v", err)
+	}
+
+	generator, err := New(Config{
+		OutputDir:      tempOutDir,
+		SeedDir:        "../../seed",
+		CleanOutputDir: true,
+		UploadsDir:     tempUploadsDir,
+	})
+	if err != nil {
+		t.Fatalf("failed to initialize SSG: %v", err)
+	}
+
+	result, err := generator.ExportAll()
+	if err != nil {
+		t.Fatalf("ExportAll returned error: %v", err)
+	}
+
+	// Verify exported upload file
+	exportedUploadPath := filepath.Join(tempOutDir, "uploads", sampleUploadName)
+	data, err := os.ReadFile(exportedUploadPath)
+	if err != nil {
+		t.Fatalf("expected uploaded file to be copied into %s, got: %v", exportedUploadPath, err)
+	}
+	if string(data) != string(sampleContent) {
+		t.Errorf("expected copied content %q, got %q", sampleContent, data)
+	}
+
+	foundInFilesWritten := false
+	for _, f := range result.FilesWritten {
+		if strings.Contains(f, sampleUploadName) {
+			foundInFilesWritten = true
+			break
+		}
+	}
+	if !foundInFilesWritten {
+		t.Errorf("expected %s in result.FilesWritten", sampleUploadName)
+	}
+}

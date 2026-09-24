@@ -24,6 +24,7 @@ func main() {
 
 	port := flag.String("port", defaultPort, "HTTP server port")
 	dbPath := flag.String("db", "invito.db", "Path to SQLite database file")
+	uploadsDir := flag.String("uploads", "uploads", "Path to directory for user-uploaded media files")
 	exportDir := flag.String("export", "", "Export invitations to static HTML/CSS bundle in specified directory (e.g. '_demo')")
 	createZip := flag.Bool("zip", false, "When exporting, also bundle the static files into a .zip archive")
 	seedDir := flag.String("seed", "seed", "Path to seed directory containing invitation JSON files")
@@ -33,7 +34,7 @@ func main() {
 
 	// If export flag is provided, run SSG exporter and exit
 	if *exportDir != "" {
-		runSSGExport(*exportDir, *seedDir, *slug, *createZip, !*noIndex)
+		runSSGExport(*exportDir, *seedDir, *slug, *createZip, !*noIndex, *uploadsDir)
 		return
 	}
 
@@ -50,6 +51,7 @@ func main() {
 		SeedDir:      *seedDir,
 		DatabasePath: *dbPath,
 		Store:        sqliteStore,
+		UploadsDir:   *uploadsDir,
 	})
 	if err != nil {
 		log.Fatalf("Failed to initialize server: %v", err)
@@ -70,6 +72,7 @@ func main() {
 	go func() {
 		fmt.Printf("✦ Invito server is listening at http://localhost:%s\n", *port)
 		fmt.Printf("✦ Health status endpoint: http://localhost:%s/health\n", *port)
+		fmt.Printf("✦ Uploaded media directory: %s (served at /uploads/)\n", *uploadsDir)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Server error: %v", err)
 		}
@@ -88,16 +91,18 @@ func main() {
 	log.Println("Server exited cleanly.")
 }
 
-func runSSGExport(outputDir, seedDir, targetSlug string, createZip, includeLanding bool) {
+func runSSGExport(outputDir, seedDir, targetSlug string, createZip, includeLanding bool, uploadsDir string) {
 	fmt.Printf("✦ Starting Invito Static Site Exporter (SSG)...\n")
 	fmt.Printf("  • Target directory : %s\n", outputDir)
 	fmt.Printf("  • Seed directory   : %s\n", seedDir)
+	fmt.Printf("  • Uploads directory: %s\n", uploadsDir)
 	fmt.Printf("  • Landing page     : %t\n", includeLanding)
 	fmt.Printf("  • Create ZIP       : %t\n", createZip)
 
 	generator, err := ssg.New(ssg.Config{
 		OutputDir:          outputDir,
 		SeedDir:            seedDir,
+		UploadsDir:         uploadsDir,
 		IncludeLandingPage: includeLanding,
 		CleanOutputDir:     true,
 		CreateZip:          createZip,

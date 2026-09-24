@@ -25,6 +25,7 @@ type Config struct {
 	CleanOutputDir     bool   // If true, clears the output directory before exporting (default true)
 	CreateZip          bool   // If true, creates a .zip archive of the exported bundle
 	ZipPath            string // Optional custom path for the zip archive (default "<OutputDir>.zip")
+	UploadsDir         string // Optional directory containing user-uploaded assets (default "uploads")
 }
 
 // Result summarizes the static site generation output.
@@ -105,6 +106,11 @@ func (g *Generator) ExportAll() (*Result, error) {
 		return nil, fmt.Errorf("failed to copy static assets: %w", err)
 	}
 
+	// 2b. Copy user-uploaded assets if present
+	if err := g.copyUploadsStatic(res); err != nil {
+		return nil, fmt.Errorf("failed to copy uploaded assets: %w", err)
+	}
+
 	// 3. Render and export each invitation
 	invitations, err := g.store.ListInvitations()
 	if err != nil {
@@ -167,6 +173,11 @@ func (g *Generator) ExportInvitation(slug string) (*Result, error) {
 		return nil, fmt.Errorf("failed to copy static assets: %w", err)
 	}
 
+	// Copy uploaded assets if present
+	if err := g.copyUploadsStatic(res); err != nil {
+		return nil, fmt.Errorf("failed to copy uploaded assets: %w", err)
+	}
+
 	// Export invitation
 	if err := g.exportSingleInvitation(inv, res); err != nil {
 		return nil, fmt.Errorf("failed to export invitation: %w", err)
@@ -219,6 +230,51 @@ func (g *Generator) copyEmbeddedStatic(res *Result) error {
 		}
 
 		res.FilesWritten = append(res.FilesWritten, path)
+		res.TotalBytes += int64(len(content))
+		return nil
+	})
+}
+
+// copyUploadsStatic copies user-uploaded assets from the uploads directory into <OutputDir>/uploads if it exists.
+func (g *Generator) copyUploadsStatic(res *Result) error {
+	uploadsDir := g.config.UploadsDir
+	if uploadsDir == "" {
+		uploadsDir = "uploads"
+	}
+
+	info, err := os.Stat(uploadsDir)
+	if err != nil || !info.IsDir() {
+		return nil
+	}
+
+	return filepath.WalkDir(uploadsDir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() {
+			return nil
+		}
+
+		rel, err := filepath.Rel(uploadsDir, path)
+		if err != nil {
+			return err
+		}
+
+		content, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("failed to read uploaded file %s: %w", path, err)
+		}
+
+		targetPath := filepath.Join(g.config.OutputDir, "uploads", rel)
+		if err := os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
+			return fmt.Errorf("failed to create parent dir for %s: %w", targetPath, err)
+		}
+
+		if err := os.WriteFile(targetPath, content, 0644); err != nil {
+			return fmt.Errorf("failed to write %s: %w", targetPath, err)
+		}
+
+		res.FilesWritten = append(res.FilesWritten, filepath.Join("uploads", rel))
 		res.TotalBytes += int64(len(content))
 		return nil
 	})

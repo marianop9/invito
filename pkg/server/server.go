@@ -3,9 +3,12 @@ package server
 import (
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -26,14 +29,17 @@ type Config struct {
 	SeedDir      string
 	DatabasePath string
 	Store        storage.Store
+	UploadsDir   string
+	MediaStorage storage.MediaStorage
 }
 
 // Server wraps the chi router, template renderer, and storage engine.
 type Server struct {
-	router   *chi.Mux
-	renderer *renderer.Renderer
-	store    storage.Store
-	config   Config
+	router       *chi.Mux
+	renderer     *renderer.Renderer
+	store        storage.Store
+	mediaStorage storage.MediaStorage
+	config       Config
 }
 
 // New creates and configures a new Server instance.
@@ -61,11 +67,23 @@ func New(cfg Config) (*Server, error) {
 		store = s
 	}
 
+	var mediaStorage storage.MediaStorage
+	if cfg.MediaStorage != nil {
+		mediaStorage = cfg.MediaStorage
+	} else {
+		uploadsDir := cfg.UploadsDir
+		if uploadsDir == "" {
+			uploadsDir = "uploads"
+		}
+		mediaStorage = storage.NewLocalMediaStorage(uploadsDir, "/uploads")
+	}
+
 	s := &Server{
-		router:   chi.NewRouter(),
-		renderer: rnd,
-		store:    store,
-		config:   cfg,
+		router:       chi.NewRouter(),
+		renderer:     rnd,
+		store:        store,
+		mediaStorage: mediaStorage,
+		config:       cfg,
 	}
 
 	s.setupMiddlewares()
@@ -105,7 +123,11 @@ func (s *Server) setupRoutes() {
 		r.Get("/invitations", s.handleAPIListInvitations)
 		r.Get("/invitations/{slug}", s.handleAPIGetInvitation)
 		r.Get("/invitations/{slug}/rsvps", s.handleAPIListRSVPs)
+		r.Post("/upload", s.handleAPIUpload)
 	})
+
+	// Uploaded Media Serving Route
+	s.router.Get("/uploads/*", s.handleServeUpload)
 
 	// Admin Planner Dashboard Routes
 	s.router.Route("/admin", func(r chi.Router) {
@@ -309,6 +331,109 @@ func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 		"templates":   templateCount,
 		"environment": "prototype",
 	})
+}
+
+// handleAPIUpload handles multipart image uploads for invitations.
+func (s *Server) handleAPIUpload(w http.ResponseWriter, r *http.Request) {
+	const maxUploadSize = 10 * 1024 * 1024
+	r.Body = http.MaxBytesReader(w, r.Body, maxUploadSize+512*1024)
+
+	if err := r.ParseMultipartForm(maxUploadSize); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		if strings.Contains(strings.ToLower(err.Error()), "request body too large") {
+			w.WriteHeader(http.StatusRequestEntityTooLarge)
+			_ = json.NewEncoder(w).Encode(map[string]string{
+				"error": "File size exceeds maximum allowed size of 10MB",
+			})
+			return
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"error": fmt.Sprintf("Failed to parse multipart form: %v", err),
+		})
+		return
+	}
+
+	file, header, err := r.FormFile("image")
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"error": "Missing 'image' file field in multipart form data",
+		})
+		return
+	}
+	defer file.Close()
+
+	slug := r.FormValue("slug")
+	if slug == "" {
+		slug = r.URL.Query().Get("slug")
+	}
+
+	info, err := s.mediaStorage.Save(r.Context(), storage.SaveMediaInput{
+		Slug:         slug,
+		OriginalName: header.Filename,
+		ContentType:  header.Header.Get("Content-Type"),
+		Reader:       file,
+		Size:         header.Size,
+	})
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		switch {
+		case errors.Is(err, storage.ErrFileTooLarge):
+			w.WriteHeader(http.StatusRequestEntityTooLarge)
+			_ = json.NewEncoder(w).Encode(map[string]string{
+				"error": err.Error(),
+			})
+		case errors.Is(err, storage.ErrInvalidMediaType):
+			w.WriteHeader(http.StatusUnsupportedMediaType)
+			_ = json.NewEncoder(w).Encode(map[string]string{
+				"error": err.Error(),
+			})
+		case errors.Is(err, storage.ErrEmptyFile):
+			w.WriteHeader(http.StatusBadRequest)
+			_ = json.NewEncoder(w).Encode(map[string]string{
+				"error": err.Error(),
+			})
+		default:
+			w.WriteHeader(http.StatusInternalServerError)
+			_ = json.NewEncoder(w).Encode(map[string]string{
+				"error": fmt.Sprintf("Failed to save media: %v", err),
+			})
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(info)
+}
+
+// handleServeUpload safely serves uploaded assets from the media storage directory.
+func (s *Server) handleServeUpload(w http.ResponseWriter, r *http.Request) {
+	subPath := chi.URLParam(r, "*")
+	subPath = filepath.Clean(subPath)
+	if subPath == "." || subPath == "/" || strings.HasPrefix(subPath, "..") {
+		http.NotFound(w, r)
+		return
+	}
+
+	localMedia, ok := s.mediaStorage.(*storage.LocalMediaStorage)
+	if !ok {
+		http.NotFound(w, r)
+		return
+	}
+
+	fullPath := filepath.Join(localMedia.BaseDir(), subPath)
+	stat, err := os.Stat(fullPath)
+	if err != nil || stat.IsDir() {
+		http.NotFound(w, r)
+		return
+	}
+
+	w.Header().Set("Cache-Control", "public, max-age=86400")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	http.ServeFile(w, r, fullPath)
 }
 
 // Router returns the configured chi.Mux.

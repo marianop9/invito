@@ -114,7 +114,7 @@ flowchart LR
   - Complete automated test suite using `:memory:`.
 
 ### Iteration 2: RSVP Admin Dashboard & CSV Export
-- **Status**: 🎯 **Ready to Implement** (See [`docs/plans/iteration-2-rsvp-dashboard.md`](file:///home/nano/projects/invitation/docs/plans/iteration-2-rsvp-dashboard.md))
+- **Status**: ✅ **Completed** (See [`docs/plans/iteration-2-rsvp-dashboard.md`](file:///home/nano/projects/invitation/docs/plans/iteration-2-rsvp-dashboard.md))
 - **Scope**:
   - Events management list at `GET /admin`.
   - RSVP tracking dashboard at `GET /admin/invitations/{slug}/rsvps` with KPI cards (Responses, Attendees, Headcount, Dietary alerts) and guest table.
@@ -122,12 +122,13 @@ flowchart LR
   - RFC 4180 CSV download at `GET /admin/invitations/{slug}/rsvps.csv`.
 
 ### Iteration 3: Local Image Upload Pipeline
-- **Status**: ⏳ **Pending**
+- **Status**: ✅ **Completed** (See [`docs/plans/iteration-3-image-upload.md`](file:///home/nano/projects/invitation/docs/plans/iteration-3-image-upload.md))
 - **Scope**:
-  - Endpoint `POST /api/upload` accepting multipart image files (JPEG, PNG, WebP, GIF) up to 10MB.
-  - Storage in `./uploads/` directory with collision-resistant filenames (`{slug}-{timestamp}-{rand}.webp`).
-  - Static file route `GET /uploads/*` serving uploaded assets.
-  - ImageStorage abstraction allowing seamless swap to AWS S3 or Cloudflare R2 if deployed to cloud in the future.
+  - Endpoint `POST /api/upload` accepting multipart image files (JPEG, PNG, WebP, GIF) up to 10MB using form field `image`.
+  - Storage in `./uploads/` directory with collision-resistant filenames (`{slug}-{timestamp}-{rand}.{ext}`).
+  - Static file route `GET /uploads/*` serving uploaded assets with caching and security headers.
+  - `MediaStorage` interface abstraction allowing seamless swap to AWS S3 or Cloudflare R2 in the future.
+  - Bundling into static site export via `ssg.Config.UploadsDir`.
 
 ### Iteration 4: Invitation Creation & Editing Form (Builder) + Live Preview
 - **Status**: ⏳ **Pending**

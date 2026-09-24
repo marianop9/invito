@@ -75,11 +75,16 @@
   - [x] Auto-migrations for `invitations` and `rsvps` tables.
   - [x] Auto-seed default templates on first boot.
   - [x] Deprecate and remove volatile `MemoryStore`.
-- [ ] **Interactive Split-Screen Preview / Sandbox (`/preview`)**:
+- [x] **Host Admin Dashboard (`/admin/invitations/{slug}/rsvps`)**:
+  - [x] Guest list table with confirmed attendees, declines, and dietary requirements.
+  - [x] CSV export endpoint (`GET /admin/invitations/{slug}/rsvps.csv`).
+- [x] **Local Image Upload Pipeline (`/api/upload`)**:
+  - [x] Multipart image upload supporting JPEG, PNG, WebP, GIF up to 10MB.
+  - [x] Collision-resistant filenames (`{slug}-{timestamp}-{rand}.{ext}`) and local `./uploads/` directory.
+  - [x] Static file route `GET /uploads/*` with security and cache headers.
+  - [x] `MediaStorage` interface abstraction for local and cloud storage.
+- [ ] **Interactive Split-Screen Preview / Sandbox (`/preview` & `/admin/invitations/new`)**:
   - [ ] Live visual editor + raw JSON editor with simulated mobile viewport.
-- [ ] **Host Admin Dashboard (`/admin/invitations/{slug}/rsvps`)**:
-  - [ ] Guest list table with confirmed attendees, declines, and dietary requirements.
-  - [ ] CSV export endpoint (`GET /api/invitations/{slug}/rsvps.csv`).
 - [ ] **Visual Iconography Enhancements**:
   - [ ] Inline SVG icons for timeline event types (rings, toast, dinner, music).
 
