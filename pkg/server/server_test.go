@@ -342,6 +342,17 @@ func TestServerEndpoints(t *testing.T) {
 		if !strings.Contains(body, "admin_editor.js") {
 			t.Errorf("expected admin_editor.js script tag in body")
 		}
+		if !strings.Contains(body, "alpine.min.js") {
+			t.Errorf("expected alpine.min.js script tag in body")
+		}
+
+		// Also verify static vendor script is served correctly
+		reqStatic := httptest.NewRequest(http.MethodGet, "/static/js/vendor/alpine.min.js", nil)
+		recStatic := httptest.NewRecorder()
+		srv.Router().ServeHTTP(recStatic, reqStatic)
+		if recStatic.Code != http.StatusOK {
+			t.Errorf("expected status 200 for vendored alpine.min.js, got %d", recStatic.Code)
+		}
 	})
 
 	t.Run("GET /admin/invitations/{slug}/edit renders editor with existing event", func(t *testing.T) {

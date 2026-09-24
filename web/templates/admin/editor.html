@@ -1,330 +1,725 @@
 {{ template "header.html" . }}
 
-<div class="admin-breadcrumb">
-  <a href="/admin" class="back-link" id="link-back-events">&larr; Back to Events Overview</a>
-</div>
-
-<div class="admin-page-header">
-  <div>
-    <h1 class="admin-title" id="page-editor-title">{{ .Title }}</h1>
-    <div class="admin-subtitle">
-      <span class="badge {{ if .IsNew }}badge-warning{{ else }}badge-success{{ end }}" id="editor-status-badge">
-        {{ if .IsNew }}✦ New Draft{{ else }}✓ Saved in Database{{ end }}
-      </span>
-      <span>&bull;</span>
-      <span id="preview-sync-status" style="font-size: 0.8125rem; color: var(--text-muted);">Live preview synced</span>
-    </div>
+<div class="admin-editor-studio" x-data="invitationEditor()">
+  <div class="admin-breadcrumb">
+    <a href="/admin" class="back-link" id="link-back-events">&larr; Back to Events Overview</a>
   </div>
-  <div class="admin-header-actions">
-    <a href="/admin" class="btn btn-secondary" id="btn-cancel-editor">Cancel</a>
-    {{ if not .IsNew }}
-      <a href="/i/{{ .Invitation.Slug }}" class="btn btn-secondary" id="btn-view-live-pass" target="_blank" rel="noopener noreferrer">
+
+  <div class="admin-page-header">
+    <div>
+      <h1 class="admin-title" id="page-editor-title" x-text="isNew ? 'New Invitation' : ('Edit: ' + (invitation.title || 'Untitled'))">{{ .Title }}</h1>
+      <div class="admin-subtitle">
+        <span class="badge" :class="isNew ? 'badge-warning' : 'badge-success'" id="editor-status-badge" x-text="isNew ? '✦ New Draft' : '✓ Saved in Database'">
+          {{ if .IsNew }}✦ New Draft{{ else }}✓ Saved in Database{{ end }}
+        </span>
+        <span>&bull;</span>
+        <span id="preview-sync-status" x-text="syncStatus" style="font-size: 0.8125rem; color: var(--text-muted);">Live preview synced</span>
+      </div>
+    </div>
+    <div class="admin-header-actions">
+      <a href="/admin" class="btn btn-secondary" id="btn-cancel-editor">Cancel</a>
+      <a :href="'/i/' + invitation.slug" class="btn btn-secondary" id="btn-view-live-pass" target="_blank" rel="noopener noreferrer" x-show="!isNew && invitation.slug" style="display: none;">
         Open Pass &nearr;
       </a>
-      <button type="button" class="btn btn-secondary" id="btn-delete-invitation" style="color: hsl(0, 65%, 45%);" title="Delete event">
+      <button type="button" class="btn btn-secondary" id="btn-delete-invitation" x-show="!isNew" @click="deleteInvitation()" style="color: hsl(0, 65%, 45%); display: none;" title="Delete event">
         🗑 Delete
       </button>
-    {{ end }}
-    <button type="button" class="btn btn-primary" id="btn-save-invitation">
-      <span id="save-spinner" style="display: none;">⏳ </span>
-      <span id="save-label">Save Invitation</span>
-    </button>
+      <button type="button" class="btn btn-primary" id="btn-save-invitation" @click="save()" :disabled="saving">
+        <span id="save-spinner" x-show="saving" style="display: none;">⏳ </span>
+        <span id="save-label" x-text="saving ? 'Saving...' : 'Save Invitation'">Save Invitation</span>
+      </button>
+    </div>
   </div>
-</div>
 
-<!-- Validation Error Alert Container -->
-<div id="validation-alert" class="admin-alert admin-alert-danger" style="display: none;">
-  <div class="alert-icon">⚠️</div>
-  <div class="alert-content">
-    <h4 id="validation-alert-title">Please correct the following errors:</h4>
-    <ul id="validation-alert-list" style="margin: 0.35rem 0 0 1.25rem; padding: 0;"></ul>
+  <!-- Validation Error Alert Container -->
+  <div id="validation-alert" class="admin-alert admin-alert-danger" x-show="errors.length > 0" style="display: none;" x-transition>
+    <div class="alert-icon">⚠️</div>
+    <div class="alert-content">
+      <h4 id="validation-alert-title">Please correct the following errors:</h4>
+      <ul id="validation-alert-list" style="margin: 0.35rem 0 0 1.25rem; padding: 0;">
+        <template x-for="(err, idx) in errors" :key="idx">
+          <li x-text="err"></li>
+        </template>
+      </ul>
+    </div>
   </div>
-</div>
 
-<!-- Success Toast Banner -->
-<div id="success-toast" class="admin-alert admin-alert-success" style="display: none;">
-  <div class="alert-icon">✅</div>
-  <div class="alert-content">
-    <strong id="success-toast-message">Invitation saved successfully!</strong>
+  <!-- Success Toast Banner -->
+  <div id="success-toast" class="admin-alert admin-alert-success" x-show="successMessage" style="display: none;" x-transition>
+    <div class="alert-icon">✅</div>
+    <div class="alert-content">
+      <strong id="success-toast-message" x-text="successMessage">Invitation saved successfully!</strong>
+    </div>
   </div>
-</div>
 
-<!-- Split-Screen Builder Studio Layout -->
-<div class="builder-layout">
-  <!-- Left Column: Form Controls Pane -->
-  <div class="builder-form-pane">
-    <form id="invitation-form" novalidate onsubmit="return false;">
-      
-      <!-- Card 1: Event Basics -->
-      <section class="builder-card">
-        <h2 class="builder-card-title">1. Event Basics</h2>
-        <p class="builder-card-subtitle">General event title, URL slug, schedule timing, and hosts.</p>
+  <!-- Split-Screen Builder Studio Layout -->
+  <div class="builder-layout">
+    <!-- Left Column: Form Controls Pane -->
+    <div class="builder-form-pane">
+      <form id="invitation-form" novalidate onsubmit="return false;">
+        
+        <!-- Card 1: Event Basics -->
+        <section class="builder-card">
+          <h2 class="builder-card-title">1. Event Basics</h2>
+          <p class="builder-card-subtitle">General event title, URL slug, schedule timing, and hosts.</p>
 
-        <div class="form-grid">
-          <div class="form-group col-12">
-            <label for="field-title" class="form-label required">Event Title</label>
-            <input type="text" id="field-title" class="form-input" placeholder="e.g. Sarah & Alex Wedding" required autocomplete="off">
-          </div>
-
-          <div class="form-group col-12">
-            <label for="field-slug" class="form-label required">
-              URL Slug
-              <span class="form-label-hint">Pass will be accessible at <code>/i/<span id="slug-hint-text">slug</span></code></span>
-            </label>
-            <div class="slug-input-wrapper">
-              <span class="slug-prefix">/i/</span>
-              <input type="text" id="field-slug" class="form-input slug-input" placeholder="sarah-and-alex-wedding" required autocomplete="off" {{ if not .IsNew }}readonly{{ end }}>
-              {{ if not .IsNew }}
-                <span class="slug-locked-icon" title="Slug cannot be changed once created to prevent broken invitation URLs">🔒 Locked</span>
-              {{ end }}
-            </div>
-          </div>
-
-          <div class="form-group col-12">
-            <label for="field-subtitle" class="form-label">Subtitle / Invitation Greeting</label>
-            <input type="text" id="field-subtitle" class="form-input" placeholder="e.g. Request the pleasure of your company to celebrate their marriage">
-          </div>
-
-          <div class="form-group col-12">
-            <label for="field-hosts" class="form-label">Hosts / Organizers</label>
-            <input type="text" id="field-hosts" class="form-input" placeholder="e.g. Sarah Jenkins, Alexander Hayes (comma-separated)">
-          </div>
-
-          <div class="form-group col-12">
-            <label for="field-description" class="form-label">Description / Summary</label>
-            <textarea id="field-description" class="form-textarea" rows="2" placeholder="Brief event summary for messaging and calendar invites..."></textarea>
-          </div>
-
-          <div class="form-group col-6">
-            <label for="field-date-start" class="form-label required">Start Date & Time</label>
-            <input type="datetime-local" id="field-date-start" class="form-input" required>
-          </div>
-
-          <div class="form-group col-6">
-            <label for="field-date-end" class="form-label">End Date & Time (Optional)</label>
-            <input type="datetime-local" id="field-date-end" class="form-input">
-          </div>
-
-          <div class="form-group col-12">
-            <label for="field-timezone" class="form-label">Event Timezone</label>
-            <input type="text" id="field-timezone" class="form-input" placeholder="e.g. America/New_York or UTC" list="timezones-list">
-            <datalist id="timezones-list">
-              <option value="America/New_York">
-              <option value="America/Chicago">
-              <option value="America/Denver">
-              <option value="America/Los_Angeles">
-              <option value="America/Argentina/Buenos_Aires">
-              <option value="America/Sao_Paulo">
-              <option value="Europe/London">
-              <option value="Europe/Paris">
-              <option value="Europe/Madrid">
-              <option value="Asia/Tokyo">
-              <option value="UTC">
-            </datalist>
-          </div>
-        </div>
-      </section>
-
-      <!-- Card 2: Venue & Location -->
-      <section class="builder-card">
-        <h2 class="builder-card-title">2. Venue & Location</h2>
-        <p class="builder-card-subtitle">Specify where guests should arrive and navigation details.</p>
-
-        <div class="form-grid">
-          <div class="form-group col-12">
-            <label for="field-loc-name" class="form-label required">Venue Name</label>
-            <input type="text" id="field-loc-name" class="form-input" placeholder="e.g. Willowbrook Botanical Estate" required>
-          </div>
-
-          <div class="form-group col-12">
-            <label for="field-loc-address" class="form-label required">Physical Street Address</label>
-            <input type="text" id="field-loc-address" class="form-input" placeholder="e.g. 450 Magnolia Lane, Charlottesville, VA" required>
-          </div>
-
-          <div class="form-group col-12">
-            <label for="field-loc-map-url" class="form-label">Google Maps Link</label>
-            <input type="url" id="field-loc-map-url" class="form-input" placeholder="https://maps.google.com/?q=...">
-          </div>
-
-          <div class="form-group col-12">
-            <label for="field-loc-directions" class="form-label">Directions & Parking Notes</label>
-            <input type="text" id="field-loc-directions" class="form-input" placeholder="e.g. Complimentary valet parking at the main entrance.">
-          </div>
-        </div>
-      </section>
-
-      <!-- Card 3: Visual Theme & Styling -->
-      <section class="builder-card">
-        <h2 class="builder-card-title">3. Visual Theme & Palette</h2>
-        <p class="builder-card-subtitle">Choose an artistic visual identity for the continuous canvas pass.</p>
-
-        <input type="hidden" id="field-theme-id" value="botanical-elegance">
-
-        <div class="theme-swatches-grid" id="theme-swatches-container">
-          <!-- Botanical Elegance -->
-          <div class="theme-swatch-card" data-theme="botanical-elegance">
-            <div class="swatch-header">
-              <div class="swatch-color-dots">
-                <span class="swatch-dot" style="background: #2A4738;"></span>
-                <span class="swatch-dot" style="background: #FBF8F3; border: 1px solid #ddd;"></span>
-                <span class="swatch-dot" style="background: #D4AF37;"></span>
-              </div>
-              <span class="swatch-check">✓</span>
-            </div>
-            <div class="swatch-name">Botanical Elegance</div>
-            <div class="swatch-vibe">Forest Sage, Cream & Warm Gold</div>
-          </div>
-
-          <!-- Golden Sunset -->
-          <div class="theme-swatch-card" data-theme="golden-sunset">
-            <div class="swatch-header">
-              <div class="swatch-color-dots">
-                <span class="swatch-dot" style="background: #A24B35;"></span>
-                <span class="swatch-dot" style="background: #FAF5EF; border: 1px solid #ddd;"></span>
-                <span class="swatch-dot" style="background: #E07A5F;"></span>
-              </div>
-              <span class="swatch-check">✓</span>
-            </div>
-            <div class="swatch-name">Golden Sunset</div>
-            <div class="swatch-vibe">Terracotta, Coral & Radiant Sand</div>
-          </div>
-
-          <!-- Midnight Soirée -->
-          <div class="theme-swatch-card" data-theme="midnight-soiree">
-            <div class="swatch-header">
-              <div class="swatch-color-dots">
-                <span class="swatch-dot" style="background: #0E121B;"></span>
-                <span class="swatch-dot" style="background: #1E2538;"></span>
-                <span class="swatch-dot" style="background: #94A3B8;"></span>
-              </div>
-              <span class="swatch-check">✓</span>
-            </div>
-            <div class="swatch-name">Midnight Soirée</div>
-            <div class="swatch-vibe">Deep Indigo, Night Sky & Starlight</div>
-          </div>
-
-          <!-- Modern Minimal -->
-          <div class="theme-swatch-card" data-theme="modern-minimal">
-            <div class="swatch-header">
-              <div class="swatch-color-dots">
-                <span class="swatch-dot" style="background: #1A1A1A;"></span>
-                <span class="swatch-dot" style="background: #F5F5F7; border: 1px solid #ddd;"></span>
-                <span class="swatch-dot" style="background: #737373;"></span>
-              </div>
-              <span class="swatch-check">✓</span>
-            </div>
-            <div class="swatch-name">Modern Minimal</div>
-            <div class="swatch-vibe">Monochrome, Clean Stone & Editorial</div>
-          </div>
-        </div>
-
-        <!-- Collapsible Palette Overrides -->
-        <details class="builder-details-accordion">
-          <summary class="builder-details-summary">Custom Palette Overrides (Optional)</summary>
-          <div class="details-content form-grid" style="padding-top: 1rem;">
-            <div class="form-group col-4">
-              <label for="field-palette-primary" class="form-label">Primary Color</label>
-              <input type="text" id="field-palette-primary" class="form-input" placeholder="#2A4738">
-            </div>
-            <div class="form-group col-4">
-              <label for="field-palette-bg" class="form-label">Background Color</label>
-              <input type="text" id="field-palette-bg" class="form-input" placeholder="#FBF8F3">
-            </div>
-            <div class="form-group col-4">
-              <label for="field-palette-accent" class="form-label">Accent Color</label>
-              <input type="text" id="field-palette-accent" class="form-input" placeholder="#D4AF37">
-            </div>
-            <div class="form-group col-6">
-              <label for="field-palette-text" class="form-label">Text Color</label>
-              <input type="text" id="field-palette-text" class="form-input" placeholder="#2C3531">
-            </div>
-            <div class="form-group col-6">
-              <label for="field-palette-card-bg" class="form-label">Card Background</label>
-              <input type="text" id="field-palette-card-bg" class="form-input" placeholder="#FFFFFF">
-            </div>
+          <div class="form-grid">
             <div class="form-group col-12">
-              <label for="field-custom-css" class="form-label">Custom CSS Overrides</label>
-              <textarea id="field-custom-css" class="form-textarea" rows="2" placeholder="/* Custom CSS rules injected into page header */"></textarea>
+              <label for="field-title" class="form-label required">Event Title</label>
+              <input type="text" id="field-title" class="form-input" placeholder="e.g. Sarah & Alex Wedding" required autocomplete="off" x-model="invitation.title" @input="onTitleInput()">
+            </div>
+
+            <div class="form-group col-12">
+              <label for="field-slug" class="form-label required">
+                URL Slug
+                <span class="form-label-hint">Pass will be accessible at <code>/i/<span id="slug-hint-text" x-text="invitation.slug || 'slug'">slug</span></code></span>
+              </label>
+              <div class="slug-input-wrapper">
+                <span class="slug-prefix">/i/</span>
+                <input type="text" id="field-slug" class="form-input slug-input" placeholder="sarah-and-alex-wedding" required autocomplete="off" x-model="invitation.slug" :readonly="!isNew" @input="manualSlug = true">
+                <span class="slug-locked-icon" x-show="!isNew" title="Slug cannot be changed once created to prevent broken invitation URLs" style="display: none;">🔒 Locked</span>
+              </div>
+            </div>
+
+            <div class="form-group col-12">
+              <label for="field-subtitle" class="form-label">Subtitle / Invitation Greeting</label>
+              <input type="text" id="field-subtitle" class="form-input" placeholder="e.g. Request the pleasure of your company to celebrate their marriage" x-model="invitation.subtitle">
+            </div>
+
+            <div class="form-group col-12">
+              <label for="field-hosts" class="form-label">Hosts / Organizers</label>
+              <input type="text" id="field-hosts" class="form-input" placeholder="e.g. Sarah Jenkins, Alexander Hayes (comma-separated)" x-model="hostsRaw">
+            </div>
+
+            <div class="form-group col-12">
+              <label for="field-description" class="form-label">Description / Summary</label>
+              <textarea id="field-description" class="form-textarea" rows="2" placeholder="Brief event summary for messaging and calendar invites..." x-model="invitation.description"></textarea>
+            </div>
+
+            <div class="form-group col-6">
+              <label for="field-date-start" class="form-label required">Start Date & Time</label>
+              <input type="datetime-local" id="field-date-start" class="form-input" required x-model="dateStartLocal">
+            </div>
+
+            <div class="form-group col-6">
+              <label for="field-date-end" class="form-label">End Date & Time (Optional)</label>
+              <input type="datetime-local" id="field-date-end" class="form-input" x-model="dateEndLocal">
+            </div>
+
+            <div class="form-group col-12">
+              <label for="field-timezone" class="form-label">Event Timezone</label>
+              <input type="text" id="field-timezone" class="form-input" placeholder="e.g. America/New_York or UTC" list="timezones-list" x-model="invitation.timezone">
+              <datalist id="timezones-list">
+                <option value="America/New_York">
+                <option value="America/Chicago">
+                <option value="America/Denver">
+                <option value="America/Los_Angeles">
+                <option value="America/Argentina/Buenos_Aires">
+                <option value="America/Sao_Paulo">
+                <option value="Europe/London">
+                <option value="Europe/Paris">
+                <option value="Europe/Madrid">
+                <option value="Asia/Tokyo">
+                <option value="UTC">
+              </datalist>
             </div>
           </div>
-        </details>
-      </section>
+        </section>
 
-      <!-- Card 4: Modular Section Blocks -->
-      <section class="builder-card">
-        <div class="builder-card-header-row">
-          <div>
-            <h2 class="builder-card-title">4. Modular Section Canvas</h2>
-            <p class="builder-card-subtitle">Assemble the invitation experience using modular building blocks.</p>
+        <!-- Card 2: Venue & Location -->
+        <section class="builder-card">
+          <h2 class="builder-card-title">2. Venue & Location</h2>
+          <p class="builder-card-subtitle">Specify where guests should arrive and navigation details.</p>
+
+          <div class="form-grid">
+            <div class="form-group col-12">
+              <label for="field-loc-name" class="form-label required">Venue Name</label>
+              <input type="text" id="field-loc-name" class="form-input" placeholder="e.g. Willowbrook Botanical Estate" required x-model="invitation.location.name">
+            </div>
+
+            <div class="form-group col-12">
+              <label for="field-loc-address" class="form-label required">Physical Street Address</label>
+              <input type="text" id="field-loc-address" class="form-input" placeholder="e.g. 450 Magnolia Lane, Charlottesville, VA" required x-model="invitation.location.address">
+            </div>
+
+            <div class="form-group col-12">
+              <label for="field-loc-map-url" class="form-label">Google Maps Link</label>
+              <input type="url" id="field-loc-map-url" class="form-input" placeholder="https://maps.google.com/?q=..." x-model="invitation.location.map_url">
+            </div>
+
+            <div class="form-group col-12">
+              <label for="field-loc-directions" class="form-label">Directions & Parking Notes</label>
+              <input type="text" id="field-loc-directions" class="form-input" placeholder="e.g. Complimentary valet parking at the main entrance." x-model="invitation.location.directions_note">
+            </div>
           </div>
-        </div>
+        </section>
 
-        <!-- Rendered Sections List -->
-        <div id="sections-container" class="sections-stack">
-          <!-- Dynamically populated by admin_editor.js -->
-        </div>
+        <!-- Card 3: Visual Theme & Styling -->
+        <section class="builder-card">
+          <h2 class="builder-card-title">3. Visual Theme & Palette</h2>
+          <p class="builder-card-subtitle">Choose an artistic visual identity for the continuous canvas pass.</p>
 
-        <!-- Add Section Toolbar -->
-        <div class="add-section-bar">
-          <div class="add-section-controls">
-            <label for="select-new-section-type" style="font-size: 0.8125rem; font-weight: 600; color: var(--text-secondary);">
-              + Add Section Block:
-            </label>
-            <select id="select-new-section-type" class="form-input" style="max-width: 240px;">
-              <option value="quote">Quote / Excerpt</option>
-              <option value="carousel">Photo Carousel</option>
-              <option value="timeline">Schedule / Timeline</option>
-              <option value="dress_code">Dress Code</option>
-              <option value="image">Single Image</option>
-              <option value="text">Text Announcement</option>
-              <option value="rsvp">Interactive RSVP Form</option>
-              <option value="rsvp_external">External RSVP Form Link</option>
-              <option value="faqs">Guest FAQs</option>
-              <option value="gift_registry">Gift Registry</option>
-              <option value="closing">Closing Sign-off</option>
-              <option value="hero">Hero Cover Card</option>
-              <option value="details">Details Quick Strip</option>
-            </select>
-            <button type="button" class="btn btn-secondary" id="btn-add-section">
-              + Add Block
-            </button>
+          <div class="theme-swatches-grid" id="theme-swatches-container">
+            <!-- Botanical Elegance -->
+            <div class="theme-swatch-card" :class="{ active: invitation.theme.id === 'botanical-elegance' }" @click="invitation.theme.id = 'botanical-elegance'">
+              <div class="swatch-header">
+                <div class="swatch-color-dots">
+                  <span class="swatch-dot" style="background: #2A4738;"></span>
+                  <span class="swatch-dot" style="background: #FBF8F3; border: 1px solid #ddd;"></span>
+                  <span class="swatch-dot" style="background: #D4AF37;"></span>
+                </div>
+                <span class="swatch-check">✓</span>
+              </div>
+              <div class="swatch-name">Botanical Elegance</div>
+              <div class="swatch-vibe">Forest Sage, Cream & Warm Gold</div>
+            </div>
+
+            <!-- Golden Sunset -->
+            <div class="theme-swatch-card" :class="{ active: invitation.theme.id === 'golden-sunset' }" @click="invitation.theme.id = 'golden-sunset'">
+              <div class="swatch-header">
+                <div class="swatch-color-dots">
+                  <span class="swatch-dot" style="background: #A24B35;"></span>
+                  <span class="swatch-dot" style="background: #FAF5EF; border: 1px solid #ddd;"></span>
+                  <span class="swatch-dot" style="background: #E07A5F;"></span>
+                </div>
+                <span class="swatch-check">✓</span>
+              </div>
+              <div class="swatch-name">Golden Sunset</div>
+              <div class="swatch-vibe">Terracotta, Coral & Radiant Sand</div>
+            </div>
+
+            <!-- Midnight Soirée -->
+            <div class="theme-swatch-card" :class="{ active: invitation.theme.id === 'midnight-soiree' }" @click="invitation.theme.id = 'midnight-soiree'">
+              <div class="swatch-header">
+                <div class="swatch-color-dots">
+                  <span class="swatch-dot" style="background: #0E121B;"></span>
+                  <span class="swatch-dot" style="background: #1E2538;"></span>
+                  <span class="swatch-dot" style="background: #94A3B8;"></span>
+                </div>
+                <span class="swatch-check">✓</span>
+              </div>
+              <div class="swatch-name">Midnight Soirée</div>
+              <div class="swatch-vibe">Deep Indigo, Night Sky & Starlight</div>
+            </div>
+
+            <!-- Modern Minimal -->
+            <div class="theme-swatch-card" :class="{ active: invitation.theme.id === 'modern-minimal' }" @click="invitation.theme.id = 'modern-minimal'">
+              <div class="swatch-header">
+                <div class="swatch-color-dots">
+                  <span class="swatch-dot" style="background: #1A1A1A;"></span>
+                  <span class="swatch-dot" style="background: #F5F5F7; border: 1px solid #ddd;"></span>
+                  <span class="swatch-dot" style="background: #737373;"></span>
+                </div>
+                <span class="swatch-check">✓</span>
+              </div>
+              <div class="swatch-name">Modern Minimal</div>
+              <div class="swatch-vibe">Monochrome, Clean Stone & Editorial</div>
+            </div>
           </div>
-        </div>
-      </section>
 
-    </form>
-  </div>
+          <!-- Collapsible Palette Overrides -->
+          <details class="builder-details-accordion">
+            <summary class="builder-details-summary">Custom Palette Overrides (Optional)</summary>
+            <div class="details-content form-grid" style="padding-top: 1rem;">
+              <div class="form-group col-4">
+                <label for="field-palette-primary" class="form-label">Primary Color</label>
+                <input type="text" id="field-palette-primary" class="form-input" placeholder="#2A4738" x-model="invitation.theme.palette_override.primary">
+              </div>
+              <div class="form-group col-4">
+                <label for="field-palette-bg" class="form-label">Background Color</label>
+                <input type="text" id="field-palette-bg" class="form-input" placeholder="#FBF8F3" x-model="invitation.theme.palette_override.background">
+              </div>
+              <div class="form-group col-4">
+                <label for="field-palette-accent" class="form-label">Accent Color</label>
+                <input type="text" id="field-palette-accent" class="form-input" placeholder="#D4AF37" x-model="invitation.theme.palette_override.accent">
+              </div>
+              <div class="form-group col-6">
+                <label for="field-palette-text" class="form-label">Text Color</label>
+                <input type="text" id="field-palette-text" class="form-input" placeholder="#2C3531" x-model="invitation.theme.palette_override.text">
+              </div>
+              <div class="form-group col-6">
+                <label for="field-palette-card-bg" class="form-label">Card Background</label>
+                <input type="text" id="field-palette-card-bg" class="form-input" placeholder="#FFFFFF" x-model="invitation.theme.palette_override.card_bg">
+              </div>
+              <div class="form-group col-12">
+                <label for="field-custom-css" class="form-label">Custom CSS Overrides</label>
+                <textarea id="field-custom-css" class="form-textarea" rows="2" placeholder="/* Custom CSS rules injected into page header */" x-model="invitation.theme.custom_css"></textarea>
+              </div>
+            </div>
+          </details>
+        </section>
 
-  <!-- Right Column: Sticky Live Preview Pane -->
-  <div class="builder-preview-pane">
-    <div class="preview-toolbar">
-      <div class="device-switcher" role="tablist">
-        <button type="button" class="device-btn active" data-device="mobile" id="btn-device-mobile" title="Mobile Pass Viewport (375px)">
-          📱 Mobile
-        </button>
-        <button type="button" class="device-btn" data-device="desktop" id="btn-device-desktop" title="Full Width Viewport">
-          💻 Desktop
-        </button>
-      </div>
+        <!-- Card 4: Modular Section Blocks -->
+        <section class="builder-card">
+          <div class="builder-card-header-row">
+            <div>
+              <h2 class="builder-card-title">4. Modular Section Canvas</h2>
+              <p class="builder-card-subtitle">Assemble the invitation experience using modular building blocks.</p>
+            </div>
+          </div>
 
-      <div class="preview-actions">
-        <button type="button" class="preview-action-btn" id="btn-refresh-preview" title="Refresh Live Preview">
-          🔄
-        </button>
-        <button type="button" class="preview-action-btn" id="btn-open-preview-tab" title="Open Preview in New Tab">
-          ↗
-        </button>
-      </div>
+          <!-- Rendered Sections List via Alpine x-for -->
+          <div id="sections-container" class="sections-stack">
+            <template x-if="invitation.sections.length === 0">
+              <div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted); background: var(--bg-subtle); border-radius: var(--radius-sm);">
+                No sections configured yet. Use the selector below to add blocks.
+              </div>
+            </template>
+
+            <template x-for="(sec, idx) in invitation.sections" :key="sec._uid || idx">
+              <div class="section-card">
+                <!-- Section Header -->
+                <div class="section-card-header">
+                  <div class="section-card-title-group">
+                    <span class="section-badge" x-text="sec.type"></span>
+                    <span class="section-label" x-text="getSectionLabel(sec.type)"></span>
+                  </div>
+                  <div class="section-card-actions">
+                    <button type="button" class="section-action-btn" title="Move Up" @click="moveSection(idx, -1)" :disabled="idx === 0" :style="idx === 0 ? 'opacity:0.4;cursor:default;' : ''">▲</button>
+                    <button type="button" class="section-action-btn" title="Move Down" @click="moveSection(idx, 1)" :disabled="idx === invitation.sections.length - 1" :style="idx === invitation.sections.length - 1 ? 'opacity:0.4;cursor:default;' : ''">▼</button>
+                    <button type="button" class="section-action-btn delete-btn" title="Remove Section" @click="removeSection(idx)">🗑</button>
+                  </div>
+                </div>
+
+                <!-- Section Body: Polymorphic Fields -->
+                <div class="section-card-body">
+
+                  <!-- 1. Hero Block -->
+                  <template x-if="sec.type === 'hero'">
+                    <div class="form-grid">
+                      <div class="form-group col-6">
+                        <label class="form-label">Layout Style</label>
+                        <select class="form-input" x-model="sec.layout">
+                          <option value="full-bleed">Full-Bleed Cover</option>
+                          <option value="banner">Split Banner</option>
+                        </select>
+                      </div>
+                      <div class="form-group col-6">
+                        <label class="form-label">Eyebrow Tag</label>
+                        <input type="text" class="form-input" placeholder="e.g. Wedding Celebration" x-model="sec.eyebrow">
+                      </div>
+                      <div class="form-group col-12">
+                        <label class="form-label">Vibe / Tagline</label>
+                        <input type="text" class="form-input" placeholder="e.g. An intimate evening of vows and dinner" x-model="sec.vibe">
+                      </div>
+                      <div class="form-group col-12">
+                        <label class="form-label">Hero Cover Image URL</label>
+                        <div class="image-upload-wrapper">
+                          <div class="image-upload-row">
+                            <input type="text" class="form-input" placeholder="/uploads/... or https://..." x-model="sec.cover_image_url">
+                            <label class="upload-btn-label">
+                              <span>📷 Upload</span>
+                              <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;" @change="uploadFile($event, sec, 'cover_image_url')">
+                            </label>
+                          </div>
+                          <img :src="sec.cover_image_url" class="image-upload-thumb" x-show="sec.cover_image_url" style="display:none;">
+                        </div>
+                      </div>
+                      <div class="form-group col-12" style="flex-direction:row; align-items:center; gap:0.5rem; margin-top:0.25rem;">
+                        <input type="checkbox" :id="'hero-countdown-' + (sec._uid || idx)" x-model="sec.show_countdown">
+                        <label :for="'hero-countdown-' + (sec._uid || idx)" class="form-label" style="margin-bottom:0;cursor:pointer;">Show Countdown Clock</label>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- 2. Details Quick Strip -->
+                  <template x-if="sec.type === 'details'">
+                    <div class="form-grid">
+                      <div class="form-group col-6" style="flex-direction:row; align-items:center; gap:0.5rem;">
+                        <input type="checkbox" :id="'details-map-' + (sec._uid || idx)" x-model="sec.show_map_link">
+                        <label :for="'details-map-' + (sec._uid || idx)" class="form-label" style="margin-bottom:0;cursor:pointer;">Show Google Maps Link</label>
+                      </div>
+                      <div class="form-group col-6" style="flex-direction:row; align-items:center; gap:0.5rem;">
+                        <input type="checkbox" :id="'details-cal-' + (sec._uid || idx)" x-model="sec.show_calendar_button">
+                        <label :for="'details-cal-' + (sec._uid || idx)" class="form-label" style="margin-bottom:0;cursor:pointer;">Show Add to Calendar Button</label>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- 3. Quote Block -->
+                  <template x-if="sec.type === 'quote'">
+                    <div class="form-grid">
+                      <div class="form-group col-12">
+                        <label class="form-label required">Quote Text</label>
+                        <textarea class="form-textarea" rows="2" placeholder="e.g. Whatever our souls are made of, his and mine are the same." x-model="sec.text"></textarea>
+                      </div>
+                      <div class="form-group col-12">
+                        <label class="form-label">Author / Attribution</label>
+                        <input type="text" class="form-input" placeholder="e.g. Emily Brontë" x-model="sec.author">
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- 4. Text Announcement Block -->
+                  <template x-if="sec.type === 'text'">
+                    <div class="form-grid">
+                      <div class="form-group col-8">
+                        <label class="form-label">Announcement Title</label>
+                        <input type="text" class="form-input" placeholder="e.g. Guest Accommodations" x-model="sec.title">
+                      </div>
+                      <div class="form-group col-4">
+                        <label class="form-label">Text Alignment</label>
+                        <select class="form-input" x-model="sec.align">
+                          <option value="left">Left</option>
+                          <option value="center">Center</option>
+                          <option value="right">Right</option>
+                        </select>
+                      </div>
+                      <div class="form-group col-12">
+                        <label class="form-label required">Message Content</label>
+                        <textarea class="form-textarea" rows="3" placeholder="Inform guests about parking, lodging, or transport..." x-model="sec.text"></textarea>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- 5. Single Image Block -->
+                  <template x-if="sec.type === 'image'">
+                    <div class="form-grid">
+                      <div class="form-group col-12">
+                        <label class="form-label required">Photo Image URL</label>
+                        <div class="image-upload-wrapper">
+                          <div class="image-upload-row">
+                            <input type="text" class="form-input" placeholder="/uploads/... or https://..." x-model="sec.url">
+                            <label class="upload-btn-label">
+                              <span>📷 Upload</span>
+                              <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;" @change="uploadFile($event, sec, 'url')">
+                            </label>
+                          </div>
+                          <img :src="sec.url" class="image-upload-thumb" x-show="sec.url" style="display:none;">
+                        </div>
+                      </div>
+                      <div class="form-group col-6">
+                        <label class="form-label">Caption</label>
+                        <input type="text" class="form-input" placeholder="Optional photo caption" x-model="sec.caption">
+                      </div>
+                      <div class="form-group col-6">
+                        <label class="form-label">Alt Text</label>
+                        <input type="text" class="form-input" placeholder="Accessibility description" x-model="sec.alt">
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- 6. Photo Carousel Block -->
+                  <template x-if="sec.type === 'carousel'">
+                    <div class="form-grid">
+                      <div class="form-group col-6">
+                        <label class="form-label">Gallery Title</label>
+                        <input type="text" class="form-input" placeholder="e.g. Our Story" x-model="sec.title">
+                      </div>
+                      <div class="form-group col-3">
+                        <label class="form-label">Aspect Ratio</label>
+                        <select class="form-input" x-model="sec.aspect_ratio">
+                          <option value="4-3">4:3 Standard</option>
+                          <option value="16-9">16:9 Landscape</option>
+                          <option value="1-1">1:1 Square</option>
+                          <option value="4-5">4:5 Portrait</option>
+                        </select>
+                      </div>
+                      <div class="form-group col-3">
+                        <label class="form-label">Fit Mode</label>
+                        <select class="form-input" x-model="sec.fit">
+                          <option value="cover">Cover (Crop)</option>
+                          <option value="contain">Contain</option>
+                        </select>
+                      </div>
+                      <div class="form-group col-12">
+                        <label class="form-label">Gallery Photos</label>
+                        <div class="sub-items-stack">
+                          <template x-for="(img, imgIdx) in sec.images" :key="img._uid || imgIdx">
+                            <div class="sub-item-card form-grid">
+                              <button type="button" class="sub-item-remove-btn" title="Remove Photo" @click="sec.images.splice(imgIdx, 1)">&times;</button>
+                              <div class="form-group col-12">
+                                <label class="form-label required" x-text="'Photo #' + (imgIdx + 1) + ' URL'"></label>
+                                <div class="image-upload-wrapper">
+                                  <div class="image-upload-row">
+                                    <input type="text" class="form-input" placeholder="/uploads/... or https://..." x-model="img.url">
+                                    <label class="upload-btn-label">
+                                      <span>📷 Upload</span>
+                                      <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;" @change="uploadFile($event, img, 'url')">
+                                    </label>
+                                  </div>
+                                  <img :src="img.url" class="image-upload-thumb" x-show="img.url" style="display:none;">
+                                </div>
+                              </div>
+                              <div class="form-group col-6">
+                                <label class="form-label">Caption</label>
+                                <input type="text" class="form-input" placeholder="Caption" x-model="img.caption">
+                              </div>
+                              <div class="form-group col-6">
+                                <label class="form-label">Alt Text</label>
+                                <input type="text" class="form-input" placeholder="Alt text" x-model="img.alt">
+                              </div>
+                            </div>
+                          </template>
+                        </div>
+                        <button type="button" class="btn btn-secondary" style="margin-top: 0.5rem; font-size: 0.8125rem;" @click="addCarouselImage(sec)">
+                          + Add Photo to Gallery
+                        </button>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- 7. Timeline Block -->
+                  <template x-if="sec.type === 'timeline'">
+                    <div class="form-grid">
+                      <div class="form-group col-12">
+                        <label class="form-label">Schedule Section Title</label>
+                        <input type="text" class="form-input" placeholder="Schedule of Events" x-model="sec.title">
+                      </div>
+                      <div class="form-group col-12">
+                        <label class="form-label">Milestones</label>
+                        <div class="sub-items-stack">
+                          <template x-for="(item, itemIdx) in sec.items" :key="item._uid || itemIdx">
+                            <div class="sub-item-card form-grid">
+                              <button type="button" class="sub-item-remove-btn" title="Remove Milestone" @click="sec.items.splice(itemIdx, 1)">&times;</button>
+                              <div class="form-group col-3">
+                                <label class="form-label required">Time</label>
+                                <input type="text" class="form-input" placeholder="e.g. 4:00 PM" x-model="item.time">
+                              </div>
+                              <div class="form-group col-5">
+                                <label class="form-label required">Milestone Title</label>
+                                <input type="text" class="form-input" placeholder="e.g. Ceremony" x-model="item.title">
+                              </div>
+                              <div class="form-group col-4">
+                                <label class="form-label">Location / Note</label>
+                                <input type="text" class="form-input" placeholder="e.g. Conservatory Lawn" x-model="item.description">
+                              </div>
+                            </div>
+                          </template>
+                        </div>
+                        <button type="button" class="btn btn-secondary" style="margin-top: 0.5rem; font-size: 0.8125rem;" @click="addTimelineItem(sec)">
+                          + Add Milestone
+                        </button>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- 8. Dress Code Block -->
+                  <template x-if="sec.type === 'dress_code'">
+                    <div class="form-grid">
+                      <div class="form-group col-6">
+                        <label class="form-label">Section Title</label>
+                        <input type="text" class="form-input" placeholder="Dress Code" x-model="sec.title">
+                      </div>
+                      <div class="form-group col-6">
+                        <label class="form-label required">Attire Name</label>
+                        <input type="text" class="form-input" placeholder="e.g. Garden Formal" x-model="sec.name">
+                      </div>
+                      <div class="form-group col-12">
+                        <label class="form-label">Guideline Description</label>
+                        <textarea class="form-textarea" rows="2" placeholder="Suits or cocktail dresses. Outdoor footwear recommended." x-model="sec.description"></textarea>
+                      </div>
+                      <div class="form-group col-12">
+                        <label class="form-label">Suggested Palette Hints (Hex codes, comma-separated)</label>
+                        <input type="text" class="form-input" placeholder="#2A4738, #D4AF37, #EFEBE4" x-model="sec._palette_hints_raw">
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- 9. Interactive RSVP Form Block -->
+                  <template x-if="sec.type === 'rsvp'">
+                    <div class="form-grid">
+                      <div class="form-group col-6" style="flex-direction:row; align-items:center; gap:0.5rem;">
+                        <input type="checkbox" :id="'rsvp-enable-' + (sec._uid || idx)" x-model="sec.enabled">
+                        <label :for="'rsvp-enable-' + (sec._uid || idx)" class="form-label" style="margin-bottom:0;cursor:pointer;">Accept Interactive RSVPs</label>
+                      </div>
+                      <div class="form-group col-6">
+                        <label class="form-label">RSVP Deadline</label>
+                        <input type="datetime-local" class="form-input" x-model="sec._deadline_local">
+                      </div>
+                      <div class="form-group col-4">
+                        <label class="form-label">Max Party Size</label>
+                        <input type="number" class="form-input" min="1" max="10" x-model.number="sec.max_party_size">
+                      </div>
+                      <div class="form-group col-4" style="flex-direction:row; align-items:center; gap:0.5rem; margin-top:1.5rem;">
+                        <input type="checkbox" :id="'rsvp-dietary-' + (sec._uid || idx)" x-model="sec.ask_dietary">
+                        <label :for="'rsvp-dietary-' + (sec._uid || idx)" class="form-label" style="margin-bottom:0;cursor:pointer;">Ask Dietary Needs</label>
+                      </div>
+                      <div class="form-group col-4" style="flex-direction:row; align-items:center; gap:0.5rem; margin-top:1.5rem;">
+                        <input type="checkbox" :id="'rsvp-song-' + (sec._uid || idx)" x-model="sec.ask_song_request">
+                        <label :for="'rsvp-song-' + (sec._uid || idx)" class="form-label" style="margin-bottom:0;cursor:pointer;">Ask Song Request</label>
+                      </div>
+                      <div class="form-group col-12">
+                        <label class="form-label">Custom Note / RSVP Prompt</label>
+                        <input type="text" class="form-input" placeholder="Kindly RSVP by August 15th" x-model="sec.custom_note">
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- 10. External RSVP Block -->
+                  <template x-if="sec.type === 'rsvp_external'">
+                    <div class="form-grid">
+                      <div class="form-group col-6">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-input" placeholder="RSVP Confirmation" x-model="sec.title">
+                      </div>
+                      <div class="form-group col-6">
+                        <label class="form-label required">External Form URL</label>
+                        <input type="url" class="form-input" placeholder="https://forms.google.com/..." x-model="sec.form_url">
+                      </div>
+                      <div class="form-group col-6">
+                        <label class="form-label">Button Label</label>
+                        <input type="text" class="form-input" placeholder="Open RSVP Form ↗" x-model="sec.button_label">
+                      </div>
+                      <div class="form-group col-6">
+                        <label class="form-label">Deadline</label>
+                        <input type="datetime-local" class="form-input" x-model="sec._deadline_local">
+                      </div>
+                      <div class="form-group col-12">
+                        <label class="form-label">Prompt Message</label>
+                        <input type="text" class="form-input" placeholder="Please click below to register your attendance" x-model="sec.prompt">
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- 11. FAQs Block -->
+                  <template x-if="sec.type === 'faqs'">
+                    <div class="form-grid">
+                      <div class="form-group col-12">
+                        <label class="form-label">FAQs Title</label>
+                        <input type="text" class="form-input" placeholder="Information for Guests" x-model="sec.title">
+                      </div>
+                      <div class="form-group col-12">
+                        <label class="form-label">Questions & Answers</label>
+                        <div class="sub-items-stack">
+                          <template x-for="(faq, faqIdx) in sec.items" :key="faq._uid || faqIdx">
+                            <div class="sub-item-card form-grid">
+                              <button type="button" class="sub-item-remove-btn" title="Remove FAQ" @click="sec.items.splice(faqIdx, 1)">&times;</button>
+                              <div class="form-group col-12">
+                                <label class="form-label required">Question</label>
+                                <input type="text" class="form-input" placeholder="e.g. Are children invited?" x-model="faq.question">
+                              </div>
+                              <div class="form-group col-12">
+                                <label class="form-label required">Answer</label>
+                                <textarea class="form-textarea" rows="2" placeholder="e.g. We kindly request an adults-only celebration." x-model="faq.answer"></textarea>
+                              </div>
+                            </div>
+                          </template>
+                        </div>
+                        <button type="button" class="btn btn-secondary" style="margin-top: 0.5rem; font-size: 0.8125rem;" @click="addFAQItem(sec)">
+                          + Add Question
+                        </button>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- 12. Gift Registry Block -->
+                  <template x-if="sec.type === 'gift_registry'">
+                    <div class="form-grid">
+                      <div class="form-group col-12">
+                        <label class="form-label">Registry Message</label>
+                        <textarea class="form-textarea" rows="2" placeholder="Your presence is our present..." x-model="sec.message"></textarea>
+                      </div>
+                      <div class="form-group col-12">
+                        <label class="form-label">Registry Links</label>
+                        <div class="sub-items-stack">
+                          <template x-for="(link, linkIdx) in sec.links" :key="link._uid || linkIdx">
+                            <div class="sub-item-card form-grid">
+                              <button type="button" class="sub-item-remove-btn" title="Remove Link" @click="sec.links.splice(linkIdx, 1)">&times;</button>
+                              <div class="form-group col-5">
+                                <label class="form-label required">Store / Fund Label</label>
+                                <input type="text" class="form-input" placeholder="e.g. Crate & Barrel" x-model="link.label">
+                              </div>
+                              <div class="form-group col-7">
+                                <label class="form-label required">Registry Link URL</label>
+                                <input type="url" class="form-input" placeholder="https://..." x-model="link.url">
+                              </div>
+                            </div>
+                          </template>
+                        </div>
+                        <button type="button" class="btn btn-secondary" style="margin-top: 0.5rem; font-size: 0.8125rem;" @click="addRegistryLink(sec)">
+                          + Add Registry Link
+                        </button>
+                      </div>
+                    </div>
+                  </template>
+
+                  <!-- 13. Closing Sign-off Block -->
+                  <template x-if="sec.type === 'closing'">
+                    <div class="form-grid">
+                      <div class="form-group col-12">
+                        <label class="form-label">Heartfelt Message</label>
+                        <textarea class="form-textarea" rows="2" placeholder="We cannot wait to celebrate with you!" x-model="sec.message"></textarea>
+                      </div>
+                      <div class="form-group col-6">
+                        <label class="form-label">Sign-off</label>
+                        <input type="text" class="form-input" placeholder="With love & gratitude," x-model="sec.signoff">
+                      </div>
+                      <div class="form-group col-6">
+                        <label class="form-label">Display Hosts</label>
+                        <input type="text" class="form-input" placeholder="Sarah & Alexander" x-model="sec.hosts">
+                      </div>
+                    </div>
+                  </template>
+
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Add Section Toolbar -->
+          <div class="add-section-bar">
+            <div class="add-section-controls">
+              <label for="select-new-section-type" style="font-size: 0.8125rem; font-weight: 600; color: var(--text-secondary);">
+                + Add Section Block:
+              </label>
+              <select id="select-new-section-type" class="form-input" style="max-width: 240px;" x-model="selectedNewType">
+                <option value="quote">Quote / Excerpt</option>
+                <option value="carousel">Photo Carousel</option>
+                <option value="timeline">Schedule / Timeline</option>
+                <option value="dress_code">Dress Code</option>
+                <option value="image">Single Image</option>
+                <option value="text">Text Announcement</option>
+                <option value="rsvp">Interactive RSVP Form</option>
+                <option value="rsvp_external">External RSVP Form Link</option>
+                <option value="faqs">Guest FAQs</option>
+                <option value="gift_registry">Gift Registry</option>
+                <option value="closing">Closing Sign-off</option>
+                <option value="hero">Hero Cover Card</option>
+                <option value="details">Details Quick Strip</option>
+              </select>
+              <button type="button" class="btn btn-secondary" id="btn-add-section" @click="addSection(selectedNewType)">
+                + Add Block
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </form>
     </div>
 
-    <div class="preview-device-wrapper device-mobile" id="preview-wrapper">
-      <iframe id="preview-iframe" class="preview-iframe" title="Invitation Live Preview" sandbox="allow-scripts allow-same-origin"></iframe>
+    <!-- Right Column: Sticky Live Preview Pane -->
+    <div class="builder-preview-pane">
+      <div class="preview-toolbar">
+        <div class="device-switcher" role="tablist">
+          <button type="button" class="device-btn" :class="{ active: previewDevice === 'mobile' }" id="btn-device-mobile" @click="previewDevice = 'mobile'" title="Mobile Pass Viewport (375px)">
+            📱 Mobile
+          </button>
+          <button type="button" class="device-btn" :class="{ active: previewDevice === 'desktop' }" id="btn-device-desktop" @click="previewDevice = 'desktop'" title="Full Width Viewport">
+            💻 Desktop
+          </button>
+        </div>
+
+        <div class="preview-actions">
+          <button type="button" class="preview-action-btn" id="btn-refresh-preview" @click="updateLivePreview()" title="Refresh Live Preview">
+            🔄
+          </button>
+          <button type="button" class="preview-action-btn" id="btn-open-preview-tab" @click="openPreviewTab()" title="Open Preview in New Tab">
+            ↗
+          </button>
+        </div>
+      </div>
+
+      <div class="preview-device-wrapper" :class="previewDevice === 'mobile' ? 'device-mobile' : 'device-desktop'" id="preview-wrapper">
+        <iframe id="preview-iframe" class="preview-iframe" title="Invitation Live Preview" sandbox="allow-scripts allow-same-origin"></iframe>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Embedded Initial Invitation State JSON -->
+<!-- Embedded Initial Invitation State JSON & Client Scripts -->
 <script id="initial-invitation-data" type="application/json">{{ .InvitationJSON | safeHTML }}</script>
 <script src="/static/js/admin_editor.js" defer></script>
+<script src="/static/js/vendor/alpine.min.js" defer></script>
 
 {{ template "footer.html" . }}
