@@ -131,12 +131,12 @@ flowchart LR
   - Bundling into static site export via `ssg.Config.UploadsDir`.
 
 ### Iteration 4: Invitation Creation & Editing Form (Builder) + Live Preview
-- **Status**: ⏳ **Pending**
+- **Status**: ✅ **Completed** (See [`docs/plans/iteration-4-invitation-editor.md`](file:///home/nano/projects/invitation/docs/plans/iteration-4-invitation-editor.md))
 - **Scope**:
   - Form UI at `GET /admin/invitations/new` and `GET /admin/invitations/{slug}/edit`.
   - Field groups: Basic info, Venue details, Visual theme selector (swatch preview cards), and modular section toggles (hero config, quote, carousel, timeline, dress code, RSVP settings).
   - Direct file upload buttons integrated with `/api/upload`.
-  - Live split-view or drawer preview `<iframe>` pointing to `/i/{slug}`.
+  - Live split-view or drawer preview `<iframe>` pointing to `/i/{slug}` with instant in-memory rendering via `POST /admin/invitations/preview`.
   - Client-side serialization to `domain.Invitation` JSON and AJAX save with domain validation error display.
 
 ### Iteration 5: Landing Page Refresh & Final Polish

@@ -121,7 +121,10 @@ func (s *Server) setupRoutes() {
 	// JSON API Routes
 	s.router.Route("/api", func(r chi.Router) {
 		r.Get("/invitations", s.handleAPIListInvitations)
+		r.Post("/invitations", s.handleAPICreateInvitation)
 		r.Get("/invitations/{slug}", s.handleAPIGetInvitation)
+		r.Put("/invitations/{slug}", s.handleAPIUpdateInvitation)
+		r.Delete("/invitations/{slug}", s.handleAPIDeleteInvitation)
 		r.Get("/invitations/{slug}/rsvps", s.handleAPIListRSVPs)
 		r.Post("/upload", s.handleAPIUpload)
 	})
@@ -132,10 +135,13 @@ func (s *Server) setupRoutes() {
 	// Admin Planner Dashboard Routes
 	s.router.Route("/admin", func(r chi.Router) {
 		r.Get("/", s.handleAdminIndex)
+		r.Get("/invitations/new", s.handleAdminInvitationNew)
 		r.Route("/invitations/{slug}", func(r chi.Router) {
+			r.Get("/edit", s.handleAdminInvitationEdit)
 			r.Get("/rsvps", s.handleAdminRSVPs)
 			r.Get("/rsvps.csv", s.handleAdminExportRSVPsCSV)
 		})
+		r.Post("/invitations/preview", s.handleAdminInvitationPreview)
 	})
 }
 
@@ -295,6 +301,132 @@ func (s *Server) handleAPIGetInvitation(w http.ResponseWriter, r *http.Request) 
 
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(inv)
+}
+
+// handleAPICreateInvitation parses, validates, and persists a new invitation document.
+func (s *Server) handleAPICreateInvitation(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	var inv domain.Invitation
+	if err := json.NewDecoder(r.Body).Decode(&inv); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"error": fmt.Sprintf("Invalid JSON request body: %v", err),
+		})
+		return
+	}
+
+	inv.Slug = strings.TrimSpace(strings.ToLower(inv.Slug))
+	if inv.Slug == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"error": "slug is required",
+		})
+		return
+	}
+
+	// TODO: Implement advanced collision resolution (e.g. auto-suffix suggestions)
+	if existing, _ := s.store.GetInvitation(inv.Slug); existing != nil {
+		w.WriteHeader(http.StatusConflict)
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"error": fmt.Sprintf("An invitation with slug %q already exists.", inv.Slug),
+		})
+		return
+	}
+
+	if err := inv.Validate(); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if err := s.store.SaveInvitation(&inv); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"error": fmt.Sprintf("Failed to save invitation: %v", err),
+		})
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	_ = json.NewEncoder(w).Encode(inv)
+}
+
+// handleAPIUpdateInvitation updates an existing invitation document in SQLite.
+func (s *Server) handleAPIUpdateInvitation(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	slug := chi.URLParam(r, "slug")
+
+	existing, err := s.store.GetInvitation(slug)
+	if err != nil || existing == nil {
+		w.WriteHeader(http.StatusNotFound)
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"error": fmt.Sprintf("Invitation with slug %q not found", slug),
+		})
+		return
+	}
+
+	var inv domain.Invitation
+	if err := json.NewDecoder(r.Body).Decode(&inv); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"error": fmt.Sprintf("Invalid JSON request body: %v", err),
+		})
+		return
+	}
+
+	// Post-save immutability: enforce slug from URL parameter
+	inv.Slug = slug
+
+	if err := inv.Validate(); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if err := s.store.SaveInvitation(&inv); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"error": fmt.Sprintf("Failed to update invitation: %v", err),
+		})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(inv)
+}
+
+// handleAPIDeleteInvitation deletes an invitation and cascades associated RSVPs.
+func (s *Server) handleAPIDeleteInvitation(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	slug := chi.URLParam(r, "slug")
+
+	if _, err := s.store.GetInvitation(slug); err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"error": fmt.Sprintf("Invitation with slug %q not found", slug),
+		})
+		return
+	}
+
+	if err := s.store.DeleteInvitation(slug); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"error": fmt.Sprintf("Failed to delete invitation: %v", err),
+		})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{
+		"status":  "deleted",
+		"slug":    slug,
+		"message": "Invitation successfully deleted",
+	})
 }
 
 // handleAPIListRSVPs returns all recorded RSVPs for an invitation.
@@ -582,4 +714,157 @@ func (s *Server) handleAdminExportRSVPsCSV(w http.ResponseWriter, r *http.Reques
 	}
 
 	writer.Flush()
+}
+
+// handleAdminInvitationNew renders the invitation builder pre-populated with starter defaults.
+func (s *Server) handleAdminInvitationNew(w http.ResponseWriter, r *http.Request) {
+	startDate := time.Now().AddDate(0, 1, 0).Truncate(time.Hour)
+	endDate := startDate.Add(6 * time.Hour)
+
+	starterInv := &domain.Invitation{
+		Version:     "1.0",
+		Slug:        "",
+		Title:       "",
+		Subtitle:    "",
+		Description: "",
+		DateStart:   startDate,
+		DateEnd:     &endDate,
+		Timezone:    "America/New_York",
+		Location: domain.Location{
+			Name:    "",
+			Address: "",
+		},
+		Theme: domain.ThemeConfig{
+			ID: domain.ThemeBotanicalElegance,
+		},
+		Sections: []domain.Section{
+			&domain.HeroSection{
+				SectionType:   domain.SectionHero,
+				Layout:        "full-bleed",
+				Eyebrow:       "Celebration",
+				ShowCountdown: true,
+			},
+			&domain.DetailsSection{
+				SectionType:        domain.SectionDetails,
+				ShowMapLink:        true,
+				ShowCalendarButton: true,
+			},
+			&domain.QuoteSection{
+				SectionType: domain.SectionQuote,
+				Text:        "Whatever our souls are made of, his and mine are the same.",
+				Author:      "Emily Brontë",
+			},
+			&domain.TimelineSection{
+				SectionType: domain.SectionTimeline,
+				Title:       "Schedule of Events",
+				Items: []domain.TimelineItem{
+					{Time: "4:00 PM", Title: "Welcome & Ceremony", Description: "Main Pavilion"},
+					{Time: "6:00 PM", Title: "Dinner & Toasts", Description: "Grand Dining Room"},
+					{Time: "8:00 PM", Title: "Music & Dancing", Description: "Courtyard"},
+				},
+			},
+			&domain.DressCodeSection{
+				SectionType:  domain.SectionDressCode,
+				Title:        "Dress Code",
+				Name:         "Garden Formal",
+				Description:  "Cocktail attire or suits. Comfortable footwear recommended for outdoors.",
+				PaletteHints: []string{"#2A4738", "#D4AF37", "#EFEBE4", "#8A9A86"},
+			},
+			&domain.RSVPSection{
+				SectionType:    domain.SectionRSVP,
+				Enabled:        true,
+				MaxPartySize:   2,
+				AskDietary:     true,
+				AskSongRequest: false,
+			},
+			&domain.ClosingSection{
+				SectionType: domain.SectionClosing,
+				Message:     "We cannot wait to celebrate our special day with all of you!",
+				Signoff:     "With love & gratitude,",
+			},
+		},
+	}
+
+	invJSON, err := json.Marshal(starterInv)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to marshal starter invitation: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	data := map[string]any{
+		"Title":          "New Invitation",
+		"Invitation":     starterInv,
+		"InvitationJSON": string(invJSON),
+		"IsNew":          true,
+		"CurrentYear":    time.Now().Year(),
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := s.renderer.RenderAdminEditor(w, data); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to render invitation editor: %v", err), http.StatusInternalServerError)
+	}
+}
+
+// handleAdminInvitationEdit renders the invitation builder populated with an existing invitation.
+func (s *Server) handleAdminInvitationEdit(w http.ResponseWriter, r *http.Request) {
+	slug := chi.URLParam(r, "slug")
+
+	inv, err := s.store.GetInvitation(slug)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	invJSON, err := json.Marshal(inv)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to marshal invitation: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	data := map[string]any{
+		"Title":          "Edit: " + inv.Title,
+		"Invitation":     inv,
+		"InvitationJSON": string(invJSON),
+		"IsNew":          false,
+		"CurrentYear":    time.Now().Year(),
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := s.renderer.RenderAdminEditor(w, data); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to render invitation editor: %v", err), http.StatusInternalServerError)
+	}
+}
+
+// handleAdminInvitationPreview generates an in-memory preview of an invitation without saving it.
+func (s *Server) handleAdminInvitationPreview(w http.ResponseWriter, r *http.Request) {
+	var inv domain.Invitation
+	if err := json.NewDecoder(r.Body).Decode(&inv); err != nil {
+		http.Error(w, fmt.Sprintf("Invalid JSON: %v", err), http.StatusBadRequest)
+		return
+	}
+
+	// Sensible defaults for live preview while typing
+	if inv.Slug == "" {
+		inv.Slug = "preview"
+	}
+	if inv.Title == "" {
+		inv.Title = "Untitled Event"
+	}
+	if inv.DateStart.IsZero() {
+		inv.DateStart = time.Now().AddDate(0, 1, 0)
+	}
+	if inv.Location.Name == "" {
+		inv.Location.Name = "Venue Name"
+	}
+	if inv.Location.Address == "" {
+		inv.Location.Address = "Venue Address"
+	}
+	if inv.Theme.ID == "" {
+		inv.Theme.ID = domain.ThemeBotanicalElegance
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := s.renderer.RenderInvitation(w, &inv); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to render preview: %v", err), http.StatusInternalServerError)
+	}
 }

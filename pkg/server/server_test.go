@@ -325,4 +325,277 @@ func TestServerEndpoints(t *testing.T) {
 			t.Errorf("expected CSV header row in response")
 		}
 	})
+
+	t.Run("GET /admin/invitations/new renders invitation creator form", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/admin/invitations/new", nil)
+		rec := httptest.NewRecorder()
+
+		srv.Router().ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusOK {
+			t.Errorf("expected status 200, got %d", rec.Code)
+		}
+		body := rec.Body.String()
+		if !strings.Contains(body, "New Invitation") || !strings.Contains(body, "field-title") {
+			t.Errorf("expected new invitation builder form in body")
+		}
+		if !strings.Contains(body, "admin_editor.js") {
+			t.Errorf("expected admin_editor.js script tag in body")
+		}
+	})
+
+	t.Run("GET /admin/invitations/{slug}/edit renders editor with existing event", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/admin/invitations/sarah-and-alex-wedding/edit", nil)
+		rec := httptest.NewRecorder()
+
+		srv.Router().ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusOK {
+			t.Errorf("expected status 200, got %d", rec.Code)
+		}
+		body := rec.Body.String()
+		if !strings.Contains(body, "Sarah &amp; Alex") && !strings.Contains(body, "Sarah & Alex") {
+			t.Errorf("expected event title in editor body")
+		}
+		if !strings.Contains(body, "Willowbrook Botanical Estate") {
+			t.Errorf("expected venue name in editor body")
+		}
+	})
+
+	t.Run("GET /admin/invitations/{slug}/edit returns 404 for nonexistent event", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/admin/invitations/nonexistent-event-slug/edit", nil)
+		rec := httptest.NewRecorder()
+
+		srv.Router().ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusNotFound {
+			t.Errorf("expected status 404 for nonexistent event edit, got %d", rec.Code)
+		}
+	})
+
+	t.Run("POST /admin/invitations/preview renders live in-memory HTML", func(t *testing.T) {
+		payload := map[string]any{
+			"slug":        "preview-test",
+			"title":       "Golden Jubilee Celebration",
+			"description": "Celebrating 50 years of excellence.",
+			"date_start":  "2026-10-15T18:00:00Z",
+			"location": map[string]string{
+				"name":    "Grand Ballroom",
+				"address": "100 Milestone Way, Boston, MA",
+			},
+			"theme": map[string]string{
+				"id": "golden-sunset",
+			},
+			"sections": []map[string]any{
+				{
+					"type":            "hero",
+					"layout":          "full-bleed",
+					"eyebrow":         "Golden Anniversary",
+					"show_countdown":  true,
+				},
+				{
+					"type": "quote",
+					"text": "Half a century of cherished moments.",
+				},
+			},
+		}
+		bodyBytes, _ := json.Marshal(payload)
+		req := httptest.NewRequest(http.MethodPost, "/admin/invitations/preview", bytes.NewReader(bodyBytes))
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+
+		srv.Router().ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusOK {
+			t.Errorf("expected status 200, got %d: %s", rec.Code, rec.Body.String())
+		}
+		if !strings.Contains(rec.Header().Get("Content-Type"), "text/html") {
+			t.Errorf("expected Content-Type text/html, got %s", rec.Header().Get("Content-Type"))
+		}
+		body := rec.Body.String()
+		if !strings.Contains(body, "Golden Jubilee Celebration") {
+			t.Errorf("expected preview body to contain title")
+		}
+		if !strings.Contains(body, "Grand Ballroom") {
+			t.Errorf("expected preview body to contain venue name")
+		}
+	})
+
+	t.Run("POST /api/invitations creates new invitation and persists to SQLite", func(t *testing.T) {
+		payload := map[string]any{
+			"version":     "1.0",
+			"slug":        "spring-gala-2026",
+			"title":       "Spring Charity Gala",
+			"description": "An evening benefiting the arts foundation.",
+			"date_start":  "2026-05-12T19:00:00Z",
+			"timezone":    "America/New_York",
+			"location": map[string]string{
+				"name":    "Metropolitan Opera Hall",
+				"address": "30 Lincoln Center Plaza, New York, NY",
+			},
+			"theme": map[string]string{
+				"id": "midnight-soiree",
+			},
+			"sections": []map[string]any{
+				{
+					"type":           "hero",
+					"layout":         "full-bleed",
+					"eyebrow":        "Annual Benefit",
+					"show_countdown": true,
+				},
+				{
+					"type":    "rsvp",
+					"enabled": true,
+					"max_party_size": 2,
+				},
+			},
+		}
+		bodyBytes, _ := json.Marshal(payload)
+		req := httptest.NewRequest(http.MethodPost, "/api/invitations", bytes.NewReader(bodyBytes))
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+
+		srv.Router().ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusCreated {
+			t.Fatalf("expected status 201 Created, got %d: %s", rec.Code, rec.Body.String())
+		}
+
+		// Verify retrieval
+		getReq := httptest.NewRequest(http.MethodGet, "/api/invitations/spring-gala-2026", nil)
+		getRec := httptest.NewRecorder()
+		srv.Router().ServeHTTP(getRec, getReq)
+
+		if getRec.Code != http.StatusOK {
+			t.Errorf("expected status 200 on GET newly created invitation, got %d", getRec.Code)
+		}
+	})
+
+	t.Run("POST /api/invitations rejects duplicate slug with 409 Conflict", func(t *testing.T) {
+		payload := map[string]any{
+			"version":    "1.0",
+			"slug":       "spring-gala-2026",
+			"title":      "Duplicate Spring Gala",
+			"date_start": "2026-05-12T19:00:00Z",
+			"location": map[string]string{
+				"name":    "Another Hall",
+				"address": "123 Main St",
+			},
+			"theme": map[string]string{"id": "botanical-elegance"},
+		}
+		bodyBytes, _ := json.Marshal(payload)
+		req := httptest.NewRequest(http.MethodPost, "/api/invitations", bytes.NewReader(bodyBytes))
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+
+		srv.Router().ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusConflict {
+			t.Errorf("expected status 409 Conflict for duplicate slug, got %d", rec.Code)
+		}
+		if !strings.Contains(rec.Body.String(), "already exists") {
+			t.Errorf("expected conflict error message, got: %s", rec.Body.String())
+		}
+	})
+
+	t.Run("POST /api/invitations rejects invalid invitation with 400 Bad Request", func(t *testing.T) {
+		payload := map[string]any{
+			"slug":  "invalid-event",
+			"title": "", // Missing title
+		}
+		bodyBytes, _ := json.Marshal(payload)
+		req := httptest.NewRequest(http.MethodPost, "/api/invitations", bytes.NewReader(bodyBytes))
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+
+		srv.Router().ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusBadRequest {
+			t.Errorf("expected status 400 Bad Request, got %d", rec.Code)
+		}
+		if !strings.Contains(rec.Body.String(), "title is required") {
+			t.Errorf("expected title is required in validation message, got: %s", rec.Body.String())
+		}
+	})
+
+	t.Run("PUT /api/invitations/{slug} updates existing invitation", func(t *testing.T) {
+		payload := map[string]any{
+			"version":     "1.0",
+			"slug":        "spring-gala-2026",
+			"title":       "Spring Charity Gala — Updated Edition",
+			"description": "An updated evening program.",
+			"date_start":  "2026-05-12T19:30:00Z",
+			"timezone":    "America/New_York",
+			"location": map[string]string{
+				"name":    "Metropolitan Opera Grand Ballroom",
+				"address": "30 Lincoln Center Plaza, New York, NY",
+			},
+			"theme": map[string]string{
+				"id": "modern-minimal",
+			},
+			"sections": []map[string]any{
+				{
+					"type":           "hero",
+					"layout":         "banner",
+					"eyebrow":        "Updated Benefit",
+					"show_countdown": false,
+				},
+			},
+		}
+		bodyBytes, _ := json.Marshal(payload)
+		req := httptest.NewRequest(http.MethodPut, "/api/invitations/spring-gala-2026", bytes.NewReader(bodyBytes))
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+
+		srv.Router().ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusOK {
+			t.Fatalf("expected status 200 OK on update, got %d: %s", rec.Code, rec.Body.String())
+		}
+
+		// Verify update reflected in GET
+		getReq := httptest.NewRequest(http.MethodGet, "/api/invitations/spring-gala-2026", nil)
+		getRec := httptest.NewRecorder()
+		srv.Router().ServeHTTP(getRec, getReq)
+
+		if !strings.Contains(getRec.Body.String(), "Spring Charity Gala — Updated Edition") {
+			t.Errorf("expected updated title in body, got: %s", getRec.Body.String())
+		}
+	})
+
+	t.Run("PUT /api/invitations/{slug} returns 404 for nonexistent event", func(t *testing.T) {
+		payload := map[string]any{
+			"title": "Nonexistent",
+		}
+		bodyBytes, _ := json.Marshal(payload)
+		req := httptest.NewRequest(http.MethodPut, "/api/invitations/does-not-exist-slug", bytes.NewReader(bodyBytes))
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+
+		srv.Router().ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusNotFound {
+			t.Errorf("expected status 404 for nonexistent update, got %d", rec.Code)
+		}
+	})
+
+	t.Run("DELETE /api/invitations/{slug} deletes invitation", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodDelete, "/api/invitations/spring-gala-2026", nil)
+		rec := httptest.NewRecorder()
+
+		srv.Router().ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusOK {
+			t.Fatalf("expected status 200 OK on delete, got %d: %s", rec.Code, rec.Body.String())
+		}
+
+		// Verify subsequent GET returns 404
+		getReq := httptest.NewRequest(http.MethodGet, "/api/invitations/spring-gala-2026", nil)
+		getRec := httptest.NewRecorder()
+		srv.Router().ServeHTTP(getRec, getReq)
+
+		if getRec.Code != http.StatusNotFound {
+			t.Errorf("expected status 404 after deletion, got %d", getRec.Code)
+		}
+	})
 }

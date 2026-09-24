@@ -8,7 +8,7 @@
     </p>
   </div>
   <div class="admin-header-actions">
-    <a href="/admin/invitations/new" class="btn btn-primary" id="btn-create-invitation" title="Create a new event invitation (Coming in Iteration 4)">
+    <a href="/admin/invitations/new" class="btn btn-primary" id="btn-create-invitation" title="Create a new event invitation">
       + Create Invitation
     </a>
   </div>
@@ -73,8 +73,11 @@
       </div>
 
       <div class="admin-event-card-actions">
-        <a href="/admin/invitations/{{ .Invitation.Slug }}/rsvps" class="btn btn-primary" style="flex: 1; font-size: 0.875rem;">
-          Manage RSVPs &rarr;
+        <a href="/admin/invitations/{{ .Invitation.Slug }}/edit" class="btn btn-primary" style="font-size: 0.875rem;">
+          Edit &rarr;
+        </a>
+        <a href="/admin/invitations/{{ .Invitation.Slug }}/rsvps" class="btn btn-secondary" style="flex: 1; font-size: 0.875rem;">
+          RSVPs ({{ .Stats.TotalResponses }})
         </a>
         <a href="/i/{{ .Invitation.Slug }}" class="btn btn-secondary" style="font-size: 0.875rem;" target="_blank" rel="noopener noreferrer" title="Preview public invitation pass">
           Pass &nearr;

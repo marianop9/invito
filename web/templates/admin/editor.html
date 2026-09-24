@@ -1,0 +1,330 @@
+{{ template "header.html" . }}
+
+<div class="admin-breadcrumb">
+  <a href="/admin" class="back-link" id="link-back-events">&larr; Back to Events Overview</a>
+</div>
+
+<div class="admin-page-header">
+  <div>
+    <h1 class="admin-title" id="page-editor-title">{{ .Title }}</h1>
+    <div class="admin-subtitle">
+      <span class="badge {{ if .IsNew }}badge-warning{{ else }}badge-success{{ end }}" id="editor-status-badge">
+        {{ if .IsNew }}✦ New Draft{{ else }}✓ Saved in Database{{ end }}
+      </span>
+      <span>&bull;</span>
+      <span id="preview-sync-status" style="font-size: 0.8125rem; color: var(--text-muted);">Live preview synced</span>
+    </div>
+  </div>
+  <div class="admin-header-actions">
+    <a href="/admin" class="btn btn-secondary" id="btn-cancel-editor">Cancel</a>
+    {{ if not .IsNew }}
+      <a href="/i/{{ .Invitation.Slug }}" class="btn btn-secondary" id="btn-view-live-pass" target="_blank" rel="noopener noreferrer">
+        Open Pass &nearr;
+      </a>
+      <button type="button" class="btn btn-secondary" id="btn-delete-invitation" style="color: hsl(0, 65%, 45%);" title="Delete event">
+        🗑 Delete
+      </button>
+    {{ end }}
+    <button type="button" class="btn btn-primary" id="btn-save-invitation">
+      <span id="save-spinner" style="display: none;">⏳ </span>
+      <span id="save-label">Save Invitation</span>
+    </button>
+  </div>
+</div>
+
+<!-- Validation Error Alert Container -->
+<div id="validation-alert" class="admin-alert admin-alert-danger" style="display: none;">
+  <div class="alert-icon">⚠️</div>
+  <div class="alert-content">
+    <h4 id="validation-alert-title">Please correct the following errors:</h4>
+    <ul id="validation-alert-list" style="margin: 0.35rem 0 0 1.25rem; padding: 0;"></ul>
+  </div>
+</div>
+
+<!-- Success Toast Banner -->
+<div id="success-toast" class="admin-alert admin-alert-success" style="display: none;">
+  <div class="alert-icon">✅</div>
+  <div class="alert-content">
+    <strong id="success-toast-message">Invitation saved successfully!</strong>
+  </div>
+</div>
+
+<!-- Split-Screen Builder Studio Layout -->
+<div class="builder-layout">
+  <!-- Left Column: Form Controls Pane -->
+  <div class="builder-form-pane">
+    <form id="invitation-form" novalidate onsubmit="return false;">
+      
+      <!-- Card 1: Event Basics -->
+      <section class="builder-card">
+        <h2 class="builder-card-title">1. Event Basics</h2>
+        <p class="builder-card-subtitle">General event title, URL slug, schedule timing, and hosts.</p>
+
+        <div class="form-grid">
+          <div class="form-group col-12">
+            <label for="field-title" class="form-label required">Event Title</label>
+            <input type="text" id="field-title" class="form-input" placeholder="e.g. Sarah & Alex Wedding" required autocomplete="off">
+          </div>
+
+          <div class="form-group col-12">
+            <label for="field-slug" class="form-label required">
+              URL Slug
+              <span class="form-label-hint">Pass will be accessible at <code>/i/<span id="slug-hint-text">slug</span></code></span>
+            </label>
+            <div class="slug-input-wrapper">
+              <span class="slug-prefix">/i/</span>
+              <input type="text" id="field-slug" class="form-input slug-input" placeholder="sarah-and-alex-wedding" required autocomplete="off" {{ if not .IsNew }}readonly{{ end }}>
+              {{ if not .IsNew }}
+                <span class="slug-locked-icon" title="Slug cannot be changed once created to prevent broken invitation URLs">🔒 Locked</span>
+              {{ end }}
+            </div>
+          </div>
+
+          <div class="form-group col-12">
+            <label for="field-subtitle" class="form-label">Subtitle / Invitation Greeting</label>
+            <input type="text" id="field-subtitle" class="form-input" placeholder="e.g. Request the pleasure of your company to celebrate their marriage">
+          </div>
+
+          <div class="form-group col-12">
+            <label for="field-hosts" class="form-label">Hosts / Organizers</label>
+            <input type="text" id="field-hosts" class="form-input" placeholder="e.g. Sarah Jenkins, Alexander Hayes (comma-separated)">
+          </div>
+
+          <div class="form-group col-12">
+            <label for="field-description" class="form-label">Description / Summary</label>
+            <textarea id="field-description" class="form-textarea" rows="2" placeholder="Brief event summary for messaging and calendar invites..."></textarea>
+          </div>
+
+          <div class="form-group col-6">
+            <label for="field-date-start" class="form-label required">Start Date & Time</label>
+            <input type="datetime-local" id="field-date-start" class="form-input" required>
+          </div>
+
+          <div class="form-group col-6">
+            <label for="field-date-end" class="form-label">End Date & Time (Optional)</label>
+            <input type="datetime-local" id="field-date-end" class="form-input">
+          </div>
+
+          <div class="form-group col-12">
+            <label for="field-timezone" class="form-label">Event Timezone</label>
+            <input type="text" id="field-timezone" class="form-input" placeholder="e.g. America/New_York or UTC" list="timezones-list">
+            <datalist id="timezones-list">
+              <option value="America/New_York">
+              <option value="America/Chicago">
+              <option value="America/Denver">
+              <option value="America/Los_Angeles">
+              <option value="America/Argentina/Buenos_Aires">
+              <option value="America/Sao_Paulo">
+              <option value="Europe/London">
+              <option value="Europe/Paris">
+              <option value="Europe/Madrid">
+              <option value="Asia/Tokyo">
+              <option value="UTC">
+            </datalist>
+          </div>
+        </div>
+      </section>
+
+      <!-- Card 2: Venue & Location -->
+      <section class="builder-card">
+        <h2 class="builder-card-title">2. Venue & Location</h2>
+        <p class="builder-card-subtitle">Specify where guests should arrive and navigation details.</p>
+
+        <div class="form-grid">
+          <div class="form-group col-12">
+            <label for="field-loc-name" class="form-label required">Venue Name</label>
+            <input type="text" id="field-loc-name" class="form-input" placeholder="e.g. Willowbrook Botanical Estate" required>
+          </div>
+
+          <div class="form-group col-12">
+            <label for="field-loc-address" class="form-label required">Physical Street Address</label>
+            <input type="text" id="field-loc-address" class="form-input" placeholder="e.g. 450 Magnolia Lane, Charlottesville, VA" required>
+          </div>
+
+          <div class="form-group col-12">
+            <label for="field-loc-map-url" class="form-label">Google Maps Link</label>
+            <input type="url" id="field-loc-map-url" class="form-input" placeholder="https://maps.google.com/?q=...">
+          </div>
+
+          <div class="form-group col-12">
+            <label for="field-loc-directions" class="form-label">Directions & Parking Notes</label>
+            <input type="text" id="field-loc-directions" class="form-input" placeholder="e.g. Complimentary valet parking at the main entrance.">
+          </div>
+        </div>
+      </section>
+
+      <!-- Card 3: Visual Theme & Styling -->
+      <section class="builder-card">
+        <h2 class="builder-card-title">3. Visual Theme & Palette</h2>
+        <p class="builder-card-subtitle">Choose an artistic visual identity for the continuous canvas pass.</p>
+
+        <input type="hidden" id="field-theme-id" value="botanical-elegance">
+
+        <div class="theme-swatches-grid" id="theme-swatches-container">
+          <!-- Botanical Elegance -->
+          <div class="theme-swatch-card" data-theme="botanical-elegance">
+            <div class="swatch-header">
+              <div class="swatch-color-dots">
+                <span class="swatch-dot" style="background: #2A4738;"></span>
+                <span class="swatch-dot" style="background: #FBF8F3; border: 1px solid #ddd;"></span>
+                <span class="swatch-dot" style="background: #D4AF37;"></span>
+              </div>
+              <span class="swatch-check">✓</span>
+            </div>
+            <div class="swatch-name">Botanical Elegance</div>
+            <div class="swatch-vibe">Forest Sage, Cream & Warm Gold</div>
+          </div>
+
+          <!-- Golden Sunset -->
+          <div class="theme-swatch-card" data-theme="golden-sunset">
+            <div class="swatch-header">
+              <div class="swatch-color-dots">
+                <span class="swatch-dot" style="background: #A24B35;"></span>
+                <span class="swatch-dot" style="background: #FAF5EF; border: 1px solid #ddd;"></span>
+                <span class="swatch-dot" style="background: #E07A5F;"></span>
+              </div>
+              <span class="swatch-check">✓</span>
+            </div>
+            <div class="swatch-name">Golden Sunset</div>
+            <div class="swatch-vibe">Terracotta, Coral & Radiant Sand</div>
+          </div>
+
+          <!-- Midnight Soirée -->
+          <div class="theme-swatch-card" data-theme="midnight-soiree">
+            <div class="swatch-header">
+              <div class="swatch-color-dots">
+                <span class="swatch-dot" style="background: #0E121B;"></span>
+                <span class="swatch-dot" style="background: #1E2538;"></span>
+                <span class="swatch-dot" style="background: #94A3B8;"></span>
+              </div>
+              <span class="swatch-check">✓</span>
+            </div>
+            <div class="swatch-name">Midnight Soirée</div>
+            <div class="swatch-vibe">Deep Indigo, Night Sky & Starlight</div>
+          </div>
+
+          <!-- Modern Minimal -->
+          <div class="theme-swatch-card" data-theme="modern-minimal">
+            <div class="swatch-header">
+              <div class="swatch-color-dots">
+                <span class="swatch-dot" style="background: #1A1A1A;"></span>
+                <span class="swatch-dot" style="background: #F5F5F7; border: 1px solid #ddd;"></span>
+                <span class="swatch-dot" style="background: #737373;"></span>
+              </div>
+              <span class="swatch-check">✓</span>
+            </div>
+            <div class="swatch-name">Modern Minimal</div>
+            <div class="swatch-vibe">Monochrome, Clean Stone & Editorial</div>
+          </div>
+        </div>
+
+        <!-- Collapsible Palette Overrides -->
+        <details class="builder-details-accordion">
+          <summary class="builder-details-summary">Custom Palette Overrides (Optional)</summary>
+          <div class="details-content form-grid" style="padding-top: 1rem;">
+            <div class="form-group col-4">
+              <label for="field-palette-primary" class="form-label">Primary Color</label>
+              <input type="text" id="field-palette-primary" class="form-input" placeholder="#2A4738">
+            </div>
+            <div class="form-group col-4">
+              <label for="field-palette-bg" class="form-label">Background Color</label>
+              <input type="text" id="field-palette-bg" class="form-input" placeholder="#FBF8F3">
+            </div>
+            <div class="form-group col-4">
+              <label for="field-palette-accent" class="form-label">Accent Color</label>
+              <input type="text" id="field-palette-accent" class="form-input" placeholder="#D4AF37">
+            </div>
+            <div class="form-group col-6">
+              <label for="field-palette-text" class="form-label">Text Color</label>
+              <input type="text" id="field-palette-text" class="form-input" placeholder="#2C3531">
+            </div>
+            <div class="form-group col-6">
+              <label for="field-palette-card-bg" class="form-label">Card Background</label>
+              <input type="text" id="field-palette-card-bg" class="form-input" placeholder="#FFFFFF">
+            </div>
+            <div class="form-group col-12">
+              <label for="field-custom-css" class="form-label">Custom CSS Overrides</label>
+              <textarea id="field-custom-css" class="form-textarea" rows="2" placeholder="/* Custom CSS rules injected into page header */"></textarea>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Card 4: Modular Section Blocks -->
+      <section class="builder-card">
+        <div class="builder-card-header-row">
+          <div>
+            <h2 class="builder-card-title">4. Modular Section Canvas</h2>
+            <p class="builder-card-subtitle">Assemble the invitation experience using modular building blocks.</p>
+          </div>
+        </div>
+
+        <!-- Rendered Sections List -->
+        <div id="sections-container" class="sections-stack">
+          <!-- Dynamically populated by admin_editor.js -->
+        </div>
+
+        <!-- Add Section Toolbar -->
+        <div class="add-section-bar">
+          <div class="add-section-controls">
+            <label for="select-new-section-type" style="font-size: 0.8125rem; font-weight: 600; color: var(--text-secondary);">
+              + Add Section Block:
+            </label>
+            <select id="select-new-section-type" class="form-input" style="max-width: 240px;">
+              <option value="quote">Quote / Excerpt</option>
+              <option value="carousel">Photo Carousel</option>
+              <option value="timeline">Schedule / Timeline</option>
+              <option value="dress_code">Dress Code</option>
+              <option value="image">Single Image</option>
+              <option value="text">Text Announcement</option>
+              <option value="rsvp">Interactive RSVP Form</option>
+              <option value="rsvp_external">External RSVP Form Link</option>
+              <option value="faqs">Guest FAQs</option>
+              <option value="gift_registry">Gift Registry</option>
+              <option value="closing">Closing Sign-off</option>
+              <option value="hero">Hero Cover Card</option>
+              <option value="details">Details Quick Strip</option>
+            </select>
+            <button type="button" class="btn btn-secondary" id="btn-add-section">
+              + Add Block
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </form>
+  </div>
+
+  <!-- Right Column: Sticky Live Preview Pane -->
+  <div class="builder-preview-pane">
+    <div class="preview-toolbar">
+      <div class="device-switcher" role="tablist">
+        <button type="button" class="device-btn active" data-device="mobile" id="btn-device-mobile" title="Mobile Pass Viewport (375px)">
+          📱 Mobile
+        </button>
+        <button type="button" class="device-btn" data-device="desktop" id="btn-device-desktop" title="Full Width Viewport">
+          💻 Desktop
+        </button>
+      </div>
+
+      <div class="preview-actions">
+        <button type="button" class="preview-action-btn" id="btn-refresh-preview" title="Refresh Live Preview">
+          🔄
+        </button>
+        <button type="button" class="preview-action-btn" id="btn-open-preview-tab" title="Open Preview in New Tab">
+          ↗
+        </button>
+      </div>
+    </div>
+
+    <div class="preview-device-wrapper device-mobile" id="preview-wrapper">
+      <iframe id="preview-iframe" class="preview-iframe" title="Invitation Live Preview" sandbox="allow-scripts allow-same-origin"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- Embedded Initial Invitation State JSON -->
+<script id="initial-invitation-data" type="application/json">{{ .InvitationJSON | safeHTML }}</script>
+<script src="/static/js/admin_editor.js" defer></script>
+
+{{ template "footer.html" . }}

@@ -126,6 +126,11 @@ func (r *Renderer) RenderAdminRSVPs(w io.Writer, data any) error {
 	return r.adminTmpl.ExecuteTemplate(w, "rsvps.html", data)
 }
 
+// RenderAdminEditor renders the invitation builder & live preview editor.
+func (r *Renderer) RenderAdminEditor(w io.Writer, data any) error {
+	return r.adminTmpl.ExecuteTemplate(w, "editor.html", data)
+}
+
 // RenderToHTMLString performs Static Site Generation (SSG) for a single invitation.
 func (r *Renderer) RenderToHTMLString(inv *domain.Invitation) (string, error) {
 	var buf bytes.Buffer
