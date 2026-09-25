@@ -1,5 +1,7 @@
 .vercel
+.vscode
 
 _demo
 bin
+uploads
 *.db*

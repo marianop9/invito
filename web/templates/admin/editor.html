@@ -697,7 +697,7 @@
           </button>
           <button type="button" class="device-btn" :class="{ active: previewDevice === 'desktop' }" id="btn-device-desktop" @click="previewDevice = 'desktop'" title="Full Width Viewport">
             💻 Desktop
-          </button>
+        </button>
         </div>
 
         <div class="preview-actions">
@@ -711,14 +711,14 @@
       </div>
 
       <div class="preview-device-wrapper" :class="previewDevice === 'mobile' ? 'device-mobile' : 'device-desktop'" id="preview-wrapper">
-        <iframe id="preview-iframe" class="preview-iframe" title="Invitation Live Preview" sandbox="allow-scripts allow-same-origin"></iframe>
+        <iframe id="preview-iframe" class="preview-iframe" title="Invitation Live Preview" sandbox="allow-scripts"></iframe>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Embedded Initial Invitation State JSON & Client Scripts -->
-<script id="initial-invitation-data" type="application/json">{{ .InvitationJSON | safeHTML }}</script>
+<script id="initial-invitation-data" type="application/json">{{ .InvitationJSON | safeJS }}</script>
 <script src="/static/js/admin_editor.js" defer></script>
 <script src="/static/js/vendor/alpine.min.js" defer></script>
 

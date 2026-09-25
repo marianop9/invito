@@ -34,7 +34,7 @@ type PaletteOverride struct {
 // ThemeConfig defines visual design, typography, and palette options.
 type ThemeConfig struct {
 	ID              ThemeID          `json:"id"`
-	PaletteOverride *PaletteOverride `json:"palette_override,omitempty"`
+	PaletteOverride *PaletteOverride `json:"palette_override"`
 	FontHeading     string           `json:"font_heading,omitempty"`
 	FontBody        string           `json:"font_body,omitempty"`
 	CustomCSS       string           `json:"custom_css,omitempty"`

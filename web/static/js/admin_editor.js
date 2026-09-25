@@ -194,16 +194,13 @@
             console.error('Failed to parse initial invitation data:', e);
           }
         }
-
+        
         this.isNew = !this.invitation.slug || this.invitation.slug === 'preview';
         this.hostsRaw = (this.invitation.hosts || []).join(', ');
         this.dateStartLocal = formatDateTimeLocal(this.invitation.date_start);
         this.dateEndLocal = formatDateTimeLocal(this.invitation.date_end);
 
-        if (!this.invitation.location) this.invitation.location = {};
-        if (!this.invitation.theme) this.invitation.theme = { id: 'botanical-elegance' };
-        if (!this.invitation.theme.palette_override) this.invitation.theme.palette_override = {};
-        if (!this.invitation.sections) this.invitation.sections = [];
+        this.normalizeInivitation(this.invitation)
 
         this.invitation.sections.forEach(sec => this.normalizeSectionForUI(sec));
 
@@ -218,6 +215,14 @@
 
         // Render initial preview
         this.updateLivePreview();
+      },
+
+      normalizeInivitation(inv) {
+        if (!inv.location) inv.location = {};
+        if (!inv.theme) inv.theme = { id: 'botanical-elegance' };
+        if (!inv.theme.palette_override) inv.theme.palette_override = {};
+        if (!inv.sections) inv.sections = [];
+        inv.sections.forEach(sec => this.normalizeSectionForUI(sec));
       },
 
       normalizeSectionForUI(sec) {
@@ -441,7 +446,7 @@
 
           this.successMessage = 'Invitation saved successfully!';
           this.invitation = data;
-          this.normalizeSectionForUI(this.invitation);
+          this.normalizeInivitation(this.invitation);
 
           if (this.isNew) {
             this.isNew = false;
