@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"invitation/pkg/domain"
+	"invitation/pkg/storage"
 )
 
 func TestRenderer(t *testing.T) {
@@ -385,6 +386,76 @@ func TestRenderer(t *testing.T) {
 		}
 		if strings.Contains(html, "btn-rsvp-external") {
 			t.Errorf("expected closed RSVP not to display active CTA button")
+		}
+	})
+
+	t.Run("RenderAdmin views output complete HTML documents with header and footer partials", func(t *testing.T) {
+		adminViews := []struct {
+			name   string
+			render func(w *bytes.Buffer) error
+		}{
+			{
+				name: "RenderAdminIndex",
+				render: func(w *bytes.Buffer) error {
+					return r.RenderAdminIndex(w, map[string]any{
+						"Title":                "Overview",
+						"CurrentYear":          2026,
+						"TotalEvents":          0,
+						"TotalConfirmedGuests": 0,
+						"Events":               []any{},
+					})
+				},
+			},
+			{
+				name: "RenderAdminRSVPs",
+				render: func(w *bytes.Buffer) error {
+					return r.RenderAdminRSVPs(w, map[string]any{
+						"Title":       "RSVP Dashboard",
+						"CurrentYear": 2026,
+						"Invitation":  inv,
+						"RSVPs":       []domain.RSVPSubmission{},
+						"Stats":       storage.RSVPStats{},
+					})
+				},
+			},
+			{
+				name: "RenderAdminEditor",
+				render: func(w *bytes.Buffer) error {
+					return r.RenderAdminEditor(w, map[string]any{
+						"Title":          "Editor",
+						"CurrentYear":    2026,
+						"IsNew":          false,
+						"Invitation":     inv,
+						"InvitationJSON": `{"slug":"test-gala"}`,
+					})
+				},
+			},
+		}
+
+		for _, tc := range adminViews {
+			t.Run(tc.name, func(t *testing.T) {
+				var buf bytes.Buffer
+				if err := tc.render(&buf); err != nil {
+					t.Fatalf("failed to render %s: %v", tc.name, err)
+				}
+				output := strings.TrimSpace(buf.String())
+
+				if !strings.HasPrefix(output, "<!DOCTYPE html>") {
+					t.Errorf("expected %s output to start with <!DOCTYPE html>", tc.name)
+				}
+				if !strings.Contains(output, `<header class="admin-header">`) {
+					t.Errorf("expected %s to contain composed header component", tc.name)
+				}
+				if !strings.Contains(output, `<main class="admin-main">`) {
+					t.Errorf("expected %s to contain admin-main container", tc.name)
+				}
+				if !strings.Contains(output, `<footer class="admin-footer">`) {
+					t.Errorf("expected %s to contain composed footer component", tc.name)
+				}
+				if !strings.HasSuffix(output, "</html>") {
+					t.Errorf("expected %s output to end with </html>", tc.name)
+				}
+			})
 		}
 	})
 }

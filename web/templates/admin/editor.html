@@ -1,4 +1,17 @@
-{{ template "header.html" . }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ if .Title }}{{ .Title }} &mdash; {{ end }}Invito Planner</title>
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+</head>
+<body class="admin-body">
+  {{ template "header.html" . }}
+
+  <main class="admin-main">
+    <div class="container">
 
 <div class="admin-editor-studio" x-data="invitationEditor()">
   <div class="admin-breadcrumb">
@@ -716,10 +729,14 @@
     </div>
   </div>
 </div>
+    </div>
+  </main>
 
-<!-- Embedded Initial Invitation State JSON & Client Scripts -->
-<script id="initial-invitation-data" type="application/json">{{ .InvitationJSON | safeJS }}</script>
-<script src="/static/js/admin_editor.js" defer></script>
-<script src="/static/js/vendor/alpine.min.js" defer></script>
+  {{ template "footer.html" . }}
 
-{{ template "footer.html" . }}
+  <!-- Embedded Initial Invitation State JSON & Client Scripts -->
+  <script id="initial-invitation-data" type="application/json">{{ .InvitationJSON | safeJS }}</script>
+  <script src="/static/js/admin_editor.js" defer></script>
+  <script src="/static/js/vendor/alpine.min.js" defer></script>
+</body>
+</html>

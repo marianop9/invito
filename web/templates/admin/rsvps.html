@@ -1,4 +1,17 @@
-{{ template "header.html" . }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ if .Title }}{{ .Title }} &mdash; {{ end }}Invito Planner</title>
+  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+</head>
+<body class="admin-body">
+  {{ template "header.html" . }}
+
+  <main class="admin-main">
+    <div class="container">
 
 <div class="admin-breadcrumb">
   <a href="/admin" class="back-link" id="link-back-events">&larr; Back to Events Overview</a>
@@ -157,5 +170,11 @@
   </table>
 </div>
 {{ end }}
+    </div>
+  </main>
 
-{{ template "footer.html" . }}
+  {{ template "footer.html" . }}
+
+  <script src="/static/js/admin.js" defer></script>
+</body>
+</html>
