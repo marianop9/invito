@@ -218,6 +218,95 @@ func TestServerEndpoints(t *testing.T) {
 		}
 	})
 
+	var uploadedAudioURL string
+	validMP3Bytes := []byte("ID3\x04\x00\x00\x00\x00\x00\x23TIT2\x00\x00\x00\x07\x00\x00\x00AcousticMelodySongBufferDataForRangeStreamingTest")
+
+	t.Run("POST /api/upload uploads valid audio and returns 201 with URL", func(t *testing.T) {
+		body := &bytes.Buffer{}
+		writer := multipart.NewWriter(body)
+
+		part, err := writer.CreateFormFile("audio", "romantic-soundtrack.mp3")
+		if err != nil {
+			t.Fatalf("failed to create audio form file: %v", err)
+		}
+		_, _ = part.Write(validMP3Bytes)
+		_ = writer.WriteField("slug", "test-wedding-audio")
+		_ = writer.Close()
+
+		req := httptest.NewRequest(http.MethodPost, "/api/upload", body)
+		req.Header.Set("Content-Type", writer.FormDataContentType())
+		rec := httptest.NewRecorder()
+
+		srv.Router().ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusCreated {
+			t.Fatalf("expected status 201, got %d: %s", rec.Code, rec.Body.String())
+		}
+
+		var resp map[string]any
+		if err := json.NewDecoder(rec.Body).Decode(&resp); err != nil {
+			t.Fatalf("failed to decode upload response: %v", err)
+		}
+
+		uploadedAudioURL = resp["url"].(string)
+		if !strings.HasPrefix(uploadedAudioURL, "/uploads/test-wedding-audio-") || !strings.HasSuffix(uploadedAudioURL, ".mp3") {
+			t.Errorf("unexpected uploaded audio URL: %s", uploadedAudioURL)
+		}
+		if resp["content_type"] != "audio/mpeg" {
+			t.Errorf("expected content_type audio/mpeg, got %v", resp["content_type"])
+		}
+	})
+
+	t.Run("GET /uploads/{filename} serves audio with byte-range requests (HTTP 206)", func(t *testing.T) {
+		if uploadedAudioURL == "" {
+			t.Skip("skipping because audio upload test did not populate uploadedAudioURL")
+		}
+
+		req := httptest.NewRequest(http.MethodGet, uploadedAudioURL, nil)
+		req.Header.Set("Range", "bytes=0-10")
+		rec := httptest.NewRecorder()
+
+		srv.Router().ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusPartialContent {
+			t.Fatalf("expected status 206 Partial Content, got %d", rec.Code)
+		}
+
+		if rec.Header().Get("Accept-Ranges") != "bytes" {
+			t.Errorf("expected Accept-Ranges: bytes, got %s", rec.Header().Get("Accept-Ranges"))
+		}
+		if !strings.HasPrefix(rec.Header().Get("Content-Range"), "bytes 0-10/") {
+			t.Errorf("expected Content-Range starting with 'bytes 0-10/', got %s", rec.Header().Get("Content-Range"))
+		}
+		if !bytes.Equal(rec.Body.Bytes(), validMP3Bytes[0:11]) {
+			t.Errorf("expected body to match range bytes 0-10")
+		}
+	})
+
+	t.Run("POST /api/upload uploads audio via generic file field", func(t *testing.T) {
+		body := &bytes.Buffer{}
+		writer := multipart.NewWriter(body)
+
+		part, err := writer.CreateFormFile("file", "ambient.ogg")
+		if err != nil {
+			t.Fatalf("failed to create generic file field: %v", err)
+		}
+		validOGG := []byte("OggS\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00")
+		_, _ = part.Write(validOGG)
+		_ = writer.WriteField("slug", "generic-field-event")
+		_ = writer.Close()
+
+		req := httptest.NewRequest(http.MethodPost, "/api/upload", body)
+		req.Header.Set("Content-Type", writer.FormDataContentType())
+		rec := httptest.NewRecorder()
+
+		srv.Router().ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusCreated {
+			t.Fatalf("expected status 201, got %d: %s", rec.Code, rec.Body.String())
+		}
+	})
+
 	t.Run("POST /api/upload rejects non-image file with 415", func(t *testing.T) {
 		body := &bytes.Buffer{}
 		writer := multipart.NewWriter(body)

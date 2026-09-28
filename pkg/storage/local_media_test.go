@@ -238,4 +238,94 @@ func TestLocalMediaStorage(t *testing.T) {
 			t.Errorf("expected ErrFileNotFound for non-existent file, got %v", err)
 		}
 	})
+
+	t.Run("Save valid MP3 audio with ID3 tag", func(t *testing.T) {
+		validMP3ID3 := []byte("ID3\x04\x00\x00\x00\x00\x00\x23TIT2\x00\x00\x00\x07\x00\x00\x00Wedding")
+		info, err := storage.Save(ctx, SaveMediaInput{
+			Slug:         "wedding-waltz",
+			OriginalName: "waltz.mp3",
+			Reader:       bytes.NewReader(validMP3ID3),
+		})
+		if err != nil {
+			t.Fatalf("unexpected error saving MP3: %v", err)
+		}
+		if info.ContentType != "audio/mpeg" {
+			t.Errorf("expected ContentType audio/mpeg, got %s", info.ContentType)
+		}
+		if !strings.HasPrefix(info.Filename, "wedding-waltz-") || !strings.HasSuffix(info.Filename, ".mp3") {
+			t.Errorf("unexpected filename format: %s", info.Filename)
+		}
+	})
+
+	t.Run("Save valid MP3 audio with raw MPEG sync frame", func(t *testing.T) {
+		validMP3Raw := []byte{0xff, 0xfb, 0x90, 0x64, 0x00, 0x00, 0x00, 0x00, 0x55, 0x55, 0x55, 0x55}
+		info, err := storage.Save(ctx, SaveMediaInput{
+			Slug:         "party-beats",
+			OriginalName: "track.mp3",
+			Reader:       bytes.NewReader(validMP3Raw),
+		})
+		if err != nil {
+			t.Fatalf("unexpected error saving raw MP3: %v", err)
+		}
+		if info.ContentType != "audio/mpeg" {
+			t.Errorf("expected ContentType audio/mpeg, got %s", info.ContentType)
+		}
+		if !strings.HasSuffix(info.Filename, ".mp3") {
+			t.Errorf("expected .mp3 suffix, got %s", info.Filename)
+		}
+	})
+
+	t.Run("Save valid M4A audio", func(t *testing.T) {
+		validM4A := []byte{0x00, 0x00, 0x00, 0x20, 'f', 't', 'y', 'p', 'M', '4', 'A', ' ', 0x00, 0x00, 0x02, 0x00}
+		info, err := storage.Save(ctx, SaveMediaInput{
+			Slug:         "sunset-acoustic",
+			OriginalName: "guitar.m4a",
+			Reader:       bytes.NewReader(validM4A),
+		})
+		if err != nil {
+			t.Fatalf("unexpected error saving M4A: %v", err)
+		}
+		if info.ContentType != "audio/mp4" {
+			t.Errorf("expected ContentType audio/mp4, got %s", info.ContentType)
+		}
+		if !strings.HasSuffix(info.Filename, ".m4a") {
+			t.Errorf("expected .m4a suffix, got %s", info.Filename)
+		}
+	})
+
+	t.Run("Save valid OGG audio", func(t *testing.T) {
+		validOGG := []byte("OggS\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00")
+		info, err := storage.Save(ctx, SaveMediaInput{
+			Slug:         "ambient-sound",
+			OriginalName: "nature.ogg",
+			Reader:       bytes.NewReader(validOGG),
+		})
+		if err != nil {
+			t.Fatalf("unexpected error saving OGG: %v", err)
+		}
+		if info.ContentType != "audio/ogg" {
+			t.Errorf("expected ContentType audio/ogg, got %s", info.ContentType)
+		}
+		if !strings.HasSuffix(info.Filename, ".ogg") {
+			t.Errorf("expected .ogg suffix, got %s", info.Filename)
+		}
+	})
+
+	t.Run("Save valid WAV audio", func(t *testing.T) {
+		validWAV := []byte("RIFF\x24\x00\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x02\x00")
+		info, err := storage.Save(ctx, SaveMediaInput{
+			Slug:         "chimes",
+			OriginalName: "intro.wav",
+			Reader:       bytes.NewReader(validWAV),
+		})
+		if err != nil {
+			t.Fatalf("unexpected error saving WAV: %v", err)
+		}
+		if info.ContentType != "audio/wav" {
+			t.Errorf("expected ContentType audio/wav, got %s", info.ContentType)
+		}
+		if !strings.HasSuffix(info.Filename, ".wav") {
+			t.Errorf("expected .wav suffix, got %s", info.Filename)
+		}
+	})
 }

@@ -218,15 +218,22 @@ func (s *LocalMediaStorage) sanitizeSlug(slug string) string {
 	return cleaned
 }
 
-// sniffMIMEType verifies whether header bytes match supported image formats (JPEG, PNG, WebP, GIF).
+// sniffMIMEType verifies whether header bytes match supported image or audio formats.
+// Supported image formats: JPEG, PNG, WebP, GIF.
+// Supported audio formats: MP3, M4A, OGG, WAV, WebM audio.
 func (s *LocalMediaStorage) sniffMIMEType(header []byte) (contentType string, extension string, err error) {
-	if len(header) < 12 {
+	if len(header) < 4 {
 		return "", "", ErrInvalidMediaType
 	}
 
-	// 1. Explicit magic byte check for WebP (RIFF....WEBP)
-	if len(header) >= 12 && bytes.Equal(header[0:4], []byte("RIFF")) && bytes.Equal(header[8:12], []byte("WEBP")) {
-		return "image/webp", ".webp", nil
+	// 1. Explicit magic byte check for WebP (RIFF....WEBP) or WAV (RIFF....WAVE)
+	if len(header) >= 12 && bytes.Equal(header[0:4], []byte("RIFF")) {
+		if bytes.Equal(header[8:12], []byte("WEBP")) {
+			return "image/webp", ".webp", nil
+		}
+		if bytes.Equal(header[8:12], []byte("WAVE")) {
+			return "audio/wav", ".wav", nil
+		}
 	}
 
 	// 2. Explicit magic byte check for PNG (\x89PNG\r\n\x1a\n)
@@ -244,7 +251,37 @@ func (s *LocalMediaStorage) sniffMIMEType(header []byte) (contentType string, ex
 		return "image/gif", ".gif", nil
 	}
 
-	// 5. Standard library sniffing fallback
+	// 5. Explicit magic byte check for MP3 with ID3v2 tag (ID3...)
+	if len(header) >= 3 && bytes.Equal(header[0:3], []byte("ID3")) {
+		return "audio/mpeg", ".mp3", nil
+	}
+
+	// 6. Explicit magic byte check for raw MPEG audio sync frame (\xff\xfb, \xff\xfa, \xff\xf3, \xff\xf2, etc.)
+	if len(header) >= 2 && header[0] == 0xff && (header[1]&0xe0) == 0xe0 && (header[1]&0x06) != 0 {
+		return "audio/mpeg", ".mp3", nil
+	}
+
+	// 7. Explicit magic byte check for OGG audio (OggS)
+	if len(header) >= 4 && bytes.Equal(header[0:4], []byte("OggS")) {
+		return "audio/ogg", ".ogg", nil
+	}
+
+	// 8. Explicit magic byte check for M4A / MP4 container (....ftyp)
+	if len(header) >= 8 && bytes.Equal(header[4:8], []byte("ftyp")) {
+		return "audio/mp4", ".m4a", nil
+	}
+
+	// 9. Explicit magic byte check for ADTS AAC (\xff\xf1 or \xff\xf9)
+	if len(header) >= 2 && header[0] == 0xff && (header[1] == 0xf1 || header[1] == 0xf9) {
+		return "audio/aac", ".aac", nil
+	}
+
+	// 10. Explicit magic byte check for WebM/Matroska audio (\x1a\x45\xdf\xa3)
+	if len(header) >= 4 && bytes.Equal(header[0:4], []byte{0x1a, 0x45, 0xdf, 0xa3}) {
+		return "audio/webm", ".weba", nil
+	}
+
+	// 11. Standard library sniffing fallback
 	detected := http.DetectContentType(header)
 	switch {
 	case strings.HasPrefix(detected, "image/jpeg"):
@@ -255,6 +292,12 @@ func (s *LocalMediaStorage) sniffMIMEType(header []byte) (contentType string, ex
 		return "image/webp", ".webp", nil
 	case strings.HasPrefix(detected, "image/gif"):
 		return "image/gif", ".gif", nil
+	case strings.HasPrefix(detected, "audio/mpeg"):
+		return "audio/mpeg", ".mp3", nil
+	case strings.HasPrefix(detected, "audio/wave"), strings.HasPrefix(detected, "audio/wav"), strings.HasPrefix(detected, "audio/x-wav"):
+		return "audio/wav", ".wav", nil
+	case strings.HasPrefix(detected, "audio/ogg"), strings.HasPrefix(detected, "application/ogg"):
+		return "audio/ogg", ".ogg", nil
 	default:
 		return "", "", ErrInvalidMediaType
 	}

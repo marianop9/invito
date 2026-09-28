@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -486,12 +487,21 @@ func (s *Server) handleAPIUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	file, header, err := r.FormFile("image")
+	var file multipart.File
+	var header *multipart.FileHeader
+	var err error
+
+	for _, fieldName := range []string{"audio", "file", "image"} {
+		file, header, err = r.FormFile(fieldName)
+		if err == nil {
+			break
+		}
+	}
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		_ = json.NewEncoder(w).Encode(map[string]string{
-			"error": "Missing 'image' file field in multipart form data",
+			"error": "Missing 'audio', 'file', or 'image' field in multipart form data",
 		})
 		return
 	}

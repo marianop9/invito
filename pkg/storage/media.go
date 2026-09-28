@@ -11,8 +11,8 @@ var (
 	// ErrFileTooLarge is returned when an uploaded media item exceeds the allowed byte limit.
 	ErrFileTooLarge = errors.New("file exceeds maximum allowed size of 10MB")
 
-	// ErrInvalidMediaType is returned when an uploaded item is not a supported image format.
-	ErrInvalidMediaType = errors.New("unsupported media type: only JPEG, PNG, WebP, and GIF images are allowed")
+	// ErrInvalidMediaType is returned when an uploaded item is not a supported media format.
+	ErrInvalidMediaType = errors.New("unsupported media type: allowed formats are JPEG, PNG, WebP, GIF images and MP3, M4A, OGG, WAV audio")
 
 	// ErrEmptyFile is returned when an uploaded media item has 0 bytes.
 	ErrEmptyFile = errors.New("uploaded file cannot be empty")

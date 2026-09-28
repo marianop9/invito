@@ -80,7 +80,7 @@ Insert a new dedicated section **"4. Welcome Splash & Background Music"** into t
       <!-- Audio File Upload -->
       <div class="column is-12">
         <div class="field">
-          <label class="label is-small">Audio Track File (MP3, M4A, OGG, WAV up to 15MB) <span class="has-text-danger">*</span></label>
+          <label class="label is-small">Audio Track File (MP3, M4A, OGG, WAV up to 10MB) <span class="has-text-danger">*</span></label>
           <div class="field has-addons">
             <div class="control is-expanded">
               <input type="text" class="input is-small" placeholder="/uploads/... or https://..." 

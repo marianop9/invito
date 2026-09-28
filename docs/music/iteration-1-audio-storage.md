@@ -87,7 +87,7 @@ http.ServeFile(w, r, fullPath)
   - Upload valid M4A (`ftypM4A`), OGG, and WAV files.
   - Verify generated URLs point to `/uploads/{slug}-{timestamp}-{rand}.{ext}`.
   - Verify rejection of unapproved formats (e.g. `.exe`, `.pdf`, `.mp4` video).
-  - Verify size enforcement (> 15MB returns `ErrFileTooLarge`).
+  - Verify size enforcement (> 10MB returns `ErrFileTooLarge`).
 - [ ] **Integration Tests (`server_test.go`)**:
   - `POST /api/upload` with multipart field `audio`.
   - `POST /api/upload` with legacy multipart field `image`.

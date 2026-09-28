@@ -30,7 +30,7 @@ Verify:
 flowchart TD
     subgraph StorageTests ["pkg/storage Tests"]
         T1["TestLocalMediaStorage_AudioFormats\n(MP3, M4A, OGG, WAV)"]
-        T2["TestLocalMediaStorage_AudioSizeLimit\n(Max 15MB)"]
+        T2["TestLocalMediaStorage_AudioSizeLimit\n(Max 10MB)"]
         T3["TestLocalMediaStorage_InvalidAudioReject\n(Reject binaries/executables)"]
     end
 
@@ -57,7 +57,7 @@ flowchart TD
 
 1. **`pkg/storage/local_media_test.go`**:
    - `TestSniffMIMEType_Audio`: Validate MIME detection for MP3 (ID3v2 header and sync frame), M4A, OGG, and WAV.
-   - `TestSave_AudioFileTooLarge`: Test that files exceeding 15MB are rejected with `ErrFileTooLarge`.
+   - `TestSave_AudioFileTooLarge`: Test that files exceeding 10MB are rejected with `ErrFileTooLarge`.
    - `TestSave_AudioSuccess`: Test atomic file persistence and URL generation (`/uploads/...`).
 
 2. **`pkg/server/server_test.go`**:
