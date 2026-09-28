@@ -4,468 +4,639 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ if .Title }}{{ .Title }} &mdash; {{ end }}Invito Planner</title>
-  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
   <link rel="stylesheet" href="/static/css/admin.css">
 </head>
 <body class="admin-body">
   {{ template "header.html" . }}
 
   <main class="admin-main">
-    <div class="container">
+    <div class="container py-5 px-3">
 
 <div class="admin-editor-studio" x-data="invitationEditor()">
-  <div class="admin-breadcrumb">
-    <a href="/admin" class="back-link" id="link-back-events">&larr; Back to Events Overview</a>
-  </div>
+  <nav class="breadcrumb mb-4" aria-label="breadcrumbs">
+    <ul>
+      <li><a href="/admin" id="link-back-events">&larr; Back to Events Overview</a></li>
+      <li class="is-active"><a href="#" aria-current="page" x-text="isNew ? 'New Invitation' : (invitation.title || 'Untitled')"></a></li>
+    </ul>
+  </nav>
 
-  <div class="admin-page-header">
-    <div>
-      <h1 class="admin-title" id="page-editor-title" x-text="isNew ? 'New Invitation' : ('Edit: ' + (invitation.title || 'Untitled'))">{{ .Title }}</h1>
-      <div class="admin-subtitle">
-        <span class="badge" :class="isNew ? 'badge-warning' : 'badge-success'" id="editor-status-badge" x-text="isNew ? '✦ New Draft' : '✓ Saved in Database'">
-          {{ if .IsNew }}✦ New Draft{{ else }}✓ Saved in Database{{ end }}
-        </span>
-        <span>&bull;</span>
-        <span id="preview-sync-status" x-text="syncStatus" style="font-size: 0.8125rem; color: var(--text-muted);">Live preview synced</span>
+  <div class="level mb-5">
+    <div class="level-left">
+      <div>
+        <h1 class="title is-3 mb-1" id="page-editor-title" x-text="isNew ? 'New Invitation' : ('Edit: ' + (invitation.title || 'Untitled'))">{{ .Title }}</h1>
+        <div class="tags has-addons mb-0">
+          <span class="tag" :class="isNew ? 'is-warning is-light' : 'is-success is-light'" id="editor-status-badge" x-text="isNew ? '✦ New Draft' : '✓ Saved in Database'">
+            {{ if .IsNew }}✦ New Draft{{ else }}✓ Saved in Database{{ end }}
+          </span>
+          <span class="tag is-light is-size-7 has-text-grey" id="preview-sync-status" x-text="syncStatus">Live preview synced</span>
+        </div>
       </div>
     </div>
-    <div class="admin-header-actions">
-      <a href="/admin" class="btn btn-secondary" id="btn-cancel-editor">Cancel</a>
-      <a :href="'/i/' + invitation.slug" class="btn btn-secondary" id="btn-view-live-pass" target="_blank" rel="noopener noreferrer" x-show="!isNew && invitation.slug" style="display: none;">
-        Open Pass &nearr;
-      </a>
-      <button type="button" class="btn btn-secondary" id="btn-delete-invitation" x-show="!isNew" @click="deleteInvitation()" style="color: hsl(0, 65%, 45%); display: none;" title="Delete event">
-        🗑 Delete
-      </button>
-      <button type="button" class="btn btn-primary" id="btn-save-invitation" @click="save()" :disabled="saving">
-        <span id="save-spinner" x-show="saving" style="display: none;">⏳ </span>
-        <span id="save-label" x-text="saving ? 'Saving...' : 'Save Invitation'">Save Invitation</span>
-      </button>
+    <div class="level-right">
+      <div class="buttons">
+        <a href="/admin" class="button is-light" id="btn-cancel-editor">Cancel</a>
+        <a :href="'/i/' + invitation.slug" class="button is-light" id="btn-view-live-pass" target="_blank" rel="noopener noreferrer" x-show="!isNew && invitation.slug" style="display: none;">
+          Open Pass &nearr;
+        </a>
+        <button type="button" class="button is-danger is-light" id="btn-delete-invitation" x-show="!isNew" @click="deleteInvitation()" style="display: none;" title="Delete event">
+          🗑 Delete
+        </button>
+        <button type="button" class="button is-primary" :class="{ 'is-loading': saving }" id="btn-save-invitation" @click="save()" :disabled="saving">
+          <span id="save-label" x-text="saving ? 'Saving...' : 'Save Invitation'">Save Invitation</span>
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- Validation Error Alert Container -->
-  <div id="validation-alert" class="admin-alert admin-alert-danger" x-show="errors.length > 0" style="display: none;" x-transition>
-    <div class="alert-icon">⚠️</div>
-    <div class="alert-content">
-      <h4 id="validation-alert-title">Please correct the following errors:</h4>
-      <ul id="validation-alert-list" style="margin: 0.35rem 0 0 1.25rem; padding: 0;">
-        <template x-for="(err, idx) in errors" :key="idx">
-          <li x-text="err"></li>
-        </template>
-      </ul>
+  <div id="validation-alert" class="notification is-danger is-light mb-5" x-show="errors.length > 0" style="display: none;" x-transition>
+    <div class="is-flex is-align-items-flex-start">
+      <span class="is-size-4 mr-3">⚠️</span>
+      <div>
+        <h4 class="has-text-weight-bold mb-1" id="validation-alert-title">Please correct the following errors:</h4>
+        <ul id="validation-alert-list" style="margin-left: 1rem; list-style-type: disc;">
+          <template x-for="(err, idx) in errors" :key="idx">
+            <li x-text="err"></li>
+          </template>
+        </ul>
+      </div>
     </div>
   </div>
 
   <!-- Success Toast Banner -->
-  <div id="success-toast" class="admin-alert admin-alert-success" x-show="successMessage" style="display: none;" x-transition>
-    <div class="alert-icon">✅</div>
-    <div class="alert-content">
-      <strong id="success-toast-message" x-text="successMessage">Invitation saved successfully!</strong>
+  <div id="success-toast" class="notification is-success is-light mb-5" x-show="successMessage" style="display: none;" x-transition>
+    <div class="is-flex is-align-items-center">
+      <span class="is-size-4 mr-3">✅</span>
+      <div>
+        <strong id="success-toast-message" x-text="successMessage">Invitation saved successfully!</strong>
+      </div>
     </div>
   </div>
 
   <!-- Split-Screen Builder Studio Layout -->
-  <div class="builder-layout">
+  <div class="columns is-desktop is-variable is-4">
     <!-- Left Column: Form Controls Pane -->
-    <div class="builder-form-pane">
+    <div class="column is-7-desktop is-8-widescreen">
       <form id="invitation-form" novalidate onsubmit="return false;">
         
         <!-- Card 1: Event Basics -->
-        <section class="builder-card">
-          <h2 class="builder-card-title">1. Event Basics</h2>
-          <p class="builder-card-subtitle">General event title, URL slug, schedule timing, and hosts.</p>
+        <section class="box mb-5">
+          <h2 class="title is-5 mb-1">1. Event Basics</h2>
+          <p class="subtitle is-6 has-text-grey mb-4">General event title, URL slug, schedule timing, and hosts.</p>
 
-          <div class="form-grid">
-            <div class="form-group col-12">
-              <label for="field-title" class="form-label required">Event Title</label>
-              <input type="text" id="field-title" class="form-input" placeholder="e.g. Sarah & Alex Wedding" required autocomplete="off" x-model="invitation.title" @input="onTitleInput()">
-            </div>
-
-            <div class="form-group col-12">
-              <label for="field-slug" class="form-label required">
-                URL Slug
-                <span class="form-label-hint">Pass will be accessible at <code>/i/<span id="slug-hint-text" x-text="invitation.slug || 'slug'">slug</span></code></span>
-              </label>
-              <div class="slug-input-wrapper">
-                <span class="slug-prefix">/i/</span>
-                <input type="text" id="field-slug" class="form-input slug-input" placeholder="sarah-and-alex-wedding" required autocomplete="off" x-model="invitation.slug" :readonly="!isNew" @input="manualSlug = true">
-                <span class="slug-locked-icon" x-show="!isNew" title="Slug cannot be changed once created to prevent broken invitation URLs" style="display: none;">🔒 Locked</span>
+          <div class="columns is-multiline">
+            <div class="column is-12">
+              <div class="field">
+                <label for="field-title" class="label is-small">Event Title <span class="has-text-danger">*</span></label>
+                <div class="control">
+                  <input type="text" id="field-title" class="input" placeholder="e.g. Sarah & Alex Wedding" required autocomplete="off" x-model="invitation.title" @input="onTitleInput()">
+                </div>
               </div>
             </div>
 
-            <div class="form-group col-12">
-              <label for="field-subtitle" class="form-label">Subtitle / Invitation Greeting</label>
-              <input type="text" id="field-subtitle" class="form-input" placeholder="e.g. Request the pleasure of your company to celebrate their marriage" x-model="invitation.subtitle">
+            <div class="column is-12">
+              <div class="field">
+                <label for="field-slug" class="label is-small">
+                  URL Slug <span class="has-text-danger">*</span>
+                  <span class="has-text-grey is-size-7 font-weight-normal ml-2">Pass will be accessible at <code>/i/<span id="slug-hint-text" x-text="invitation.slug || 'slug'">slug</span></code></span>
+                </label>
+                <div class="field has-addons">
+                  <div class="control">
+                    <a class="button is-static">/i/</a>
+                  </div>
+                  <div class="control is-expanded">
+                    <input type="text" id="field-slug" class="input" placeholder="sarah-and-alex-wedding" required autocomplete="off" x-model="invitation.slug" :readonly="!isNew" @input="manualSlug = true">
+                  </div>
+                  <div class="control" x-show="!isNew" style="display: none;">
+                    <span class="button is-static is-size-7" title="Slug cannot be changed once created">🔒 Locked</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div class="form-group col-12">
-              <label for="field-hosts" class="form-label">Hosts / Organizers</label>
-              <input type="text" id="field-hosts" class="form-input" placeholder="e.g. Sarah Jenkins, Alexander Hayes (comma-separated)" x-model="hostsRaw">
+            <div class="column is-12">
+              <div class="field">
+                <label for="field-subtitle" class="label is-small">Subtitle / Invitation Greeting</label>
+                <div class="control">
+                  <input type="text" id="field-subtitle" class="input" placeholder="e.g. Request the pleasure of your company to celebrate their marriage" x-model="invitation.subtitle">
+                </div>
+              </div>
             </div>
 
-            <div class="form-group col-12">
-              <label for="field-description" class="form-label">Description / Summary</label>
-              <textarea id="field-description" class="form-textarea" rows="2" placeholder="Brief event summary for messaging and calendar invites..." x-model="invitation.description"></textarea>
+            <div class="column is-12">
+              <div class="field">
+                <label for="field-hosts" class="label is-small">Hosts / Organizers</label>
+                <div class="control">
+                  <input type="text" id="field-hosts" class="input" placeholder="e.g. Sarah Jenkins, Alexander Hayes (comma-separated)" x-model="hostsRaw">
+                </div>
+              </div>
             </div>
 
-            <div class="form-group col-6">
-              <label for="field-date-start" class="form-label required">Start Date & Time</label>
-              <input type="datetime-local" id="field-date-start" class="form-input" required x-model="dateStartLocal">
+            <div class="column is-12">
+              <div class="field">
+                <label for="field-description" class="label is-small">Description / Summary</label>
+                <div class="control">
+                  <textarea id="field-description" class="textarea" rows="2" placeholder="Brief event summary for messaging and calendar invites..." x-model="invitation.description"></textarea>
+                </div>
+              </div>
             </div>
 
-            <div class="form-group col-6">
-              <label for="field-date-end" class="form-label">End Date & Time (Optional)</label>
-              <input type="datetime-local" id="field-date-end" class="form-input" x-model="dateEndLocal">
+            <div class="column is-6">
+              <div class="field">
+                <label for="field-date-start" class="label is-small">Start Date & Time <span class="has-text-danger">*</span></label>
+                <div class="control">
+                  <input type="datetime-local" id="field-date-start" class="input" required x-model="dateStartLocal">
+                </div>
+              </div>
             </div>
 
-            <div class="form-group col-12">
-              <label for="field-timezone" class="form-label">Event Timezone</label>
-              <input type="text" id="field-timezone" class="form-input" placeholder="e.g. America/New_York or UTC" list="timezones-list" x-model="invitation.timezone">
-              <datalist id="timezones-list">
-                <option value="America/New_York">
-                <option value="America/Chicago">
-                <option value="America/Denver">
-                <option value="America/Los_Angeles">
-                <option value="America/Argentina/Buenos_Aires">
-                <option value="America/Sao_Paulo">
-                <option value="Europe/London">
-                <option value="Europe/Paris">
-                <option value="Europe/Madrid">
-                <option value="Asia/Tokyo">
-                <option value="UTC">
-              </datalist>
+            <div class="column is-6">
+              <div class="field">
+                <label for="field-date-end" class="label is-small">End Date & Time (Optional)</label>
+                <div class="control">
+                  <input type="datetime-local" id="field-date-end" class="input" x-model="dateEndLocal">
+                </div>
+              </div>
+            </div>
+
+            <div class="column is-12">
+              <div class="field">
+                <label for="field-timezone" class="label is-small">Event Timezone</label>
+                <div class="control">
+                  <input type="text" id="field-timezone" class="input" placeholder="e.g. America/New_York or UTC" list="timezones-list" x-model="invitation.timezone">
+                  <datalist id="timezones-list">
+                    <option value="America/New_York">
+                    <option value="America/Chicago">
+                    <option value="America/Denver">
+                    <option value="America/Los_Angeles">
+                    <option value="America/Argentina/Buenos_Aires">
+                    <option value="America/Sao_Paulo">
+                    <option value="Europe/London">
+                    <option value="Europe/Paris">
+                    <option value="Europe/Madrid">
+                    <option value="Asia/Tokyo">
+                    <option value="UTC">
+                  </datalist>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
         <!-- Card 2: Venue & Location -->
-        <section class="builder-card">
-          <h2 class="builder-card-title">2. Venue & Location</h2>
-          <p class="builder-card-subtitle">Specify where guests should arrive and navigation details.</p>
+        <section class="box mb-5">
+          <h2 class="title is-5 mb-1">2. Venue & Location</h2>
+          <p class="subtitle is-6 has-text-grey mb-4">Specify where guests should arrive and navigation details.</p>
 
-          <div class="form-grid">
-            <div class="form-group col-12">
-              <label for="field-loc-name" class="form-label required">Venue Name</label>
-              <input type="text" id="field-loc-name" class="form-input" placeholder="e.g. Willowbrook Botanical Estate" required x-model="invitation.location.name">
+          <div class="columns is-multiline">
+            <div class="column is-12">
+              <div class="field">
+                <label for="field-loc-name" class="label is-small">Venue Name <span class="has-text-danger">*</span></label>
+                <div class="control">
+                  <input type="text" id="field-loc-name" class="input" placeholder="e.g. Willowbrook Botanical Estate" required x-model="invitation.location.name">
+                </div>
+              </div>
             </div>
 
-            <div class="form-group col-12">
-              <label for="field-loc-address" class="form-label required">Physical Street Address</label>
-              <input type="text" id="field-loc-address" class="form-input" placeholder="e.g. 450 Magnolia Lane, Charlottesville, VA" required x-model="invitation.location.address">
+            <div class="column is-12">
+              <div class="field">
+                <label for="field-loc-address" class="label is-small">Physical Street Address <span class="has-text-danger">*</span></label>
+                <div class="control">
+                  <input type="text" id="field-loc-address" class="input" placeholder="e.g. 450 Magnolia Lane, Charlottesville, VA" required x-model="invitation.location.address">
+                </div>
+              </div>
             </div>
 
-            <div class="form-group col-12">
-              <label for="field-loc-map-url" class="form-label">Google Maps Link</label>
-              <input type="url" id="field-loc-map-url" class="form-input" placeholder="https://maps.google.com/?q=..." x-model="invitation.location.map_url">
+            <div class="column is-12">
+              <div class="field">
+                <label for="field-loc-map-url" class="label is-small">Google Maps Link</label>
+                <div class="control">
+                  <input type="url" id="field-loc-map-url" class="input" placeholder="https://maps.google.com/?q=..." x-model="invitation.location.map_url">
+                </div>
+              </div>
             </div>
 
-            <div class="form-group col-12">
-              <label for="field-loc-directions" class="form-label">Directions & Parking Notes</label>
-              <input type="text" id="field-loc-directions" class="form-input" placeholder="e.g. Complimentary valet parking at the main entrance." x-model="invitation.location.directions_note">
+            <div class="column is-12">
+              <div class="field">
+                <label for="field-loc-directions" class="label is-small">Directions & Parking Notes</label>
+                <div class="control">
+                  <input type="text" id="field-loc-directions" class="input" placeholder="e.g. Complimentary valet parking at the main entrance." x-model="invitation.location.directions_note">
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
         <!-- Card 3: Visual Theme & Styling -->
-        <section class="builder-card">
-          <h2 class="builder-card-title">3. Visual Theme & Palette</h2>
-          <p class="builder-card-subtitle">Choose an artistic visual identity for the continuous canvas pass.</p>
+        <section class="box mb-5">
+          <h2 class="title is-5 mb-1">3. Visual Theme & Palette</h2>
+          <p class="subtitle is-6 has-text-grey mb-4">Choose an artistic visual identity for the continuous canvas pass.</p>
 
-          <div class="theme-swatches-grid" id="theme-swatches-container">
+          <div class="columns is-multiline mb-3" id="theme-swatches-container">
             <!-- Botanical Elegance -->
-            <div class="theme-swatch-card" :class="{ active: invitation.theme.id === 'botanical-elegance' }" @click="invitation.theme.id = 'botanical-elegance'">
-              <div class="swatch-header">
-                <div class="swatch-color-dots">
-                  <span class="swatch-dot" style="background: #2A4738;"></span>
-                  <span class="swatch-dot" style="background: #FBF8F3; border: 1px solid #ddd;"></span>
-                  <span class="swatch-dot" style="background: #D4AF37;"></span>
+            <div class="column is-6">
+              <div class="theme-swatch-card" :class="{ active: invitation.theme.id === 'botanical-elegance' }" @click="invitation.theme.id = 'botanical-elegance'">
+                <div class="swatch-header">
+                  <div class="swatch-color-dots">
+                    <span class="swatch-dot" style="background: #2A4738;"></span>
+                    <span class="swatch-dot" style="background: #FBF8F3; border: 1px solid #ddd;"></span>
+                    <span class="swatch-dot" style="background: #D4AF37;"></span>
+                  </div>
+                  <span class="swatch-check">✓</span>
                 </div>
-                <span class="swatch-check">✓</span>
+                <div class="swatch-name">Botanical Elegance</div>
+                <div class="swatch-vibe">Forest Sage, Cream & Warm Gold</div>
               </div>
-              <div class="swatch-name">Botanical Elegance</div>
-              <div class="swatch-vibe">Forest Sage, Cream & Warm Gold</div>
             </div>
 
             <!-- Golden Sunset -->
-            <div class="theme-swatch-card" :class="{ active: invitation.theme.id === 'golden-sunset' }" @click="invitation.theme.id = 'golden-sunset'">
-              <div class="swatch-header">
-                <div class="swatch-color-dots">
-                  <span class="swatch-dot" style="background: #A24B35;"></span>
-                  <span class="swatch-dot" style="background: #FAF5EF; border: 1px solid #ddd;"></span>
-                  <span class="swatch-dot" style="background: #E07A5F;"></span>
+            <div class="column is-6">
+              <div class="theme-swatch-card" :class="{ active: invitation.theme.id === 'golden-sunset' }" @click="invitation.theme.id = 'golden-sunset'">
+                <div class="swatch-header">
+                  <div class="swatch-color-dots">
+                    <span class="swatch-dot" style="background: #A24B35;"></span>
+                    <span class="swatch-dot" style="background: #FAF5EF; border: 1px solid #ddd;"></span>
+                    <span class="swatch-dot" style="background: #E07A5F;"></span>
+                  </div>
+                  <span class="swatch-check">✓</span>
                 </div>
-                <span class="swatch-check">✓</span>
+                <div class="swatch-name">Golden Sunset</div>
+                <div class="swatch-vibe">Terracotta, Coral & Radiant Sand</div>
               </div>
-              <div class="swatch-name">Golden Sunset</div>
-              <div class="swatch-vibe">Terracotta, Coral & Radiant Sand</div>
             </div>
 
             <!-- Midnight Soirée -->
-            <div class="theme-swatch-card" :class="{ active: invitation.theme.id === 'midnight-soiree' }" @click="invitation.theme.id = 'midnight-soiree'">
-              <div class="swatch-header">
-                <div class="swatch-color-dots">
-                  <span class="swatch-dot" style="background: #0E121B;"></span>
-                  <span class="swatch-dot" style="background: #1E2538;"></span>
-                  <span class="swatch-dot" style="background: #94A3B8;"></span>
+            <div class="column is-6">
+              <div class="theme-swatch-card" :class="{ active: invitation.theme.id === 'midnight-soiree' }" @click="invitation.theme.id = 'midnight-soiree'">
+                <div class="swatch-header">
+                  <div class="swatch-color-dots">
+                    <span class="swatch-dot" style="background: #0E121B;"></span>
+                    <span class="swatch-dot" style="background: #1E2538;"></span>
+                    <span class="swatch-dot" style="background: #94A3B8;"></span>
+                  </div>
+                  <span class="swatch-check">✓</span>
                 </div>
-                <span class="swatch-check">✓</span>
+                <div class="swatch-name">Midnight Soirée</div>
+                <div class="swatch-vibe">Deep Indigo, Night Sky & Starlight</div>
               </div>
-              <div class="swatch-name">Midnight Soirée</div>
-              <div class="swatch-vibe">Deep Indigo, Night Sky & Starlight</div>
             </div>
 
             <!-- Modern Minimal -->
-            <div class="theme-swatch-card" :class="{ active: invitation.theme.id === 'modern-minimal' }" @click="invitation.theme.id = 'modern-minimal'">
-              <div class="swatch-header">
-                <div class="swatch-color-dots">
-                  <span class="swatch-dot" style="background: #1A1A1A;"></span>
-                  <span class="swatch-dot" style="background: #F5F5F7; border: 1px solid #ddd;"></span>
-                  <span class="swatch-dot" style="background: #737373;"></span>
+            <div class="column is-6">
+              <div class="theme-swatch-card" :class="{ active: invitation.theme.id === 'modern-minimal' }" @click="invitation.theme.id = 'modern-minimal'">
+                <div class="swatch-header">
+                  <div class="swatch-color-dots">
+                    <span class="swatch-dot" style="background: #1A1A1A;"></span>
+                    <span class="swatch-dot" style="background: #F5F5F7; border: 1px solid #ddd;"></span>
+                    <span class="swatch-dot" style="background: #737373;"></span>
+                  </div>
+                  <span class="swatch-check">✓</span>
                 </div>
-                <span class="swatch-check">✓</span>
+                <div class="swatch-name">Modern Minimal</div>
+                <div class="swatch-vibe">Monochrome, Clean Stone & Editorial</div>
               </div>
-              <div class="swatch-name">Modern Minimal</div>
-              <div class="swatch-vibe">Monochrome, Clean Stone & Editorial</div>
             </div>
           </div>
 
           <!-- Collapsible Palette Overrides -->
-          <details class="builder-details-accordion">
-            <summary class="builder-details-summary">Custom Palette Overrides (Optional)</summary>
-            <div class="details-content form-grid" style="padding-top: 1rem;">
-              <div class="form-group col-4">
-                <label for="field-palette-primary" class="form-label">Primary Color</label>
-                <input type="text" id="field-palette-primary" class="form-input" placeholder="#2A4738" x-model="invitation.theme.palette_override.primary">
+          <details class="box is-shadowless p-3" style="border: 1px solid var(--bulma-border-weak, #dbdbdb);">
+            <summary class="is-clickable has-text-weight-semibold is-size-7 has-text-grey">Custom Palette Overrides (Optional)</summary>
+            <div class="columns is-multiline mt-2">
+              <div class="column is-4">
+                <div class="field">
+                  <label for="field-palette-primary" class="label is-small">Primary Color</label>
+                  <div class="control">
+                    <input type="text" id="field-palette-primary" class="input is-small" placeholder="#2A4738" x-model="invitation.theme.palette_override.primary">
+                  </div>
+                </div>
               </div>
-              <div class="form-group col-4">
-                <label for="field-palette-bg" class="form-label">Background Color</label>
-                <input type="text" id="field-palette-bg" class="form-input" placeholder="#FBF8F3" x-model="invitation.theme.palette_override.background">
+              <div class="column is-4">
+                <div class="field">
+                  <label for="field-palette-bg" class="label is-small">Background Color</label>
+                  <div class="control">
+                    <input type="text" id="field-palette-bg" class="input is-small" placeholder="#FBF8F3" x-model="invitation.theme.palette_override.background">
+                  </div>
+                </div>
               </div>
-              <div class="form-group col-4">
-                <label for="field-palette-accent" class="form-label">Accent Color</label>
-                <input type="text" id="field-palette-accent" class="form-input" placeholder="#D4AF37" x-model="invitation.theme.palette_override.accent">
+              <div class="column is-4">
+                <div class="field">
+                  <label for="field-palette-accent" class="label is-small">Accent Color</label>
+                  <div class="control">
+                    <input type="text" id="field-palette-accent" class="input is-small" placeholder="#D4AF37" x-model="invitation.theme.palette_override.accent">
+                  </div>
+                </div>
               </div>
-              <div class="form-group col-6">
-                <label for="field-palette-text" class="form-label">Text Color</label>
-                <input type="text" id="field-palette-text" class="form-input" placeholder="#2C3531" x-model="invitation.theme.palette_override.text">
+              <div class="column is-6">
+                <div class="field">
+                  <label for="field-palette-text" class="label is-small">Text Color</label>
+                  <div class="control">
+                    <input type="text" id="field-palette-text" class="input is-small" placeholder="#2C3531" x-model="invitation.theme.palette_override.text">
+                  </div>
+                </div>
               </div>
-              <div class="form-group col-6">
-                <label for="field-palette-card-bg" class="form-label">Card Background</label>
-                <input type="text" id="field-palette-card-bg" class="form-input" placeholder="#FFFFFF" x-model="invitation.theme.palette_override.card_bg">
+              <div class="column is-6">
+                <div class="field">
+                  <label for="field-palette-card-bg" class="label is-small">Card Background</label>
+                  <div class="control">
+                    <input type="text" id="field-palette-card-bg" class="input is-small" placeholder="#FFFFFF" x-model="invitation.theme.palette_override.card_bg">
+                  </div>
+                </div>
               </div>
-              <div class="form-group col-12">
-                <label for="field-custom-css" class="form-label">Custom CSS Overrides</label>
-                <textarea id="field-custom-css" class="form-textarea" rows="2" placeholder="/* Custom CSS rules injected into page header */" x-model="invitation.theme.custom_css"></textarea>
+              <div class="column is-12">
+                <div class="field">
+                  <label for="field-custom-css" class="label is-small">Custom CSS Overrides</label>
+                  <div class="control">
+                    <textarea id="field-custom-css" class="textarea is-small" rows="2" placeholder="/* Custom CSS rules injected into page header */" x-model="invitation.theme.custom_css"></textarea>
+                  </div>
+                </div>
               </div>
             </div>
           </details>
         </section>
 
         <!-- Card 4: Modular Section Blocks -->
-        <section class="builder-card">
-          <div class="builder-card-header-row">
-            <div>
-              <h2 class="builder-card-title">4. Modular Section Canvas</h2>
-              <p class="builder-card-subtitle">Assemble the invitation experience using modular building blocks.</p>
-            </div>
+        <section class="box mb-5">
+          <div class="mb-4">
+            <h2 class="title is-5 mb-1">4. Modular Section Canvas</h2>
+            <p class="subtitle is-6 has-text-grey">Assemble the invitation experience using modular building blocks.</p>
           </div>
 
           <!-- Rendered Sections List via Alpine x-for -->
-          <div id="sections-container" class="sections-stack">
+          <div id="sections-container" class="mb-4">
             <template x-if="invitation.sections.length === 0">
-              <div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted); background: var(--bg-subtle); border-radius: var(--radius-sm);">
+              <div class="notification is-light has-text-centered is-size-7 has-text-grey py-5">
                 No sections configured yet. Use the selector below to add blocks.
               </div>
             </template>
 
             <template x-for="(sec, idx) in invitation.sections" :key="sec._uid || idx">
-              <div class="section-card">
+              <div class="card mb-4" style="border: 1px solid var(--bulma-border-weak, #dbdbdb);">
                 <!-- Section Header -->
-                <div class="section-card-header">
-                  <div class="section-card-title-group">
-                    <span class="section-badge" x-text="sec.type"></span>
-                    <span class="section-label" x-text="getSectionLabel(sec.type)"></span>
+                <header class="card-header has-background-light is-align-items-center px-4 py-2">
+                  <div class="card-header-title p-0 is-align-items-center">
+                    <span class="tag is-info is-light mr-2 is-uppercase is-size-7 has-text-weight-bold" x-text="sec.type"></span>
+                    <span class="is-size-6 has-text-weight-semibold" x-text="getSectionLabel(sec.type)"></span>
                   </div>
-                  <div class="section-card-actions">
-                    <button type="button" class="section-action-btn" title="Move Up" @click="moveSection(idx, -1)" :disabled="idx === 0" :style="idx === 0 ? 'opacity:0.4;cursor:default;' : ''">▲</button>
-                    <button type="button" class="section-action-btn" title="Move Down" @click="moveSection(idx, 1)" :disabled="idx === invitation.sections.length - 1" :style="idx === invitation.sections.length - 1 ? 'opacity:0.4;cursor:default;' : ''">▼</button>
-                    <button type="button" class="section-action-btn delete-btn" title="Remove Section" @click="removeSection(idx)">🗑</button>
+                  <div class="buttons has-addons mb-0">
+                    <button type="button" class="button is-small is-light" title="Move Up" @click="moveSection(idx, -1)" :disabled="idx === 0">▲</button>
+                    <button type="button" class="button is-small is-light" title="Move Down" @click="moveSection(idx, 1)" :disabled="idx === invitation.sections.length - 1">▼</button>
+                    <button type="button" class="button is-small is-danger is-light" title="Remove Section" @click="removeSection(idx)">🗑</button>
                   </div>
-                </div>
+                </header>
 
                 <!-- Section Body: Polymorphic Fields -->
-                <div class="section-card-body">
+                <div class="card-content p-4">
 
                   <!-- 1. Hero Block -->
                   <template x-if="sec.type === 'hero'">
-                    <div class="form-grid">
-                      <div class="form-group col-6">
-                        <label class="form-label">Layout Style</label>
-                        <select class="form-input" x-model="sec.layout">
-                          <option value="full-bleed">Full-Bleed Cover</option>
-                          <option value="banner">Split Banner</option>
-                        </select>
-                      </div>
-                      <div class="form-group col-6">
-                        <label class="form-label">Eyebrow Tag</label>
-                        <input type="text" class="form-input" placeholder="e.g. Wedding Celebration" x-model="sec.eyebrow">
-                      </div>
-                      <div class="form-group col-12">
-                        <label class="form-label">Vibe / Tagline</label>
-                        <input type="text" class="form-input" placeholder="e.g. An intimate evening of vows and dinner" x-model="sec.vibe">
-                      </div>
-                      <div class="form-group col-12">
-                        <label class="form-label">Hero Cover Image URL</label>
-                        <div class="image-upload-wrapper">
-                          <div class="image-upload-row">
-                            <input type="text" class="form-input" placeholder="/uploads/... or https://..." x-model="sec.cover_image_url">
-                            <label class="upload-btn-label">
-                              <span>📷 Upload</span>
-                              <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;" @change="uploadFile($event, sec, 'cover_image_url')">
-                            </label>
+                    <div class="columns is-multiline">
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Layout Style</label>
+                          <div class="control">
+                            <div class="select is-fullwidth is-small">
+                              <select x-model="sec.layout">
+                                <option value="full-bleed">Full-Bleed Cover</option>
+                                <option value="banner">Split Banner</option>
+                              </select>
+                            </div>
                           </div>
-                          <img :src="sec.cover_image_url" class="image-upload-thumb" x-show="sec.cover_image_url" style="display:none;">
                         </div>
                       </div>
-                      <div class="form-group col-12" style="flex-direction:row; align-items:center; gap:0.5rem; margin-top:0.25rem;">
-                        <input type="checkbox" :id="'hero-countdown-' + (sec._uid || idx)" x-model="sec.show_countdown">
-                        <label :for="'hero-countdown-' + (sec._uid || idx)" class="form-label" style="margin-bottom:0;cursor:pointer;">Show Countdown Clock</label>
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Eyebrow Tag</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="e.g. Wedding Celebration" x-model="sec.eyebrow">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column is-12">
+                        <div class="field">
+                          <label class="label is-small">Vibe / Tagline</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="e.g. An intimate evening of vows and dinner" x-model="sec.vibe">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column is-12">
+                        <div class="field">
+                          <label class="label is-small">Hero Cover Image URL</label>
+                          <div class="control">
+                            <div class="field has-addons mb-2">
+                              <div class="control is-expanded">
+                                <input type="text" class="input is-small" placeholder="/uploads/... or https://..." x-model="sec.cover_image_url">
+                              </div>
+                              <div class="control">
+                                <label class="button is-small is-light">
+                                  <span>📷 Upload</span>
+                                  <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;" @change="uploadFile($event, sec, 'cover_image_url')">
+                                </label>
+                              </div>
+                            </div>
+                            <img :src="sec.cover_image_url" class="image-upload-thumb" x-show="sec.cover_image_url" style="display:none;">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column is-12">
+                        <label class="checkbox is-size-7">
+                          <input type="checkbox" :id="'hero-countdown-' + (sec._uid || idx)" x-model="sec.show_countdown">
+                          Show Countdown Clock
+                        </label>
                       </div>
                     </div>
                   </template>
 
                   <!-- 2. Details Quick Strip -->
                   <template x-if="sec.type === 'details'">
-                    <div class="form-grid">
-                      <div class="form-group col-6" style="flex-direction:row; align-items:center; gap:0.5rem;">
-                        <input type="checkbox" :id="'details-map-' + (sec._uid || idx)" x-model="sec.show_map_link">
-                        <label :for="'details-map-' + (sec._uid || idx)" class="form-label" style="margin-bottom:0;cursor:pointer;">Show Google Maps Link</label>
+                    <div class="columns is-multiline">
+                      <div class="column is-6">
+                        <label class="checkbox is-size-7">
+                          <input type="checkbox" :id="'details-map-' + (sec._uid || idx)" x-model="sec.show_map_link">
+                          Show Google Maps Link
+                        </label>
                       </div>
-                      <div class="form-group col-6" style="flex-direction:row; align-items:center; gap:0.5rem;">
-                        <input type="checkbox" :id="'details-cal-' + (sec._uid || idx)" x-model="sec.show_calendar_button">
-                        <label :for="'details-cal-' + (sec._uid || idx)" class="form-label" style="margin-bottom:0;cursor:pointer;">Show Add to Calendar Button</label>
+                      <div class="column is-6">
+                        <label class="checkbox is-size-7">
+                          <input type="checkbox" :id="'details-cal-' + (sec._uid || idx)" x-model="sec.show_calendar_button">
+                          Show Add to Calendar Button
+                        </label>
                       </div>
                     </div>
                   </template>
 
                   <!-- 3. Quote Block -->
                   <template x-if="sec.type === 'quote'">
-                    <div class="form-grid">
-                      <div class="form-group col-12">
-                        <label class="form-label required">Quote Text</label>
-                        <textarea class="form-textarea" rows="2" placeholder="e.g. Whatever our souls are made of, his and mine are the same." x-model="sec.text"></textarea>
+                    <div class="columns is-multiline">
+                      <div class="column is-12">
+                        <div class="field">
+                          <label class="label is-small">Quote Text <span class="has-text-danger">*</span></label>
+                          <div class="control">
+                            <textarea class="textarea is-small" rows="2" placeholder="e.g. Whatever our souls are made of, his and mine are the same." x-model="sec.text"></textarea>
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-12">
-                        <label class="form-label">Author / Attribution</label>
-                        <input type="text" class="form-input" placeholder="e.g. Emily Brontë" x-model="sec.author">
+                      <div class="column is-12">
+                        <div class="field">
+                          <label class="label is-small">Author / Attribution</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="e.g. Emily Brontë" x-model="sec.author">
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </template>
 
                   <!-- 4. Text Announcement Block -->
                   <template x-if="sec.type === 'text'">
-                    <div class="form-grid">
-                      <div class="form-group col-8">
-                        <label class="form-label">Announcement Title</label>
-                        <input type="text" class="form-input" placeholder="e.g. Guest Accommodations" x-model="sec.title">
+                    <div class="columns is-multiline">
+                      <div class="column is-8">
+                        <div class="field">
+                          <label class="label is-small">Announcement Title</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="e.g. Guest Accommodations" x-model="sec.title">
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-4">
-                        <label class="form-label">Text Alignment</label>
-                        <select class="form-input" x-model="sec.align">
-                          <option value="left">Left</option>
-                          <option value="center">Center</option>
-                          <option value="right">Right</option>
-                        </select>
+                      <div class="column is-4">
+                        <div class="field">
+                          <label class="label is-small">Text Alignment</label>
+                          <div class="control">
+                            <div class="select is-fullwidth is-small">
+                              <select x-model="sec.align">
+                                <option value="left">Left</option>
+                                <option value="center">Center</option>
+                                <option value="right">Right</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-12">
-                        <label class="form-label required">Message Content</label>
-                        <textarea class="form-textarea" rows="3" placeholder="Inform guests about parking, lodging, or transport..." x-model="sec.text"></textarea>
+                      <div class="column is-12">
+                        <div class="field">
+                          <label class="label is-small">Message Content <span class="has-text-danger">*</span></label>
+                          <div class="control">
+                            <textarea class="textarea is-small" rows="3" placeholder="Inform guests about parking, lodging, or transport..." x-model="sec.text"></textarea>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </template>
 
                   <!-- 5. Single Image Block -->
                   <template x-if="sec.type === 'image'">
-                    <div class="form-grid">
-                      <div class="form-group col-12">
-                        <label class="form-label required">Photo Image URL</label>
-                        <div class="image-upload-wrapper">
-                          <div class="image-upload-row">
-                            <input type="text" class="form-input" placeholder="/uploads/... or https://..." x-model="sec.url">
-                            <label class="upload-btn-label">
-                              <span>📷 Upload</span>
-                              <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;" @change="uploadFile($event, sec, 'url')">
-                            </label>
+                    <div class="columns is-multiline">
+                      <div class="column is-12">
+                        <div class="field">
+                          <label class="label is-small">Photo Image URL <span class="has-text-danger">*</span></label>
+                          <div class="control">
+                            <div class="field has-addons mb-2">
+                              <div class="control is-expanded">
+                                <input type="text" class="input is-small" placeholder="/uploads/... or https://..." x-model="sec.url">
+                              </div>
+                              <div class="control">
+                                <label class="button is-small is-light">
+                                  <span>📷 Upload</span>
+                                  <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;" @change="uploadFile($event, sec, 'url')">
+                                </label>
+                              </div>
+                            </div>
+                            <img :src="sec.url" class="image-upload-thumb" x-show="sec.url" style="display:none;">
                           </div>
-                          <img :src="sec.url" class="image-upload-thumb" x-show="sec.url" style="display:none;">
                         </div>
                       </div>
-                      <div class="form-group col-6">
-                        <label class="form-label">Caption</label>
-                        <input type="text" class="form-input" placeholder="Optional photo caption" x-model="sec.caption">
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Caption</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="Optional photo caption" x-model="sec.caption">
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-6">
-                        <label class="form-label">Alt Text</label>
-                        <input type="text" class="form-input" placeholder="Accessibility description" x-model="sec.alt">
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Alt Text</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="Accessibility description" x-model="sec.alt">
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </template>
 
                   <!-- 6. Photo Carousel Block -->
                   <template x-if="sec.type === 'carousel'">
-                    <div class="form-grid">
-                      <div class="form-group col-6">
-                        <label class="form-label">Gallery Title</label>
-                        <input type="text" class="form-input" placeholder="e.g. Our Story" x-model="sec.title">
+                    <div class="columns is-multiline">
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Gallery Title</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="e.g. Our Story" x-model="sec.title">
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-3">
-                        <label class="form-label">Aspect Ratio</label>
-                        <select class="form-input" x-model="sec.aspect_ratio">
-                          <option value="4-3">4:3 Standard</option>
-                          <option value="16-9">16:9 Landscape</option>
-                          <option value="1-1">1:1 Square</option>
-                          <option value="4-5">4:5 Portrait</option>
-                        </select>
+                      <div class="column is-3">
+                        <div class="field">
+                          <label class="label is-small">Aspect Ratio</label>
+                          <div class="control">
+                            <div class="select is-fullwidth is-small">
+                              <select x-model="sec.aspect_ratio">
+                                <option value="4-3">4:3 Standard</option>
+                                <option value="16-9">16:9 Landscape</option>
+                                <option value="1-1">1:1 Square</option>
+                                <option value="4-5">4:5 Portrait</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-3">
-                        <label class="form-label">Fit Mode</label>
-                        <select class="form-input" x-model="sec.fit">
-                          <option value="cover">Cover (Crop)</option>
-                          <option value="contain">Contain</option>
-                        </select>
+                      <div class="column is-3">
+                        <div class="field">
+                          <label class="label is-small">Fit Mode</label>
+                          <div class="control">
+                            <div class="select is-fullwidth is-small">
+                              <select x-model="sec.fit">
+                                <option value="cover">Cover (Crop)</option>
+                                <option value="contain">Contain</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-12">
-                        <label class="form-label">Gallery Photos</label>
-                        <div class="sub-items-stack">
+                      <div class="column is-12">
+                        <label class="label is-small">Gallery Photos</label>
+                        <div class="sub-items-stack mb-2">
                           <template x-for="(img, imgIdx) in sec.images" :key="img._uid || imgIdx">
-                            <div class="sub-item-card form-grid">
-                              <button type="button" class="sub-item-remove-btn" title="Remove Photo" @click="sec.images.splice(imgIdx, 1)">&times;</button>
-                              <div class="form-group col-12">
-                                <label class="form-label required" x-text="'Photo #' + (imgIdx + 1) + ' URL'"></label>
-                                <div class="image-upload-wrapper">
-                                  <div class="image-upload-row">
-                                    <input type="text" class="form-input" placeholder="/uploads/... or https://..." x-model="img.url">
-                                    <label class="upload-btn-label">
+                            <div class="box p-3 mb-2 has-background-white-bis position-relative">
+                              <button type="button" class="delete is-small" style="position: absolute; top: 0.5rem; right: 0.5rem;" title="Remove Photo" @click="sec.images.splice(imgIdx, 1)"></button>
+                              <div class="field mb-2">
+                                <label class="label is-small" x-text="'Photo #' + (imgIdx + 1) + ' URL'"></label>
+                                <div class="field has-addons mb-1">
+                                  <div class="control is-expanded">
+                                    <input type="text" class="input is-small" placeholder="/uploads/... or https://..." x-model="img.url">
+                                  </div>
+                                  <div class="control">
+                                    <label class="button is-small is-light">
                                       <span>📷 Upload</span>
                                       <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;" @change="uploadFile($event, img, 'url')">
                                     </label>
                                   </div>
-                                  <img :src="img.url" class="image-upload-thumb" x-show="img.url" style="display:none;">
                                 </div>
+                                <img :src="img.url" class="image-upload-thumb" x-show="img.url" style="display:none;">
                               </div>
-                              <div class="form-group col-6">
-                                <label class="form-label">Caption</label>
-                                <input type="text" class="form-input" placeholder="Caption" x-model="img.caption">
-                              </div>
-                              <div class="form-group col-6">
-                                <label class="form-label">Alt Text</label>
-                                <input type="text" class="form-input" placeholder="Alt text" x-model="img.alt">
+                              <div class="columns is-mobile">
+                                <div class="column is-6">
+                                  <input type="text" class="input is-small" placeholder="Caption" x-model="img.caption">
+                                </div>
+                                <div class="column is-6">
+                                  <input type="text" class="input is-small" placeholder="Alt text" x-model="img.alt">
+                                </div>
                               </div>
                             </div>
                           </template>
                         </div>
-                        <button type="button" class="btn btn-secondary" style="margin-top: 0.5rem; font-size: 0.8125rem;" @click="addCarouselImage(sec)">
+                        <button type="button" class="button is-small is-light" @click="addCarouselImage(sec)">
                           + Add Photo to Gallery
                         </button>
                       </div>
@@ -474,33 +645,39 @@
 
                   <!-- 7. Timeline Block -->
                   <template x-if="sec.type === 'timeline'">
-                    <div class="form-grid">
-                      <div class="form-group col-12">
-                        <label class="form-label">Schedule Section Title</label>
-                        <input type="text" class="form-input" placeholder="Schedule of Events" x-model="sec.title">
+                    <div class="columns is-multiline">
+                      <div class="column is-12">
+                        <div class="field">
+                          <label class="label is-small">Schedule Section Title</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="Schedule of Events" x-model="sec.title">
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-12">
-                        <label class="form-label">Milestones</label>
-                        <div class="sub-items-stack">
+                      <div class="column is-12">
+                        <label class="label is-small">Milestones</label>
+                        <div class="sub-items-stack mb-2">
                           <template x-for="(item, itemIdx) in sec.items" :key="item._uid || itemIdx">
-                            <div class="sub-item-card form-grid">
-                              <button type="button" class="sub-item-remove-btn" title="Remove Milestone" @click="sec.items.splice(itemIdx, 1)">&times;</button>
-                              <div class="form-group col-3">
-                                <label class="form-label required">Time</label>
-                                <input type="text" class="form-input" placeholder="e.g. 4:00 PM" x-model="item.time">
-                              </div>
-                              <div class="form-group col-5">
-                                <label class="form-label required">Milestone Title</label>
-                                <input type="text" class="form-input" placeholder="e.g. Ceremony" x-model="item.title">
-                              </div>
-                              <div class="form-group col-4">
-                                <label class="form-label">Location / Note</label>
-                                <input type="text" class="form-input" placeholder="e.g. Conservatory Lawn" x-model="item.description">
+                            <div class="box p-3 mb-2 has-background-white-bis position-relative">
+                              <button type="button" class="delete is-small" style="position: absolute; top: 0.5rem; right: 0.5rem;" title="Remove Milestone" @click="sec.items.splice(itemIdx, 1)"></button>
+                              <div class="columns is-multiline">
+                                <div class="column is-3">
+                                  <label class="label is-small">Time <span class="has-text-danger">*</span></label>
+                                  <input type="text" class="input is-small" placeholder="e.g. 4:00 PM" x-model="item.time">
+                                </div>
+                                <div class="column is-5">
+                                  <label class="label is-small">Milestone Title <span class="has-text-danger">*</span></label>
+                                  <input type="text" class="input is-small" placeholder="e.g. Ceremony" x-model="item.title">
+                                </div>
+                                <div class="column is-4">
+                                  <label class="label is-small">Location / Note</label>
+                                  <input type="text" class="input is-small" placeholder="e.g. Conservatory Lawn" x-model="item.description">
+                                </div>
                               </div>
                             </div>
                           </template>
                         </div>
-                        <button type="button" class="btn btn-secondary" style="margin-top: 0.5rem; font-size: 0.8125rem;" @click="addTimelineItem(sec)">
+                        <button type="button" class="button is-small is-light" @click="addTimelineItem(sec)">
                           + Add Milestone
                         </button>
                       </div>
@@ -509,107 +686,165 @@
 
                   <!-- 8. Dress Code Block -->
                   <template x-if="sec.type === 'dress_code'">
-                    <div class="form-grid">
-                      <div class="form-group col-6">
-                        <label class="form-label">Section Title</label>
-                        <input type="text" class="form-input" placeholder="Dress Code" x-model="sec.title">
+                    <div class="columns is-multiline">
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Section Title</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="Dress Code" x-model="sec.title">
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-6">
-                        <label class="form-label required">Attire Name</label>
-                        <input type="text" class="form-input" placeholder="e.g. Garden Formal" x-model="sec.name">
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Attire Name <span class="has-text-danger">*</span></label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="e.g. Garden Formal" x-model="sec.name">
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-12">
-                        <label class="form-label">Guideline Description</label>
-                        <textarea class="form-textarea" rows="2" placeholder="Suits or cocktail dresses. Outdoor footwear recommended." x-model="sec.description"></textarea>
+                      <div class="column is-12">
+                        <div class="field">
+                          <label class="label is-small">Guideline Description</label>
+                          <div class="control">
+                            <textarea class="textarea is-small" rows="2" placeholder="Suits or cocktail dresses. Outdoor footwear recommended." x-model="sec.description"></textarea>
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-12">
-                        <label class="form-label">Suggested Palette Hints (Hex codes, comma-separated)</label>
-                        <input type="text" class="form-input" placeholder="#2A4738, #D4AF37, #EFEBE4" x-model="sec._palette_hints_raw">
+                      <div class="column is-12">
+                        <div class="field">
+                          <label class="label is-small">Suggested Palette Hints (Hex codes, comma-separated)</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="#2A4738, #D4AF37, #EFEBE4" x-model="sec._palette_hints_raw">
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </template>
 
                   <!-- 9. Interactive RSVP Form Block -->
                   <template x-if="sec.type === 'rsvp'">
-                    <div class="form-grid">
-                      <div class="form-group col-6" style="flex-direction:row; align-items:center; gap:0.5rem;">
-                        <input type="checkbox" :id="'rsvp-enable-' + (sec._uid || idx)" x-model="sec.enabled">
-                        <label :for="'rsvp-enable-' + (sec._uid || idx)" class="form-label" style="margin-bottom:0;cursor:pointer;">Accept Interactive RSVPs</label>
+                    <div class="columns is-multiline">
+                      <div class="column is-6">
+                        <label class="checkbox is-size-7">
+                          <input type="checkbox" :id="'rsvp-enable-' + (sec._uid || idx)" x-model="sec.enabled">
+                          Accept Interactive RSVPs
+                        </label>
                       </div>
-                      <div class="form-group col-6">
-                        <label class="form-label">RSVP Deadline</label>
-                        <input type="datetime-local" class="form-input" x-model="sec._deadline_local">
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">RSVP Deadline</label>
+                          <div class="control">
+                            <input type="datetime-local" class="input is-small" x-model="sec._deadline_local">
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-4">
-                        <label class="form-label">Max Party Size</label>
-                        <input type="number" class="form-input" min="1" max="10" x-model.number="sec.max_party_size">
+                      <div class="column is-4">
+                        <div class="field">
+                          <label class="label is-small">Max Party Size</label>
+                          <div class="control">
+                            <input type="number" class="input is-small" min="1" max="10" x-model.number="sec.max_party_size">
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-4" style="flex-direction:row; align-items:center; gap:0.5rem; margin-top:1.5rem;">
-                        <input type="checkbox" :id="'rsvp-dietary-' + (sec._uid || idx)" x-model="sec.ask_dietary">
-                        <label :for="'rsvp-dietary-' + (sec._uid || idx)" class="form-label" style="margin-bottom:0;cursor:pointer;">Ask Dietary Needs</label>
+                      <div class="column is-4">
+                        <label class="checkbox is-size-7 mt-5">
+                          <input type="checkbox" :id="'rsvp-dietary-' + (sec._uid || idx)" x-model="sec.ask_dietary">
+                          Ask Dietary Needs
+                        </label>
                       </div>
-                      <div class="form-group col-4" style="flex-direction:row; align-items:center; gap:0.5rem; margin-top:1.5rem;">
-                        <input type="checkbox" :id="'rsvp-song-' + (sec._uid || idx)" x-model="sec.ask_song_request">
-                        <label :for="'rsvp-song-' + (sec._uid || idx)" class="form-label" style="margin-bottom:0;cursor:pointer;">Ask Song Request</label>
+                      <div class="column is-4">
+                        <label class="checkbox is-size-7 mt-5">
+                          <input type="checkbox" :id="'rsvp-song-' + (sec._uid || idx)" x-model="sec.ask_song_request">
+                          Ask Song Request
+                        </label>
                       </div>
-                      <div class="form-group col-12">
-                        <label class="form-label">Custom Note / RSVP Prompt</label>
-                        <input type="text" class="form-input" placeholder="Kindly RSVP by August 15th" x-model="sec.custom_note">
+                      <div class="column is-12">
+                        <div class="field">
+                          <label class="label is-small">Custom Note / RSVP Prompt</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="Kindly RSVP by August 15th" x-model="sec.custom_note">
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </template>
 
                   <!-- 10. External RSVP Block -->
                   <template x-if="sec.type === 'rsvp_external'">
-                    <div class="form-grid">
-                      <div class="form-group col-6">
-                        <label class="form-label">Title</label>
-                        <input type="text" class="form-input" placeholder="RSVP Confirmation" x-model="sec.title">
+                    <div class="columns is-multiline">
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Title</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="RSVP Confirmation" x-model="sec.title">
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-6">
-                        <label class="form-label required">External Form URL</label>
-                        <input type="url" class="form-input" placeholder="https://forms.google.com/..." x-model="sec.form_url">
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">External Form URL <span class="has-text-danger">*</span></label>
+                          <div class="control">
+                            <input type="url" class="input is-small" placeholder="https://forms.google.com/..." x-model="sec.form_url">
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-6">
-                        <label class="form-label">Button Label</label>
-                        <input type="text" class="form-input" placeholder="Open RSVP Form ↗" x-model="sec.button_label">
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Button Label</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="Open RSVP Form ↗" x-model="sec.button_label">
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-6">
-                        <label class="form-label">Deadline</label>
-                        <input type="datetime-local" class="form-input" x-model="sec._deadline_local">
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Deadline</label>
+                          <div class="control">
+                            <input type="datetime-local" class="input is-small" x-model="sec._deadline_local">
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-12">
-                        <label class="form-label">Prompt Message</label>
-                        <input type="text" class="form-input" placeholder="Please click below to register your attendance" x-model="sec.prompt">
+                      <div class="column is-12">
+                        <div class="field">
+                          <label class="label is-small">Prompt Message</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="Please click below to register your attendance" x-model="sec.prompt">
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </template>
 
                   <!-- 11. FAQs Block -->
                   <template x-if="sec.type === 'faqs'">
-                    <div class="form-grid">
-                      <div class="form-group col-12">
-                        <label class="form-label">FAQs Title</label>
-                        <input type="text" class="form-input" placeholder="Information for Guests" x-model="sec.title">
+                    <div class="columns is-multiline">
+                      <div class="column is-12">
+                        <div class="field">
+                          <label class="label is-small">FAQs Title</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="Information for Guests" x-model="sec.title">
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-12">
-                        <label class="form-label">Questions & Answers</label>
-                        <div class="sub-items-stack">
+                      <div class="column is-12">
+                        <label class="label is-small">Questions & Answers</label>
+                        <div class="sub-items-stack mb-2">
                           <template x-for="(faq, faqIdx) in sec.items" :key="faq._uid || faqIdx">
-                            <div class="sub-item-card form-grid">
-                              <button type="button" class="sub-item-remove-btn" title="Remove FAQ" @click="sec.items.splice(faqIdx, 1)">&times;</button>
-                              <div class="form-group col-12">
-                                <label class="form-label required">Question</label>
-                                <input type="text" class="form-input" placeholder="e.g. Are children invited?" x-model="faq.question">
+                            <div class="box p-3 mb-2 has-background-white-bis position-relative">
+                              <button type="button" class="delete is-small" style="position: absolute; top: 0.5rem; right: 0.5rem;" title="Remove FAQ" @click="sec.items.splice(faqIdx, 1)"></button>
+                              <div class="field mb-2">
+                                <label class="label is-small">Question <span class="has-text-danger">*</span></label>
+                                <input type="text" class="input is-small" placeholder="e.g. Are children invited?" x-model="faq.question">
                               </div>
-                              <div class="form-group col-12">
-                                <label class="form-label required">Answer</label>
-                                <textarea class="form-textarea" rows="2" placeholder="e.g. We kindly request an adults-only celebration." x-model="faq.answer"></textarea>
+                              <div class="field">
+                                <label class="label is-small">Answer <span class="has-text-danger">*</span></label>
+                                <textarea class="textarea is-small" rows="2" placeholder="e.g. We kindly request an adults-only celebration." x-model="faq.answer"></textarea>
                               </div>
                             </div>
                           </template>
                         </div>
-                        <button type="button" class="btn btn-secondary" style="margin-top: 0.5rem; font-size: 0.8125rem;" @click="addFAQItem(sec)">
+                        <button type="button" class="button is-small is-light" @click="addFAQItem(sec)">
                           + Add Question
                         </button>
                       </div>
@@ -618,29 +853,35 @@
 
                   <!-- 12. Gift Registry Block -->
                   <template x-if="sec.type === 'gift_registry'">
-                    <div class="form-grid">
-                      <div class="form-group col-12">
-                        <label class="form-label">Registry Message</label>
-                        <textarea class="form-textarea" rows="2" placeholder="Your presence is our present..." x-model="sec.message"></textarea>
+                    <div class="columns is-multiline">
+                      <div class="column is-12">
+                        <div class="field">
+                          <label class="label is-small">Registry Message</label>
+                          <div class="control">
+                            <textarea class="textarea is-small" rows="2" placeholder="Your presence is our present..." x-model="sec.message"></textarea>
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-12">
-                        <label class="form-label">Registry Links</label>
-                        <div class="sub-items-stack">
+                      <div class="column is-12">
+                        <label class="label is-small">Registry Links</label>
+                        <div class="sub-items-stack mb-2">
                           <template x-for="(link, linkIdx) in sec.links" :key="link._uid || linkIdx">
-                            <div class="sub-item-card form-grid">
-                              <button type="button" class="sub-item-remove-btn" title="Remove Link" @click="sec.links.splice(linkIdx, 1)">&times;</button>
-                              <div class="form-group col-5">
-                                <label class="form-label required">Store / Fund Label</label>
-                                <input type="text" class="form-input" placeholder="e.g. Crate & Barrel" x-model="link.label">
-                              </div>
-                              <div class="form-group col-7">
-                                <label class="form-label required">Registry Link URL</label>
-                                <input type="url" class="form-input" placeholder="https://..." x-model="link.url">
+                            <div class="box p-3 mb-2 has-background-white-bis position-relative">
+                              <button type="button" class="delete is-small" style="position: absolute; top: 0.5rem; right: 0.5rem;" title="Remove Link" @click="sec.links.splice(linkIdx, 1)"></button>
+                              <div class="columns is-multiline">
+                                <div class="column is-5">
+                                  <label class="label is-small">Store / Fund Label <span class="has-text-danger">*</span></label>
+                                  <input type="text" class="input is-small" placeholder="e.g. Crate & Barrel" x-model="link.label">
+                                </div>
+                                <div class="column is-7">
+                                  <label class="label is-small">Registry Link URL <span class="has-text-danger">*</span></label>
+                                  <input type="url" class="input is-small" placeholder="https://..." x-model="link.url">
+                                </div>
                               </div>
                             </div>
                           </template>
                         </div>
-                        <button type="button" class="btn btn-secondary" style="margin-top: 0.5rem; font-size: 0.8125rem;" @click="addRegistryLink(sec)">
+                        <button type="button" class="button is-small is-light" @click="addRegistryLink(sec)">
                           + Add Registry Link
                         </button>
                       </div>
@@ -649,18 +890,30 @@
 
                   <!-- 13. Closing Sign-off Block -->
                   <template x-if="sec.type === 'closing'">
-                    <div class="form-grid">
-                      <div class="form-group col-12">
-                        <label class="form-label">Heartfelt Message</label>
-                        <textarea class="form-textarea" rows="2" placeholder="We cannot wait to celebrate with you!" x-model="sec.message"></textarea>
+                    <div class="columns is-multiline">
+                      <div class="column is-12">
+                        <div class="field">
+                          <label class="label is-small">Heartfelt Message</label>
+                          <div class="control">
+                            <textarea class="textarea is-small" rows="2" placeholder="We cannot wait to celebrate with you!" x-model="sec.message"></textarea>
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-6">
-                        <label class="form-label">Sign-off</label>
-                        <input type="text" class="form-input" placeholder="With love & gratitude," x-model="sec.signoff">
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Sign-off</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="With love & gratitude," x-model="sec.signoff">
+                          </div>
+                        </div>
                       </div>
-                      <div class="form-group col-6">
-                        <label class="form-label">Display Hosts</label>
-                        <input type="text" class="form-input" placeholder="Sarah & Alexander" x-model="sec.hosts">
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Display Hosts</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="Sarah & Alexander" x-model="sec.hosts">
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </template>
@@ -671,29 +924,37 @@
           </div>
 
           <!-- Add Section Toolbar -->
-          <div class="add-section-bar">
-            <div class="add-section-controls">
-              <label for="select-new-section-type" style="font-size: 0.8125rem; font-weight: 600; color: var(--text-secondary);">
-                + Add Section Block:
-              </label>
-              <select id="select-new-section-type" class="form-input" style="max-width: 240px;" x-model="selectedNewType">
-                <option value="quote">Quote / Excerpt</option>
-                <option value="carousel">Photo Carousel</option>
-                <option value="timeline">Schedule / Timeline</option>
-                <option value="dress_code">Dress Code</option>
-                <option value="image">Single Image</option>
-                <option value="text">Text Announcement</option>
-                <option value="rsvp">Interactive RSVP Form</option>
-                <option value="rsvp_external">External RSVP Form Link</option>
-                <option value="faqs">Guest FAQs</option>
-                <option value="gift_registry">Gift Registry</option>
-                <option value="closing">Closing Sign-off</option>
-                <option value="hero">Hero Cover Card</option>
-                <option value="details">Details Quick Strip</option>
-              </select>
-              <button type="button" class="btn btn-secondary" id="btn-add-section" @click="addSection(selectedNewType)">
-                + Add Block
-              </button>
+          <div class="box p-3 has-background-white-ter">
+            <div class="field is-grouped is-align-items-center mb-0">
+              <div class="control">
+                <label for="select-new-section-type" class="label is-small mb-0">
+                  + Add Section Block:
+                </label>
+              </div>
+              <div class="control is-expanded" style="max-width: 260px;">
+                <div class="select is-small is-fullwidth">
+                  <select id="select-new-section-type" x-model="selectedNewType">
+                    <option value="quote">Quote / Excerpt</option>
+                    <option value="carousel">Photo Carousel</option>
+                    <option value="timeline">Schedule / Timeline</option>
+                    <option value="dress_code">Dress Code</option>
+                    <option value="image">Single Image</option>
+                    <option value="text">Text Announcement</option>
+                    <option value="rsvp">Interactive RSVP Form</option>
+                    <option value="rsvp_external">External RSVP Form Link</option>
+                    <option value="faqs">Guest FAQs</option>
+                    <option value="gift_registry">Gift Registry</option>
+                    <option value="closing">Closing Sign-off</option>
+                    <option value="hero">Hero Cover Card</option>
+                    <option value="details">Details Quick Strip</option>
+                  </select>
+                </div>
+              </div>
+              <div class="control">
+                <button type="button" class="button is-small is-primary" id="btn-add-section" @click="addSection(selectedNewType)">
+                  + Add Block
+                </button>
+              </div>
             </div>
           </div>
         </section>
@@ -702,29 +963,37 @@
     </div>
 
     <!-- Right Column: Sticky Live Preview Pane -->
-    <div class="builder-preview-pane">
-      <div class="preview-toolbar">
-        <div class="device-switcher" role="tablist">
-          <button type="button" class="device-btn" :class="{ active: previewDevice === 'mobile' }" id="btn-device-mobile" @click="previewDevice = 'mobile'" title="Mobile Pass Viewport (375px)">
-            📱 Mobile
-          </button>
-          <button type="button" class="device-btn" :class="{ active: previewDevice === 'desktop' }" id="btn-device-desktop" @click="previewDevice = 'desktop'" title="Full Width Viewport">
-            💻 Desktop
-        </button>
+    <div class="column is-5-desktop is-4-widescreen">
+      <div class="builder-preview-pane">
+        <div class="box p-0 mb-0" style="border-bottom-left-radius: 0; border-bottom-right-radius: 0;">
+          <div class="level is-mobile px-3 py-2 mb-0">
+            <div class="level-left">
+              <div class="buttons has-addons mb-0" role="tablist">
+                <button type="button" class="button is-small device-btn" :class="{ 'is-dark': previewDevice === 'mobile' }" id="btn-device-mobile" @click="previewDevice = 'mobile'" title="Mobile Pass Viewport (375px)">
+                  📱 Mobile
+                </button>
+                <button type="button" class="button is-small device-btn" :class="{ 'is-dark': previewDevice === 'desktop' }" id="btn-device-desktop" @click="previewDevice = 'desktop'" title="Full Width Viewport">
+                  💻 Desktop
+                </button>
+              </div>
+            </div>
+
+            <div class="level-right">
+              <div class="buttons mb-0">
+                <button type="button" class="button is-small is-light" id="btn-refresh-preview" @click="updateLivePreview()" title="Refresh Live Preview">
+                  🔄
+                </button>
+                <button type="button" class="button is-small is-light" id="btn-open-preview-tab" @click="openPreviewTab()" title="Open Preview in New Tab">
+                  ↗
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="preview-actions">
-          <button type="button" class="preview-action-btn" id="btn-refresh-preview" @click="updateLivePreview()" title="Refresh Live Preview">
-            🔄
-          </button>
-          <button type="button" class="preview-action-btn" id="btn-open-preview-tab" @click="openPreviewTab()" title="Open Preview in New Tab">
-            ↗
-          </button>
+        <div class="preview-device-wrapper" :class="previewDevice === 'mobile' ? 'device-mobile' : 'device-desktop'" id="preview-wrapper">
+          <iframe id="preview-iframe" class="preview-iframe" title="Invitation Live Preview" sandbox="allow-scripts"></iframe>
         </div>
-      </div>
-
-      <div class="preview-device-wrapper" :class="previewDevice === 'mobile' ? 'device-mobile' : 'device-desktop'" id="preview-wrapper">
-        <iframe id="preview-iframe" class="preview-iframe" title="Invitation Live Preview" sandbox="allow-scripts"></iframe>
       </div>
     </div>
   </div>

@@ -4,97 +4,107 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ if .Title }}{{ .Title }} &mdash; {{ end }}Invito Planner</title>
-  <link rel="stylesheet" href="/static/css/base.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
   <link rel="stylesheet" href="/static/css/admin.css">
 </head>
 <body class="admin-body">
   {{ template "header.html" . }}
 
   <main class="admin-main">
-    <div class="container">
+    <div class="container py-5 px-3">
 
-<div class="admin-page-header">
-  <div>
-    <h1 class="admin-title">Events Management</h1>
-    <p class="admin-subtitle">
-      <span>Overview of active digital invitations, guest confirmations, and attendee headcounts.</span>
-    </p>
+<div class="level mb-5">
+  <div class="level-left">
+    <div>
+      <h1 class="title is-3 mb-1">Events Management</h1>
+      <p class="subtitle is-6 has-text-grey">
+        Overview of active digital invitations, guest confirmations, and attendee headcounts.
+      </p>
+    </div>
   </div>
-  <div class="admin-header-actions">
-    <a href="/admin/invitations/new" class="btn btn-primary" id="btn-create-invitation" title="Create a new event invitation">
-      + Create Invitation
+  <div class="level-right">
+    <a href="/admin/invitations/new" class="button is-primary" id="btn-create-invitation" title="Create a new event invitation">
+      <span class="mr-1">+</span> Create Invitation
     </a>
   </div>
 </div>
 
-<div class="admin-stats-summary">
-  <div class="kpi-card kpi-primary">
-    <div class="kpi-label">Active Events</div>
-    <div class="kpi-value">{{ .TotalEvents }}</div>
-    <div class="kpi-subtext">Configured invitations in database</div>
+<div class="columns is-multiline mb-5">
+  <div class="column is-6">
+    <div class="box p-5" style="border-top: 3px solid var(--bulma-primary, #00d1b2);">
+      <p class="heading has-text-grey has-text-weight-bold">Active Events</p>
+      <p class="title is-2 mb-1">{{ .TotalEvents }}</p>
+      <p class="help has-text-grey">Configured invitations in database</p>
+    </div>
   </div>
-  <div class="kpi-card kpi-attending">
-    <div class="kpi-label">Total Confirmed Headcount</div>
-    <div class="kpi-value">{{ .TotalConfirmedGuests }}</div>
-    <div class="kpi-subtext">Attending guests across all events</div>
+  <div class="column is-6">
+    <div class="box p-5" style="border-top: 3px solid var(--bulma-success, #48c78e);">
+      <p class="heading has-text-grey has-text-weight-bold">Total Confirmed Headcount</p>
+      <p class="title is-2 mb-1">{{ .TotalConfirmedGuests }}</p>
+      <p class="help has-text-grey">Attending guests across all events</p>
+    </div>
   </div>
 </div>
 
 {{ if eq (len .Events) 0 }}
-<div class="admin-table-container">
-  <div class="empty-state">
-    <div class="empty-state-icon">📂</div>
-    <h3>No Events Configured Yet</h3>
-    <p>Get started by creating your first digital invitation.</p>
-    <a href="/admin/invitations/new" class="btn btn-primary">+ Create Invitation</a>
-  </div>
+<div class="box has-text-centered py-6 px-4">
+  <div class="is-size-1 mb-3">📂</div>
+  <h3 class="title is-4 mb-2">No Events Configured Yet</h3>
+  <p class="subtitle is-6 has-text-grey mb-4">Get started by creating your first digital invitation.</p>
+  <a href="/admin/invitations/new" class="button is-primary">+ Create Invitation</a>
 </div>
 {{ else }}
-<div class="admin-events-grid">
+<div class="columns is-multiline">
   {{ range .Events }}
-  <div class="admin-event-card">
-    <div class="admin-event-card-header">
-      {{ if .Invitation.HasCoverImage }}
-        <img src="{{ .Invitation.CoverImage }}" alt="{{ .Invitation.Title }}" loading="lazy">
-      {{ else }}
-        <div class="admin-event-card-placeholder">✦</div>
-      {{ end }}
-      <span class="admin-event-theme-badge">{{ .Invitation.Theme.ID }}</span>
-    </div>
-
-    <div class="admin-event-card-body">
-      <div>
-        <h2 class="admin-event-card-title">{{ .Invitation.Title }}</h2>
-        <div class="admin-event-card-meta">
-          <div>📅 <strong>{{ .Invitation.FormattedDateShort }}</strong> &bull; {{ .Invitation.FormattedTime }}</div>
-          <div>📍 {{ .Invitation.Location.Name }}</div>
-        </div>
-
-        <div class="admin-event-metrics-strip">
-          {{ if gt .Stats.TotalResponses 0 }}
-            <span>✅ <strong>{{ .Stats.AttendingCount }}</strong> attending ({{ .Stats.TotalGuests }} headcount)</span>
-            {{ if gt .Stats.DeclinedCount 0 }}
-              <span>&bull; {{ .Stats.DeclinedCount }} declined</span>
-            {{ end }}
-            {{ if gt .Stats.DietaryCount 0 }}
-              <span class="badge badge-warning" style="margin-left: auto;">⚠️ {{ .Stats.DietaryCount }} dietary</span>
-            {{ end }}
-          {{ else }}
-            <span style="color: var(--text-muted);">No responses received yet</span>
-          {{ end }}
-        </div>
+  <div class="column is-12-tablet is-6-desktop is-4-widescreen">
+    <div class="card is-flex is-flex-direction-column" style="height: 100%;">
+      <div class="card-image" style="position: relative; height: 140px; overflow: hidden; background-color: var(--bulma-scheme-main-bis, #f5f5f5);">
+        {{ if .Invitation.HasCoverImage }}
+          <img src="{{ .Invitation.CoverImage }}" alt="{{ .Invitation.Title }}" style="width: 100%; height: 100%; object-fit: cover;" loading="lazy">
+        {{ else }}
+          <div class="is-flex is-align-items-center is-justify-content-center has-text-grey-light is-size-1" style="height: 100%; background: linear-gradient(135deg, #f5f5f0, #e8edea);">
+            ✦
+          </div>
+        {{ end }}
+        <span class="tag is-dark is-rounded" style="position: absolute; top: 0.75rem; right: 0.75rem; opacity: 0.9;">
+          {{ .Invitation.Theme.ID }}
+        </span>
       </div>
 
-      <div class="admin-event-card-actions">
-        <a href="/admin/invitations/{{ .Invitation.Slug }}/edit" class="btn btn-primary" style="font-size: 0.875rem;">
-          Edit &rarr;
-        </a>
-        <a href="/admin/invitations/{{ .Invitation.Slug }}/rsvps" class="btn btn-secondary" style="flex: 1; font-size: 0.875rem;">
-          RSVPs ({{ .Stats.TotalResponses }})
-        </a>
-        <a href="/i/{{ .Invitation.Slug }}" class="btn btn-secondary" style="font-size: 0.875rem;" target="_blank" rel="noopener noreferrer" title="Preview public invitation pass">
-          Pass &nearr;
-        </a>
+      <div class="card-content is-flex-grow-1 is-flex is-flex-direction-column is-justify-content-between">
+        <div>
+          <h2 class="title is-5 mb-2">{{ .Invitation.Title }}</h2>
+          <div class="content is-small has-text-grey mb-3">
+            <div class="mb-1">📅 <strong>{{ .Invitation.FormattedDateShort }}</strong> &bull; {{ .Invitation.FormattedTime }}</div>
+            <div>📍 {{ .Invitation.Location.Name }}</div>
+          </div>
+
+          <div class="notification is-light py-2 px-3 mb-3 is-size-7">
+            {{ if gt .Stats.TotalResponses 0 }}
+              <span>✅ <strong>{{ .Stats.AttendingCount }}</strong> attending ({{ .Stats.TotalGuests }} headcount)</span>
+              {{ if gt .Stats.DeclinedCount 0 }}
+                <span>&bull; {{ .Stats.DeclinedCount }} declined</span>
+              {{ end }}
+              {{ if gt .Stats.DietaryCount 0 }}
+                <span class="tag is-warning is-light is-small ml-2">⚠️ {{ .Stats.DietaryCount }} dietary</span>
+              {{ end }}
+            {{ else }}
+              <span class="has-text-grey">No responses received yet</span>
+            {{ end }}
+          </div>
+        </div>
+
+        <footer class="card-footer mt-2" style="border-top: 1px solid var(--bulma-border-weak, #f0f0f0); margin: 0 -1.5rem -1.5rem;">
+          <a href="/admin/invitations/{{ .Invitation.Slug }}/edit" class="card-footer-item has-text-weight-semibold has-text-primary">
+            Edit &rarr;
+          </a>
+          <a href="/admin/invitations/{{ .Invitation.Slug }}/rsvps" class="card-footer-item">
+            RSVPs ({{ .Stats.TotalResponses }})
+          </a>
+          <a href="/i/{{ .Invitation.Slug }}" class="card-footer-item has-text-grey" target="_blank" rel="noopener noreferrer" title="Preview public invitation pass">
+            Pass &nearr;
+          </a>
+        </footer>
       </div>
     </div>
   </div>

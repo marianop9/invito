@@ -1,16 +1,20 @@
 <header class="admin-header">
-  <div class="container admin-header-content">
-    <div class="admin-brand">
-      <a href="/admin" class="brand-link" id="admin-brand-link">
-        <span class="brand-icon">✦</span>
-        <span>Invito</span>
-        <span class="admin-tag">Planner</span>
-      </a>
+  <nav class="navbar is-white has-shadow" role="navigation" aria-label="admin navigation">
+    <div class="container">
+      <div class="navbar-brand">
+        <a href="/admin" class="navbar-item has-text-weight-bold is-size-5" id="admin-brand-link">
+          <span class="mr-2 has-text-primary">✦</span>
+          <span>Invito</span>
+          <span class="tag is-primary is-light is-rounded ml-2 is-size-7 has-text-weight-semibold">Planner</span>
+        </a>
+      </div>
+      <div class="navbar-menu is-active" style="box-shadow: none;">
+        <div class="navbar-end">
+          <a href="/admin" class="navbar-item has-text-weight-medium" id="nav-admin-events">Events</a>
+          <a href="/" class="navbar-item" id="nav-admin-public" target="_blank" rel="noopener noreferrer">Public Site &nearr;</a>
+          <a href="/health" class="navbar-item" id="nav-admin-health">Status</a>
+        </div>
+      </div>
     </div>
-    <nav class="admin-nav">
-      <a href="/admin" class="admin-nav-link" id="nav-admin-events">Events</a>
-      <a href="/" class="admin-nav-link" id="nav-admin-public" target="_blank" rel="noopener noreferrer">Public Site &nearr;</a>
-      <a href="/health" class="admin-nav-link" id="nav-admin-health">Status</a>
-    </nav>
-  </div>
+  </nav>
 </header>
