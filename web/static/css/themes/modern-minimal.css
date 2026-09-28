@@ -1,23 +1,24 @@
-/* Theme: Modern Minimal */
+/* Theme: Modern Minimal (Blush Elegance - Quinceañeras & Romantic Celebrations) */
 :root {
-  --inv-bg: #F3F5F8;
+  --inv-bg: #FAF5F5;
   --inv-surface: #FFFFFF;
-  --inv-surface-alt: #EBF0F7;
-  --inv-text: #0B0E17;
-  --inv-text-muted: #566479;
-  --inv-accent: #0052FF;
-  --inv-accent-hover: #003ECC;
-  --inv-accent-light: #E8F0FE;
-  --inv-border: #DCE3EC;
-  --inv-border-light: #E6EDF5;
-  --inv-radius-sm: 4px;
-  --inv-radius-md: 8px;
-  --inv-radius-lg: 12px;
-  --inv-font-heading: 'Space Grotesk', -apple-system, sans-serif;
-  --inv-font-body: 'Inter', -apple-system, sans-serif;
+  --inv-surface-alt: #FBF2F3;
+  --inv-text: #281B1E;
+  --inv-text-muted: #735D62;
+  --inv-accent: #A45868;
+  --inv-accent-hover: #894352;
+  --inv-accent-light: #FBECEE;
+  --inv-border: #EFE2E4;
+  --inv-border-light: #F7EDEF;
+  --inv-font-heading: 'Playfair Display', Georgia, serif;
+  --inv-font-body: 'Outfit', -apple-system, sans-serif;
 }
 
-.inv-title {
-  letter-spacing: -0.03em;
-  font-weight: 700;
+body.invitation-body {
+  background-image: linear-gradient(180deg, #FCF8F7 0%, #F5ECEB 100%);
+}
+
+.theme-modern-minimal .inv-hero:not(.has-cover-image) {
+  background: radial-gradient(circle at 50% 30%, #FFF8F8 0%, #FAEAEC 55%, #F0D9DD 100%);
+  border-bottom: 1px solid var(--inv-border);
 }

@@ -1,25 +1,24 @@
-/* Theme: Golden Sunset */
+/* Theme: Golden Sunset (Champagne Romance - Classic Weddings & Formal Events) */
 :root {
-  --inv-bg: #FAF5F0;
+  --inv-bg: #F8F6F0;
   --inv-surface: #FFFFFF;
-  --inv-surface-alt: #FBF0E8;
-  --inv-text: #2A1C16;
-  --inv-text-muted: #785F55;
-  --inv-accent: #D74E2A;
-  --inv-accent-hover: #BE3D1B;
-  --inv-accent-light: #FCEBE5;
-  --inv-border: #EEDCD0;
-  --inv-border-light: #F5EAE2;
-  --inv-font-heading: 'Plus Jakarta Sans', sans-serif;
-  --inv-font-body: 'Plus Jakarta Sans', sans-serif;
+  --inv-surface-alt: #FBF9F4;
+  --inv-text: #231F1A;
+  --inv-text-muted: #70685D;
+  --inv-accent: #96783C;
+  --inv-accent-hover: #7D632F;
+  --inv-accent-light: #F5EFE1;
+  --inv-border: #E8E2D5;
+  --inv-border-light: #F2EDE3;
+  --inv-font-heading: 'Cormorant Garamond', Georgia, serif;
+  --inv-font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
 }
 
 body.invitation-body {
-  background-image: linear-gradient(180deg, #FAF4EE 0%, #F5E8DC 100%);
+  background-image: linear-gradient(180deg, #FBF9F4 0%, #F4EFE6 100%);
 }
 
 .theme-golden-sunset .inv-hero:not(.has-cover-image) {
-  background: radial-gradient(circle at 50% 30%, #FFF5ED 0%, #FCE5D4 40%, #F8CCA8 75%, #F0B388 100%);
+  background: radial-gradient(circle at 50% 30%, #FDFBF7 0%, #F6EFE2 55%, #EDE3D1 100%);
   border-bottom: 1px solid var(--inv-border);
 }
-
