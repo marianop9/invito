@@ -19,6 +19,18 @@
   "theme": {
     "id": "golden-sunset"
   },
+  "music": {
+    "url": "/uploads/demo-birthday-track.mp3",
+    "title": "Sunset Chill Beats",
+    "autoplay": true,
+    "loop": true
+  },
+  "splash_screen": {
+    "enabled": true,
+    "title": "Lucas is turning 30",
+    "message": "You're invited to celebrate chapter 30 with spritzes, sourdough pizza, and sunset dancing.",
+    "button_text": "Open Invitation"
+  },
   "sections": [
     {
       "type": "hero",

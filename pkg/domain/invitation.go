@@ -445,37 +445,90 @@ func (c *ClosingSection) DisplayHosts(defaultHosts string) string {
 	return defaultHosts
 }
 
+// MusicConfig configures optional background audio track and player controls.
+type MusicConfig struct {
+	URL      string `json:"url"`
+	Title    string `json:"title,omitempty"`
+	Autoplay bool   `json:"autoplay"`
+	Loop     bool   `json:"loop"`
+}
+
+func (m *MusicConfig) Validate() error {
+	if m == nil {
+		return nil
+	}
+	if strings.TrimSpace(m.URL) == "" {
+		return errors.New("music config: url is required")
+	}
+	return nil
+}
+
+func (m *MusicConfig) DisplayTitle(fallback string) string {
+	if m != nil && strings.TrimSpace(m.Title) != "" {
+		return m.Title
+	}
+	return fallback
+}
+
+// SplashScreenConfig configures the welcome cover and tap-to-open gesture gate.
+type SplashScreenConfig struct {
+	Enabled            bool   `json:"enabled"`
+	Title              string `json:"title,omitempty"`
+	Message            string `json:"message,omitempty"`
+	ButtonText         string `json:"button_text,omitempty"`
+	BackgroundImageURL string `json:"background_image_url,omitempty"`
+}
+
+func (s *SplashScreenConfig) Validate() error {
+	return nil
+}
+
+func (s *SplashScreenConfig) IsActive() bool {
+	return s != nil && s.Enabled
+}
+
+func (s *SplashScreenConfig) CTAButtonText() string {
+	if s != nil && strings.TrimSpace(s.ButtonText) != "" {
+		return s.ButtonText
+	}
+	return "Open Invitation"
+}
+
 // Invitation is the top-level structured event invitation entity.
 type Invitation struct {
-	Version     string      `json:"version"`
-	Slug        string      `json:"slug"`
-	Title       string      `json:"title"`
-	Subtitle    string      `json:"subtitle,omitempty"`
-	Hosts       []string    `json:"hosts,omitempty"`
-	Description string      `json:"description,omitempty"`
-	DateStart   time.Time   `json:"date_start"`
-	DateEnd     *time.Time  `json:"date_end,omitempty"`
-	Timezone    string      `json:"timezone"`
-	Location    Location    `json:"location"`
-	Theme       ThemeConfig `json:"theme"`
-	Sections    []Section   `json:"sections"`
+	Version      string              `json:"version"`
+	Slug         string              `json:"slug"`
+	Title        string              `json:"title"`
+	Subtitle     string              `json:"subtitle,omitempty"`
+	Hosts        []string            `json:"hosts,omitempty"`
+	Description  string              `json:"description,omitempty"`
+	DateStart    time.Time           `json:"date_start"`
+	DateEnd      *time.Time          `json:"date_end,omitempty"`
+	Timezone     string              `json:"timezone"`
+	Location     Location            `json:"location"`
+	Theme        ThemeConfig         `json:"theme"`
+	Music        *MusicConfig        `json:"music,omitempty"`
+	SplashScreen *SplashScreenConfig `json:"splash_screen,omitempty"`
+	Sections     []Section           `json:"sections"`
 }
 
 // UnmarshalJSON unmarshals an Invitation, supporting both ordered []Section arrays and legacy section maps.
 func (inv *Invitation) UnmarshalJSON(data []byte) error {
 	type rawInvitation struct {
-		Version     string          `json:"version"`
-		Slug        string          `json:"slug"`
-		Title       string          `json:"title"`
-		Subtitle    string          `json:"subtitle,omitempty"`
-		Hosts       []string        `json:"hosts,omitempty"`
-		Description string          `json:"description,omitempty"`
-		DateStart   time.Time       `json:"date_start"`
-		DateEnd     *time.Time      `json:"date_end,omitempty"`
-		Timezone    string          `json:"timezone"`
-		Location    Location        `json:"location"`
-		Theme       ThemeConfig     `json:"theme"`
-		Sections    json.RawMessage `json:"sections"`
+		Version      string              `json:"version"`
+		Slug         string              `json:"slug"`
+		Title        string              `json:"title"`
+		Subtitle     string              `json:"subtitle,omitempty"`
+		Hosts        []string            `json:"hosts,omitempty"`
+		Description  string              `json:"description,omitempty"`
+		DateStart    time.Time           `json:"date_start"`
+		DateEnd      *time.Time          `json:"date_end,omitempty"`
+		Timezone     string              `json:"timezone"`
+		Location     Location            `json:"location"`
+		Theme        ThemeConfig         `json:"theme"`
+		Music        *MusicConfig        `json:"music,omitempty"`
+		SplashScreen *SplashScreenConfig `json:"splash_screen,omitempty"`
+		Sections     json.RawMessage     `json:"sections"`
 	}
 
 	var raw rawInvitation
@@ -494,6 +547,8 @@ func (inv *Invitation) UnmarshalJSON(data []byte) error {
 	inv.Timezone = raw.Timezone
 	inv.Location = raw.Location
 	inv.Theme = raw.Theme
+	inv.Music = raw.Music
+	inv.SplashScreen = raw.SplashScreen
 	inv.Sections = nil
 
 	if len(raw.Sections) == 0 {
@@ -653,6 +708,16 @@ func (inv *Invitation) CoverImage() string {
 func (inv *Invitation) HasCarousel() bool {
 	c := inv.CarouselSection()
 	return c != nil && c.HasImages()
+}
+
+// HasMusic returns true if music configuration is present and has a non-empty URL.
+func (inv *Invitation) HasMusic() bool {
+	return inv != nil && inv.Music != nil && strings.TrimSpace(inv.Music.URL) != ""
+}
+
+// HasSplashScreen returns true if splash screen configuration is present and enabled.
+func (inv *Invitation) HasSplashScreen() bool {
+	return inv != nil && inv.SplashScreen.IsActive()
 }
 
 // IsRSVPOpen checks if RSVP is enabled and if the deadline has not passed.

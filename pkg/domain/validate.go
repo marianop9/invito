@@ -56,6 +56,20 @@ func (inv *Invitation) Validate() error {
 		errs = append(errs, fmt.Sprintf("unknown theme id: %q", inv.Theme.ID))
 	}
 
+	// Validate music config if present
+	if inv.Music != nil {
+		if err := inv.Music.Validate(); err != nil {
+			errs = append(errs, err.Error())
+		}
+	}
+
+	// Validate splash screen config if present
+	if inv.SplashScreen != nil {
+		if err := inv.SplashScreen.Validate(); err != nil {
+			errs = append(errs, err.Error())
+		}
+	}
+
 	// Validate each section block using its own Section.Validate() contract
 	for idx, sec := range inv.Sections {
 		if sec == nil {

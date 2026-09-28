@@ -21,6 +21,18 @@
   "theme": {
     "id": "botanical-elegance"
   },
+  "music": {
+    "url": "/uploads/demo-wedding-track.mp3",
+    "title": "Acoustic Sunset Vibe",
+    "autoplay": true,
+    "loop": true
+  },
+  "splash_screen": {
+    "enabled": true,
+    "title": "Sarah & Alex",
+    "message": "Request the pleasure of your company to celebrate their marriage.",
+    "button_text": "Open Invitation"
+  },
   "sections": [
     {
       "type": "hero",

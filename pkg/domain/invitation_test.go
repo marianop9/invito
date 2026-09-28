@@ -495,3 +495,255 @@ func TestRSVPExternalSection(t *testing.T) {
 		t.Errorf("expected inv.RSVPExternalSection() to return ext")
 	}
 }
+
+func TestMusicConfig(t *testing.T) {
+	t.Run("Validation", func(t *testing.T) {
+		var nilMusic *MusicConfig
+		if err := nilMusic.Validate(); err != nil {
+			t.Errorf("expected nil music config to be valid, got: %v", err)
+		}
+
+		emptyURL := &MusicConfig{URL: ""}
+		if err := emptyURL.Validate(); err == nil || !strings.Contains(err.Error(), "url is required") {
+			t.Errorf("expected url required error, got: %v", err)
+		}
+
+		whitespaceURL := &MusicConfig{URL: "   "}
+		if err := whitespaceURL.Validate(); err == nil || !strings.Contains(err.Error(), "url is required") {
+			t.Errorf("expected url required error for whitespace, got: %v", err)
+		}
+
+		validMusic := &MusicConfig{URL: "/uploads/song.mp3", Title: "My Song", Autoplay: true, Loop: true}
+		if err := validMusic.Validate(); err != nil {
+			t.Errorf("expected valid music config, got: %v", err)
+		}
+	})
+
+	t.Run("DisplayTitle", func(t *testing.T) {
+		var nilMusic *MusicConfig
+		if nilMusic.DisplayTitle("Fallback") != "Fallback" {
+			t.Errorf("expected 'Fallback' on nil music, got %q", nilMusic.DisplayTitle("Fallback"))
+		}
+
+		m := &MusicConfig{Title: "A Thousand Years"}
+		if m.DisplayTitle("Fallback") != "A Thousand Years" {
+			t.Errorf("expected 'A Thousand Years', got %q", m.DisplayTitle("Fallback"))
+		}
+
+		emptyTitle := &MusicConfig{Title: "   "}
+		if emptyTitle.DisplayTitle("Fallback") != "Fallback" {
+			t.Errorf("expected 'Fallback' for empty title, got %q", emptyTitle.DisplayTitle("Fallback"))
+		}
+	})
+
+	t.Run("JSON Serialization and Deserialization", func(t *testing.T) {
+		orig := MusicConfig{
+			URL:      "/uploads/sunset.mp3",
+			Title:    "Sunset Melody",
+			Autoplay: true,
+			Loop:     true,
+		}
+
+		data, err := json.Marshal(orig)
+		if err != nil {
+			t.Fatalf("failed to marshal MusicConfig: %v", err)
+		}
+
+		var parsed MusicConfig
+		if err := json.Unmarshal(data, &parsed); err != nil {
+			t.Fatalf("failed to unmarshal MusicConfig: %v", err)
+		}
+
+		if parsed != orig {
+			t.Errorf("expected %+v, got %+v", orig, parsed)
+		}
+	})
+}
+
+func TestSplashScreenConfig(t *testing.T) {
+	t.Run("Validation", func(t *testing.T) {
+		var nilSplash *SplashScreenConfig
+		if err := nilSplash.Validate(); err != nil {
+			t.Errorf("expected nil splash screen to be valid, got: %v", err)
+		}
+
+		s := &SplashScreenConfig{Enabled: true}
+		if err := s.Validate(); err != nil {
+			t.Errorf("expected splash screen to be valid, got: %v", err)
+		}
+	})
+
+	t.Run("IsActive", func(t *testing.T) {
+		var nilSplash *SplashScreenConfig
+		if nilSplash.IsActive() {
+			t.Errorf("expected nil splash screen to not be active")
+		}
+
+		disabled := &SplashScreenConfig{Enabled: false}
+		if disabled.IsActive() {
+			t.Errorf("expected disabled splash screen to not be active")
+		}
+
+		enabled := &SplashScreenConfig{Enabled: true}
+		if !enabled.IsActive() {
+			t.Errorf("expected enabled splash screen to be active")
+		}
+	})
+
+	t.Run("CTAButtonText", func(t *testing.T) {
+		var nilSplash *SplashScreenConfig
+		if nilSplash.CTAButtonText() != "Open Invitation" {
+			t.Errorf("expected default 'Open Invitation' on nil, got %q", nilSplash.CTAButtonText())
+		}
+
+		emptyBtn := &SplashScreenConfig{ButtonText: "   "}
+		if emptyBtn.CTAButtonText() != "Open Invitation" {
+			t.Errorf("expected default 'Open Invitation' on empty button text, got %q", emptyBtn.CTAButtonText())
+		}
+
+		customBtn := &SplashScreenConfig{ButtonText: "Abrir Invitación"}
+		if customBtn.CTAButtonText() != "Abrir Invitación" {
+			t.Errorf("expected custom button text, got %q", customBtn.CTAButtonText())
+		}
+	})
+
+	t.Run("JSON Serialization and Deserialization", func(t *testing.T) {
+		orig := SplashScreenConfig{
+			Enabled:            true,
+			Title:              "Welcome Guests",
+			Message:            "Please tap to enter",
+			ButtonText:         "Enter Event",
+			BackgroundImageURL: "/uploads/cover.jpg",
+		}
+
+		data, err := json.Marshal(orig)
+		if err != nil {
+			t.Fatalf("failed to marshal SplashScreenConfig: %v", err)
+		}
+
+		var parsed SplashScreenConfig
+		if err := json.Unmarshal(data, &parsed); err != nil {
+			t.Fatalf("failed to unmarshal SplashScreenConfig: %v", err)
+		}
+
+		if parsed != orig {
+			t.Errorf("expected %+v, got %+v", orig, parsed)
+		}
+	})
+}
+
+func TestInvitationWithMusicAndSplashScreen(t *testing.T) {
+	jsonBlob := `{
+		"version": "1.0",
+		"slug": "audio-splash-party",
+		"title": "Audio & Splash Fiesta",
+		"date_start": "2026-09-19T18:00:00Z",
+		"location": {
+			"name": "Sunset Terrace",
+			"address": "123 Ocean Blvd"
+		},
+		"theme": { "id": "golden-sunset" },
+		"music": {
+			"url": "/uploads/party-track.mp3",
+			"title": "Fiesta Vibes",
+			"autoplay": true,
+			"loop": true
+		},
+		"splash_screen": {
+			"enabled": true,
+			"title": "Welcome to the Fiesta",
+			"message": "Put on your dancing shoes!",
+			"button_text": "Join Party",
+			"background_image_url": "/uploads/splash-bg.jpg"
+		},
+		"sections": [
+			{ "type": "hero", "eyebrow": "Fiesta 2026" }
+		]
+	}`
+
+	var inv Invitation
+	if err := json.Unmarshal([]byte(jsonBlob), &inv); err != nil {
+		t.Fatalf("failed to unmarshal invitation with music & splash: %v", err)
+	}
+
+	if inv.Music == nil {
+		t.Fatalf("expected non-nil Music")
+	}
+	if inv.Music.URL != "/uploads/party-track.mp3" || inv.Music.Title != "Fiesta Vibes" || !inv.Music.Autoplay || !inv.Music.Loop {
+		t.Errorf("unexpected MusicConfig values: %+v", inv.Music)
+	}
+	if !inv.HasMusic() {
+		t.Errorf("expected HasMusic() to be true")
+	}
+
+	if inv.SplashScreen == nil {
+		t.Fatalf("expected non-nil SplashScreen")
+	}
+	if !inv.SplashScreen.Enabled || inv.SplashScreen.Title != "Welcome to the Fiesta" || inv.SplashScreen.ButtonText != "Join Party" {
+		t.Errorf("unexpected SplashScreenConfig values: %+v", inv.SplashScreen)
+	}
+	if !inv.HasSplashScreen() {
+		t.Errorf("expected HasSplashScreen() to be true")
+	}
+
+	if err := inv.Validate(); err != nil {
+		t.Fatalf("expected valid invitation, got: %v", err)
+	}
+
+	// Validation failure when music URL is missing
+	inv.Music.URL = ""
+	if err := inv.Validate(); err == nil || !strings.Contains(err.Error(), "music config: url is required") {
+		t.Errorf("expected validation error for empty music url, got: %v", err)
+	}
+}
+
+func TestInvitationBackwardCompatibility(t *testing.T) {
+	legacyJSON := `{
+		"version": "1.0",
+		"slug": "legacy-no-audio",
+		"title": "Legacy Invitation Without Audio",
+		"date_start": "2026-09-19T18:00:00Z",
+		"location": {
+			"name": "Classic Ballroom",
+			"address": "789 Main St"
+		},
+		"theme": { "id": "botanical-elegance" },
+		"sections": [
+			{ "type": "hero", "badge": "Legacy Event" }
+		]
+	}`
+
+	var inv Invitation
+	if err := json.Unmarshal([]byte(legacyJSON), &inv); err != nil {
+		t.Fatalf("failed to unmarshal legacy invitation without music/splash: %v", err)
+	}
+
+	if inv.Music != nil {
+		t.Errorf("expected nil Music for legacy invitation, got %+v", inv.Music)
+	}
+	if inv.SplashScreen != nil {
+		t.Errorf("expected nil SplashScreen for legacy invitation, got %+v", inv.SplashScreen)
+	}
+	if inv.HasMusic() {
+		t.Errorf("expected HasMusic() to be false for legacy invitation")
+	}
+	if inv.HasSplashScreen() {
+		t.Errorf("expected HasSplashScreen() to be false for legacy invitation")
+	}
+
+	if err := inv.Validate(); err != nil {
+		t.Fatalf("expected legacy invitation to validate cleanly, got: %v", err)
+	}
+
+	// Re-marshal to verify music and splash_screen are omitted
+	marshaled, err := json.Marshal(&inv)
+	if err != nil {
+		t.Fatalf("failed to re-marshal legacy invitation: %v", err)
+	}
+	if strings.Contains(string(marshaled), `"music"`) {
+		t.Errorf("expected marshaled JSON to omit 'music', got: %s", string(marshaled))
+	}
+	if strings.Contains(string(marshaled), `"splash_screen"`) {
+		t.Errorf("expected marshaled JSON to omit 'splash_screen', got: %s", string(marshaled))
+	}
+}
