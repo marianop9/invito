@@ -1452,6 +1452,228 @@ body.invitation-body {
 }
 
 /* ==========================================================================
+   Splash Screen Fullscreen Overlay
+   ========================================================================== */
+.inv-splash-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background-color: var(--inv-bg, #F5F4EF);
+  background-size: cover;
+  background-position: center;
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.inv-splash-overlay.is-dismissed {
+  opacity: 0;
+  transform: scale(1.04);
+  pointer-events: none;
+}
+
+.inv-splash-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1;
+}
+
+.inv-splash-card {
+  position: relative;
+  z-index: 2;
+  background: var(--inv-surface, #FFFFFF);
+  border: 1px solid var(--inv-border, #E5E1D8);
+  border-radius: var(--inv-radius-lg, 20px);
+  padding: 2.5rem 2rem;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+}
+
+.inv-splash-seal {
+  font-size: 2.25rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--inv-accent-light, #E7EEEA);
+  margin: 0 auto 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.inv-splash-title {
+  font-family: var(--inv-font-heading);
+  font-size: 2rem;
+  line-height: 1.2;
+  font-weight: 600;
+  color: var(--inv-text);
+  margin-bottom: 0.75rem;
+}
+
+.inv-splash-message {
+  font-size: 0.9375rem;
+  color: var(--inv-text-muted);
+  line-height: 1.5;
+  margin-bottom: 1.75rem;
+}
+
+.inv-splash-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--inv-accent, #264336);
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--inv-radius-pill, 9999px);
+  padding: 0.85rem 2rem;
+  font-family: var(--inv-font-body);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.inv-splash-cta:hover {
+  transform: translateY(-2px);
+  background: var(--inv-accent-hover, #1B3127);
+}
+
+.inv-splash-arrow {
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.inv-splash-cta:hover .inv-splash-arrow {
+  transform: translateX(3px);
+}
+
+/* ==========================================================================
+   Floating Music Player FAB
+   ========================================================================== */
+.inv-music-fab {
+  position: fixed;
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  right: 1.25rem;
+  z-index: 99;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--inv-border, #E5E1D8);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--inv-accent, #264336);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s;
+}
+
+.inv-music-fab:hover {
+  transform: scale(1.08);
+}
+
+.music-disc-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.icon-disc {
+  width: 24px;
+  height: 24px;
+  stroke: currentColor;
+  transform-origin: center;
+}
+
+.inv-music-fab.is-playing .icon-disc {
+  animation: spinVinyl 3.5s linear infinite;
+}
+
+@keyframes spinVinyl {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Sound wave bars */
+.music-bars {
+  position: absolute;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+  bottom: 8px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.inv-music-fab.is-playing .music-bars {
+  opacity: 1;
+}
+
+.music-bars span {
+  width: 2px;
+  background-color: var(--inv-accent, #264336);
+  border-radius: 1px;
+  animation: eqWave 0.8s ease-in-out infinite alternate;
+}
+
+.music-bars span:nth-child(1) { height: 4px; animation-delay: 0.1s; }
+.music-bars span:nth-child(2) { height: 10px; animation-delay: 0.3s; }
+.music-bars span:nth-child(3) { height: 6px; animation-delay: 0.2s; }
+
+@keyframes eqWave {
+  0% { height: 3px; }
+  100% { height: 12px; }
+}
+
+.inv-music-fab.is-paused {
+  opacity: 0.75;
+}
+
+/* Tooltip for track title */
+.music-tooltip {
+  position: absolute;
+  right: calc(100% + 12px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(23, 28, 26, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--inv-radius-pill, 9999px);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.inv-music-fab:hover .music-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(-2px);
+}
+
+/* ==========================================================================
    Accessibility: Reduced Motion Preference
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {

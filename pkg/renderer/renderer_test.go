@@ -389,6 +389,144 @@ func TestRenderer(t *testing.T) {
 		}
 	})
 
+	t.Run("RenderInvitation with SplashScreen and Music config", func(t *testing.T) {
+		musicAndSplashInv := *inv
+		musicAndSplashInv.Music = &domain.MusicConfig{
+			URL:      "/uploads/music/romantic-piano.mp3",
+			Title:    "Romantic Piano Serenade",
+			Autoplay: true,
+			Loop:     true,
+		}
+		musicAndSplashInv.SplashScreen = &domain.SplashScreenConfig{
+			Enabled:            true,
+			Title:              "Welcome to Our Celebration",
+			Message:            "Please tap below to enter the invitation and enjoy background music.",
+			ButtonText:         "Enter Celebration",
+			BackgroundImageURL: "/uploads/images/splash-bg.webp",
+		}
+
+		var buf bytes.Buffer
+		if err := r.RenderInvitation(&buf, &musicAndSplashInv); err != nil {
+			t.Fatalf("RenderInvitation with splash & music error: %v", err)
+		}
+
+		html := buf.String()
+
+		// Verify Splash Screen elements
+		splashExpected := []string{
+			`id="inv-splash-overlay"`,
+			`class="inv-splash-overlay"`,
+			`style="background-image: url('/uploads/images/splash-bg.webp');"`,
+			`class="inv-splash-backdrop"`,
+			`class="inv-splash-card"`,
+			`class="inv-splash-seal"`,
+			`Welcome to Our Celebration`,
+			`Please tap below to enter the invitation and enjoy background music.`,
+			`id="btn-splash-open"`,
+			`class="inv-splash-cta"`,
+			`Enter Celebration`,
+			`class="inv-splash-arrow"`,
+		}
+		for _, exp := range splashExpected {
+			if !strings.Contains(html, exp) {
+				t.Errorf("expected HTML to contain splash screen element %q, but missing", exp)
+			}
+		}
+
+		// Verify Music Audio and FAB elements
+		musicExpected := []string{
+			`id="inv-bg-audio"`,
+			`preload="auto"`,
+			`loop`,
+			`<source src="/uploads/music/romantic-piano.mp3" type="audio/mpeg">`,
+			`id="inv-music-toggle"`,
+			`class="inv-music-fab"`,
+			`data-autoplay="true"`,
+			`title="Romantic Piano Serenade"`,
+			`class="music-disc-icon"`,
+			`class="icon-disc"`,
+			`class="music-bars"`,
+			`class="music-tooltip"`,
+			`Romantic Piano Serenade`,
+		}
+		for _, exp := range musicExpected {
+			if !strings.Contains(html, exp) {
+				t.Errorf("expected HTML to contain music player element %q, but missing", exp)
+			}
+		}
+	})
+
+	t.Run("RenderInvitation with SplashScreen fallback defaults", func(t *testing.T) {
+		fallbackInv := *inv
+		fallbackInv.SplashScreen = &domain.SplashScreenConfig{
+			Enabled: true,
+		}
+
+		var buf bytes.Buffer
+		if err := r.RenderInvitation(&buf, &fallbackInv); err != nil {
+			t.Fatalf("RenderInvitation error: %v", err)
+		}
+
+		html := buf.String()
+
+		if !strings.Contains(html, `id="inv-splash-overlay"`) {
+			t.Errorf("expected splash overlay to be rendered")
+		}
+		// Fallback to invitation title
+		if !strings.Contains(html, `<h2 class="inv-splash-title">`) || !strings.Contains(html, fallbackInv.Title) {
+			t.Errorf("expected splash title fallback to invitation Title %q", fallbackInv.Title)
+		}
+		// Fallback button text
+		if !strings.Contains(html, "Open Invitation") {
+			t.Errorf("expected fallback CTAButtonText 'Open Invitation'")
+		}
+		// No background-image style
+		if strings.Contains(html, "background-image:") {
+			t.Errorf("expected no background-image style when BackgroundImageURL is empty")
+		}
+		// No message paragraph
+		if strings.Contains(html, "inv-splash-message") {
+			t.Errorf("expected no message element when Message is empty")
+		}
+	})
+
+	t.Run("RenderInvitation with disabled or omitted SplashScreen and Music", func(t *testing.T) {
+		// Test legacy / omitted config
+		var buf bytes.Buffer
+		if err := r.RenderInvitation(&buf, inv); err != nil {
+			t.Fatalf("RenderInvitation error: %v", err)
+		}
+		html := buf.String()
+
+		unexpected := []string{
+			"inv-splash-overlay",
+			"btn-splash-open",
+			"inv-bg-audio",
+			"inv-music-toggle",
+			"music-disc-icon",
+		}
+		for _, unexp := range unexpected {
+			if strings.Contains(html, unexp) {
+				t.Errorf("expected HTML without splash/music NOT to contain %q", unexp)
+			}
+		}
+
+		// Test explicitly disabled splash screen
+		disabledInv := *inv
+		disabledInv.SplashScreen = &domain.SplashScreenConfig{
+			Enabled: false,
+			Title:   "Should not appear",
+		}
+		buf.Reset()
+		if err := r.RenderInvitation(&buf, &disabledInv); err != nil {
+			t.Fatalf("RenderInvitation error: %v", err)
+		}
+		htmlDisabled := buf.String()
+		if strings.Contains(htmlDisabled, "inv-splash-overlay") || strings.Contains(htmlDisabled, "Should not appear") {
+			t.Errorf("expected disabled splash screen NOT to render overlay")
+		}
+	})
+
 	t.Run("RenderAdmin views output complete HTML documents with header and footer partials", func(t *testing.T) {
 		adminViews := []struct {
 			name   string

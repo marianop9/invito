@@ -45,7 +45,28 @@
   {{ end }}
 </head>
 <body class="invitation-body theme-{{ .Theme.ID }}">
-  
+  {{ if and .SplashScreen .SplashScreen.Enabled }}
+  <div id="inv-splash-overlay" class="inv-splash-overlay" 
+       {{ if .SplashScreen.BackgroundImageURL }}style="background-image: url('{{ .SplashScreen.BackgroundImageURL }}');"{{ end }}>
+    <div class="inv-splash-backdrop"></div>
+    <div class="inv-splash-card">
+      <div class="inv-splash-seal">
+        <span>✉️</span>
+      </div>
+      <h2 class="inv-splash-title">
+        {{ if .SplashScreen.Title }}{{ .SplashScreen.Title }}{{ else }}{{ .Title }}{{ end }}
+      </h2>
+      {{ if .SplashScreen.Message }}
+        <p class="inv-splash-message">{{ .SplashScreen.Message }}</p>
+      {{ end }}
+      <button id="btn-splash-open" class="inv-splash-cta" type="button">
+        <span>{{ .SplashScreen.CTAButtonText }}</span>
+        <span class="inv-splash-arrow">&rarr;</span>
+      </button>
+    </div>
+  </div>
+  {{ end }}
+
   <!-- Top utility bar -->
   <nav class="inv-top-bar">
     <a href="/" id="btn-back-home">&larr; Invito</a>
@@ -63,6 +84,34 @@
       <span>Event details &bull; Hosted on Invito</span>
     </footer>
   </main>
+
+  {{ if .Music }}
+  <!-- Hidden Native Audio Engine -->
+  <audio id="inv-bg-audio" preload="auto" {{ if .Music.Loop }}loop{{ end }}>
+    <source src="{{ .Music.URL }}" type="audio/mpeg">
+  </audio>
+
+  <!-- Floating Audio Player FAB -->
+  <button id="inv-music-toggle" class="inv-music-fab" type="button" 
+          aria-label="Toggle background music" 
+          data-autoplay="{{ .Music.Autoplay }}"
+          title="{{ .Music.DisplayTitle "Background Music" }}">
+    <div class="music-disc-icon">
+      <!-- Vinyl record icon -->
+      <svg class="icon-disc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+      <!-- Sound wave bars -->
+      <div class="music-bars" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+    {{ if .Music.Title }}
+      <span class="music-tooltip">{{ .Music.Title }}</span>
+    {{ end }}
+  </button>
+  {{ end }}
 
   <!-- Interactivity Script -->
   <script src="/static/js/invitation.js"></script>

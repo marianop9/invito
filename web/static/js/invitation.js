@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initHeroScrollCue();
   initRSVPForm();
   initCarousel();
+  initMusicAndSplash();
 });
 
 
@@ -438,3 +439,111 @@ function initCarousel() {
     startAutoScroll();
   }
 }
+
+/* ==========================================================================
+   Splash Screen & Background Music Engine
+   ========================================================================== */
+function initMusicAndSplash() {
+  const splash = document.getElementById('inv-splash-overlay');
+  const splashBtn = document.getElementById('btn-splash-open');
+  const audio = document.getElementById('inv-bg-audio');
+  const fab = document.getElementById('inv-music-toggle');
+
+  let isPlaying = false;
+
+  function setPlayingState(playing) {
+    isPlaying = playing;
+    if (!fab) return;
+    if (playing) {
+      fab.classList.add('is-playing');
+      fab.classList.remove('is-paused');
+      fab.setAttribute('aria-label', 'Pause background music');
+    } else {
+      fab.classList.remove('is-playing');
+      fab.classList.add('is-paused');
+      fab.setAttribute('aria-label', 'Play background music');
+    }
+  }
+
+  function fadeInAudio(durationMs = 1200) {
+    if (!audio) return;
+    audio.volume = 0;
+    const playPromise = audio.play();
+    if (!playPromise) return;
+
+    playPromise
+      .then(() => {
+        setPlayingState(true);
+        const targetVol = 0.75;
+        const steps = 20;
+        const stepTime = durationMs / steps;
+        const stepVol = targetVol / steps;
+        let currentStep = 0;
+
+        const interval = setInterval(() => {
+          currentStep++;
+          if (audio.volume + stepVol >= targetVol || currentStep >= steps) {
+            audio.volume = targetVol;
+            clearInterval(interval);
+          } else {
+            audio.volume += stepVol;
+          }
+        }, stepTime);
+      })
+      .catch((err) => {
+        console.warn('Playback deferred or blocked:', err.message);
+        setPlayingState(false);
+      });
+  }
+
+  // 1. Splash Screen Gesture Unlock
+  if (splash && splashBtn) {
+    splashBtn.addEventListener('click', () => {
+      splash.classList.add('is-dismissed');
+      // Unlock audio synchronously inside the click user gesture
+      if (audio) {
+        fadeInAudio(1000);
+      }
+      setTimeout(() => {
+        splash.style.display = 'none';
+      }, 700);
+    });
+  } else if (audio && fab && fab.getAttribute('data-autoplay') === 'true') {
+    // 2. Fallback when splash is disabled: Play on very first user gesture anywhere
+    const unlockOnGesture = () => {
+      fadeInAudio(1000);
+      window.removeEventListener('pointerdown', unlockOnGesture);
+      window.removeEventListener('touchstart', unlockOnGesture);
+      window.removeEventListener('keydown', unlockOnGesture);
+    };
+    window.addEventListener('pointerdown', unlockOnGesture, { once: true, passive: true });
+    window.addEventListener('touchstart', unlockOnGesture, { once: true, passive: true });
+    window.addEventListener('keydown', unlockOnGesture, { once: true, passive: true });
+  }
+
+  // 3. Floating FAB Play/Pause Toggle
+  if (fab && audio) {
+    audio.addEventListener('ended', () => {
+      setPlayingState(false);
+    });
+
+    fab.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (isPlaying) {
+        audio.pause();
+        setPlayingState(false);
+      } else {
+        audio.play().then(() => setPlayingState(true)).catch(() => {});
+      }
+    });
+
+    // 4. Tab Visibility Pause/Resume
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && isPlaying) {
+        audio.pause();
+        setPlayingState(false);
+      }
+    });
+  }
+}
+
