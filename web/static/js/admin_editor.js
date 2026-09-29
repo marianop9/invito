@@ -222,6 +222,13 @@
         if (!inv.theme) inv.theme = { id: 'botanical-elegance' };
         if (!inv.theme.palette_override) inv.theme.palette_override = {};
         if (!inv.sections) inv.sections = [];
+        if (inv.music) {
+          if (inv.music.autoplay === undefined) inv.music.autoplay = true;
+          if (inv.music.loop === undefined) inv.music.loop = true;
+        }
+        if (inv.splash_screen) {
+          if (!inv.splash_screen.button_text) inv.splash_screen.button_text = 'Open Invitation';
+        }
         inv.sections.forEach(sec => this.normalizeSectionForUI(sec));
       },
 
@@ -317,6 +324,70 @@
         sec.links.push({ _uid: 'reg_' + Math.random().toString(36).slice(2, 9), label: '', url: '' });
       },
 
+      ensureSplashScreen() {
+        if (!this.invitation.splash_screen) {
+          this.invitation.splash_screen = {
+            enabled: false,
+            title: '',
+            message: '',
+            button_text: 'Open Invitation',
+          };
+        }
+        return this.invitation.splash_screen;
+      },
+
+      hasMusic() {
+        return !!(this.invitation.music && this.invitation.music.url !== undefined && this.invitation.music.url !== null);
+      },
+
+      toggleMusic(enable) {
+        if (enable) {
+          if (!this.invitation.music) {
+            this.invitation.music = {
+              url: '',
+              title: '',
+              autoplay: true,
+              loop: true,
+            };
+          }
+        } else {
+          this.invitation.music = null;
+        }
+      },
+
+      async uploadAudioFile(event) {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const fd = new FormData();
+        fd.append('audio', file);
+        if (this.invitation.slug) fd.append('slug', this.invitation.slug);
+
+        this.syncStatus = 'Uploading audio track...';
+        try {
+          const res = await fetch('/api/upload', { method: 'POST', body: fd });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Audio upload failed');
+
+          if (!this.invitation.music) {
+            this.toggleMusic(true);
+          }
+          this.invitation.music.url = data.url;
+          if (!this.invitation.music.title) {
+            // Clean base filename without extension for friendly default track title
+            const baseName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+            this.invitation.music.title = baseName;
+          }
+
+          this.syncStatus = 'Audio track uploaded!';
+          event.target.value = '';
+          this.refreshLivePreview();
+        } catch (err) {
+          alert('Audio upload failed: ' + err.message);
+          this.syncStatus = 'Audio upload failed';
+        }
+      },
+
       async uploadFile(event, targetObj, key) {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -354,6 +425,50 @@
           }
         }
 
+        // Clean splash screen configuration: omit if disabled and empty
+        if (doc.splash_screen) {
+          const hasContent = !!((doc.splash_screen.title && doc.splash_screen.title.trim()) ||
+                                (doc.splash_screen.message && doc.splash_screen.message.trim()));
+          if (!doc.splash_screen.enabled && !hasContent) {
+            delete doc.splash_screen;
+          } else {
+            doc.splash_screen.enabled = !!doc.splash_screen.enabled;
+            if (doc.splash_screen.title) {
+              doc.splash_screen.title = doc.splash_screen.title.trim();
+              if (!doc.splash_screen.title) delete doc.splash_screen.title;
+            }
+            if (doc.splash_screen.message) {
+              doc.splash_screen.message = doc.splash_screen.message.trim();
+              if (!doc.splash_screen.message) delete doc.splash_screen.message;
+            }
+            if (doc.splash_screen.button_text) {
+              doc.splash_screen.button_text = doc.splash_screen.button_text.trim();
+            }
+            if (!doc.splash_screen.button_text) {
+              doc.splash_screen.button_text = 'Open Invitation';
+            }
+            if (doc.splash_screen.background_image_url) {
+              doc.splash_screen.background_image_url = doc.splash_screen.background_image_url.trim();
+              if (!doc.splash_screen.background_image_url) delete doc.splash_screen.background_image_url;
+            }
+          }
+        }
+
+        // Clean music configuration: omit if missing or empty URL
+        if (doc.music) {
+          if (!doc.music.url || !doc.music.url.trim()) {
+            delete doc.music;
+          } else {
+            doc.music.url = doc.music.url.trim();
+            if (doc.music.title) {
+              doc.music.title = doc.music.title.trim();
+              if (!doc.music.title) delete doc.music.title;
+            }
+            doc.music.autoplay = doc.music.autoplay !== false;
+            doc.music.loop = doc.music.loop !== false;
+          }
+        }
+
         if (doc.sections) {
           doc.sections.forEach(sec => {
             delete sec._uid;
@@ -374,6 +489,10 @@
         }
 
         return doc;
+      },
+
+      refreshLivePreview() {
+        this.updateLivePreview();
       },
 
       triggerPreviewSync() {

@@ -355,10 +355,135 @@
           </details>
         </section>
 
-        <!-- Card 4: Modular Section Blocks -->
+        <!-- Card 4: Welcome Splash & Background Music -->
+        <section class="box mb-5">
+          <h2 class="title is-5 mb-1">4. Welcome Splash & Background Music</h2>
+          <p class="subtitle is-6 has-text-grey mb-4">
+            Configure the interactive envelope opening screen and ambient background soundtrack.
+          </p>
+
+          <!-- Subsection A: Welcome Splash Screen -->
+          <div class="field mb-4">
+            <label class="checkbox has-text-weight-semibold">
+              <input type="checkbox" x-model="ensureSplashScreen().enabled">
+              Enable Tap-to-Open Welcome Splash Screen
+            </label>
+            <p class="help">Displays an elegant welcome card or envelope flap before the invitation opens.</p>
+          </div>
+
+          <div class="p-4 mb-5 has-background-light" style="border-radius: 8px;" x-show="invitation.splash_screen?.enabled" x-transition>
+            <div class="columns is-multiline">
+              <div class="column is-6">
+                <div class="field">
+                  <label class="label is-small">Card Headline / Title</label>
+                  <div class="control">
+                    <input type="text" class="input is-small" placeholder="e.g. Lucas is turning 30" 
+                           x-model="invitation.splash_screen.title">
+                  </div>
+                </div>
+              </div>
+
+              <div class="column is-6">
+                <div class="field">
+                  <label class="label is-small">CTA Button Text</label>
+                  <div class="control">
+                    <input type="text" class="input is-small" placeholder="Open Invitation" 
+                           x-model="invitation.splash_screen.button_text">
+                  </div>
+                </div>
+              </div>
+
+              <div class="column is-12">
+                <div class="field">
+                  <label class="label is-small">Welcome Note / Message</label>
+                  <div class="control">
+                    <textarea class="textarea is-small" rows="2" 
+                              placeholder="You are invited to celebrate chapter 30 with spritzes and sunset dancing..." 
+                              x-model="invitation.splash_screen.message"></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-4">
+
+          <!-- Subsection B: Background Music Soundtrack -->
+          <div class="field mb-4">
+            <label class="checkbox has-text-weight-semibold">
+              <input type="checkbox" :checked="hasMusic()" @change="toggleMusic($event.target.checked)">
+              Enable Ambient Background Music
+            </label>
+            <p class="help">Plays ambient music when the guest opens the invitation.</p>
+          </div>
+
+          <div class="p-4 has-background-light" style="border-radius: 8px;" x-show="hasMusic()" x-transition>
+            <div class="columns is-multiline">
+              <!-- Audio File Upload -->
+              <div class="column is-12">
+                <div class="field">
+                  <label class="label is-small">Audio Track File (MP3, M4A, OGG, WAV up to 10MB) <span class="has-text-danger">*</span></label>
+                  <div class="field has-addons">
+                    <div class="control is-expanded">
+                      <input type="text" class="input is-small" placeholder="/uploads/... or https://..." 
+                             x-model="invitation.music.url">
+                    </div>
+                    <div class="control">
+                      <label class="button is-small is-primary is-light">
+                        <span>🎵 Upload Audio</span>
+                        <input type="file" accept="audio/mpeg,audio/mp3,audio/mp4,audio/ogg,audio/wav,audio/webm" 
+                               style="display: none;" @change="uploadAudioFile($event)">
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Track Name / Metadata -->
+              <div class="column is-12">
+                <div class="field">
+                  <label class="label is-small">Track Title or Artist (Shown on Floating Player)</label>
+                  <div class="control">
+                    <input type="text" class="input is-small" placeholder="e.g. Ludovico Einaudi - Nuvole Bianche" 
+                           x-model="invitation.music.title">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Playback Options -->
+              <div class="column is-6">
+                <div class="field">
+                  <label class="checkbox is-size-7">
+                    <input type="checkbox" x-model="invitation.music.autoplay">
+                    Start playing on first tap / open (Autoplay)
+                  </label>
+                </div>
+              </div>
+
+              <div class="column is-6">
+                <div class="field">
+                  <label class="checkbox is-size-7">
+                    <input type="checkbox" x-model="invitation.music.loop">
+                    Loop playback continuously
+                  </label>
+                </div>
+              </div>
+
+              <!-- Audio Preview In Admin -->
+              <div class="column is-12" x-show="invitation.music?.url">
+                <div class="field">
+                  <label class="label is-small">Track Preview</label>
+                  <audio class="mt-1" style="width: 100%; height: 36px;" controls :src="invitation.music.url" preload="none"></audio>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Card 5: Modular Section Blocks -->
         <section class="box mb-5">
           <div class="mb-4">
-            <h2 class="title is-5 mb-1">4. Modular Section Canvas</h2>
+            <h2 class="title is-5 mb-1">5. Modular Section Canvas</h2>
             <p class="subtitle is-6 has-text-grey">Assemble the invitation experience using modular building blocks.</p>
           </div>
 

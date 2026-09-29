@@ -434,6 +434,12 @@ func TestServerEndpoints(t *testing.T) {
 		if !strings.Contains(body, "alpine.min.js") {
 			t.Errorf("expected alpine.min.js script tag in body")
 		}
+		if !strings.Contains(body, "4. Welcome Splash &amp; Background Music") && !strings.Contains(body, "4. Welcome Splash & Background Music") {
+			t.Errorf("expected Card 4 (Welcome Splash & Background Music) in editor body")
+		}
+		if !strings.Contains(body, "5. Modular Section Canvas") {
+			t.Errorf("expected Card 5 (Modular Section Canvas) in editor body")
+		}
 
 		// Also verify static vendor script is served correctly
 		reqStatic := httptest.NewRequest(http.MethodGet, "/static/js/vendor/alpine.min.js", nil)

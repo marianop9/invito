@@ -593,6 +593,30 @@ func TestRenderer(t *testing.T) {
 				if !strings.HasSuffix(output, "</html>") {
 					t.Errorf("expected %s output to end with </html>", tc.name)
 				}
+
+				if tc.name == "RenderAdminEditor" {
+					expectedStrings := []string{
+						"4. Welcome Splash & Background Music",
+						"5. Modular Section Canvas",
+						"ensureSplashScreen().enabled",
+						"invitation.splash_screen.title",
+						"invitation.splash_screen.button_text",
+						"invitation.splash_screen.message",
+						"hasMusic()",
+						"toggleMusic($event.target.checked)",
+						"uploadAudioFile($event)",
+						"invitation.music.url",
+						"invitation.music.title",
+						"invitation.music.autoplay",
+						"invitation.music.loop",
+						"🎵 Upload Audio",
+					}
+					for _, exp := range expectedStrings {
+						if !strings.Contains(output, exp) {
+							t.Errorf("expected RenderAdminEditor to contain %q", exp)
+						}
+					}
+				}
 			})
 		}
 	})
