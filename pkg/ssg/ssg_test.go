@@ -104,14 +104,14 @@ func TestSSG_ExportAll(t *testing.T) {
 		t.Errorf("missing UID in calendar.ics: %s", icsStr)
 	}
 
-	// 4. Verify Birthday Invitation HTML
-	birthdayHTMLPath := filepath.Join(tempDir, "i", "lucas-30th-birthday-sunset-fiesta", "index.html")
-	birthdayHTML, err := os.ReadFile(birthdayHTMLPath)
+	// 4. Verify Reception Demo Invitation HTML
+	recepcionHTMLPath := filepath.Join(tempDir, "i", "demo-recepcion-xyz", "index.html")
+	recepcionHTML, err := os.ReadFile(recepcionHTMLPath)
 	if err != nil {
-		t.Fatalf("failed to read birthday index.html: %v", err)
+		t.Fatalf("failed to read recepcion index.html: %v", err)
 	}
-	if !strings.Contains(string(birthdayHTML), "Lucas is 30") {
-		t.Errorf("birthday HTML missing title")
+	if !strings.Contains(string(recepcionHTML), "Promo 2026") {
+		t.Errorf("recepcion HTML missing title")
 	}
 }
 

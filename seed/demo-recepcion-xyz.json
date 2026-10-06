@@ -1,0 +1,135 @@
+{
+  "$schema": "../schema/invitation.schema.json",
+  "version": "1.0",
+  "slug": "demo-recepcion-xyz",
+  "title": "Promo 2026",
+  "subtitle": "Nuestra Noche de Egresados",
+  "hosts": [
+    "Promo 2026"
+  ],
+  "description": "Llegó el momento de celebrar juntos el final de esta etapa inolvidable. Te esperamos para compartir una noche única llena de recuerdos, risas y fiesta.",
+  "date_start": "2026-12-08T21:30:00-03:00",
+  "date_end": "2026-12-09T05:30:00-03:00",
+  "timezone": "America/Argentina/Buenos_Aires",
+  "location": {
+    "name": "Salón Terrazas del Río",
+    "address": "Av. del Libertador 4500, Buenos Aires",
+    "map_url": "https://maps.google.com/?q=Buenos+Aires",
+    "directions_note": "Estacionamiento privado y guardarropas en el acceso principal."
+  },
+  "theme": {
+    "id": "midnight-soiree"
+  },
+  "splash_screen": {
+    "enabled": true,
+    "title": "Promo 2026",
+    "message": "Estás invitado a nuestra gran noche de egresados.",
+    "button_text": "Abrir Invitación"
+  },
+  "sections": [
+    {
+      "type": "hero",
+      "layout": "full-bleed",
+      "eyebrow": "Fiesta de Egresados",
+      "vibe": "Una noche para celebrar el final del secundario y el comienzo de todo lo que viene",
+      "cover_image_url": "/uploads/images/demo-recepcion-xyz/demo-recepcion-xyz-formal.webp",
+      "show_countdown": true
+    },
+    {
+      "type": "details",
+      "date_label": "¿Cuándo?",
+      "location_label": "¿Dónde?",
+      "show_map_link": true,
+      "show_calendar_button": true
+    },
+    {
+      "type": "timeline",
+      "title": "Cronograma de la Noche",
+      "items": [
+        {
+          "time": "21:30",
+          "title": "Recepción & Alfombra Roja",
+          "description": "Llegada de los egresados, fotos y cóctel de bienvenida"
+        },
+        {
+          "time": "22:30",
+          "title": "Cena & Proyección",
+          "description": "Video de la promo, cena principal y anécdotas"
+        },
+        {
+          "time": "00:00",
+          "title": "Brindis & Vals",
+          "description": "Vals tradicional con las familias y brindis central"
+        },
+        {
+          "time": "00:45",
+          "title": "Apertura de Pista & Fiesta",
+          "description": "DJ en vivo, barra libre y pista abierta"
+        },
+        {
+          "time": "03:30",
+          "title": "Cotillón & Carioca",
+          "description": "Show sorpresa, cotillón lumínico y glitter bar"
+        },
+        {
+          "time": "05:00",
+          "title": "Trasnoche & Desayuno",
+          "description": "Medialunas, café y fin de fiesta"
+        }
+      ]
+    },
+    {
+      "type": "carousel",
+      "title": "Recuerdos de la Promo",
+      "aspect_ratio": "4:3",
+      "fit": "cover",
+      "images": [
+        {
+          "url": "/uploads/images/demo-recepcion-xyz/demo-recepcion-xyz-brindis1.webp",
+          "caption": "Brindis de la Promo",
+          "alt": "Brindis de egresados"
+        },
+        {
+          "url": "/uploads/images/demo-recepcion-xyz/demo-recepcion-xyz-fiesta1.webp",
+          "caption": "Nuestra fiesta",
+          "alt": "Fiesta de egresados"
+        }
+      ]
+    },
+    {
+      "type": "quote",
+      "text": "No recordamos días, recordamos momentos. Gracias por ser parte de este viaje.",
+      "author": "Promo 2026"
+    },
+    {
+      "type": "text",
+      "title": "Menú & Servicio Gastronómico",
+      "text": "Recepción con finger food y appetizers fríos y calientes.\nPlato principal con opción tradicional y menú especial vegetariano / celíaco / vegano.\nPostre artesanal, barra libre durante toda la fiesta y mesa de trasnoche con medialunas y café.",
+      "align": "center"
+    },
+    {
+      "type": "carousel",
+      "title": "Momentos Compartidos",
+      "aspect_ratio": "4:3",
+      "fit": "cover",
+      "images": [
+        {
+          "url": "/uploads/images/demo-recepcion-xyz/demo-recepcion-xyz-brindis2.webp",
+          "caption": "Celebrando juntos",
+          "alt": "Celebración de la promo"
+        },
+        {
+          "url": "/uploads/images/demo-recepcion-xyz/demo-recepcion-xyz-fiesta2.webp",
+          "caption": "La noche de la promo",
+          "alt": "Egresados festejando"
+        }
+      ]
+    },
+    {
+      "type": "closing",
+      "message": "Fueron años increíbles y queremos vivirlos hasta el último minuto. ¡Gracias por acompañarnos!",
+      "signoff": "Los esperamos,",
+      "hosts": "Egresados Promo 2026"
+    }
+  ]
+}

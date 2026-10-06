@@ -3,11 +3,13 @@ package ssg
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"invitation/pkg/calendar"
@@ -112,7 +114,7 @@ func (g *Generator) ExportAll() (*Result, error) {
 	}
 
 	// 3. Render and export each invitation
-	invitations, err := g.store.ListInvitations()
+	invitations, err := g.listInvitations()
 	if err != nil {
 		return nil, fmt.Errorf("failed to list invitations: %w", err)
 	}
@@ -147,7 +149,7 @@ func (g *Generator) ExportAll() (*Result, error) {
 
 // ExportInvitation exports a single invitation with all static assets to the configured output directory.
 func (g *Generator) ExportInvitation(slug string) (*Result, error) {
-	inv, err := g.store.GetInvitation(slug)
+	inv, err := g.getInvitation(slug)
 	if err != nil {
 		return nil, fmt.Errorf("invitation not found: %w", err)
 	}
@@ -395,4 +397,77 @@ func CreateZipArchive(sourceDir, targetZip string) error {
 
 		return nil
 	})
+}
+
+// getInvitation retrieves an invitation from SeedDir or store.
+func (g *Generator) getInvitation(slug string) (*domain.Invitation, error) {
+	if g.config.SeedDir != "" {
+		cleanSlug := filepath.Base(slug)
+		targetFile := filepath.Join(g.config.SeedDir, cleanSlug+".json")
+		if data, err := os.ReadFile(targetFile); err == nil {
+			var inv domain.Invitation
+			if err := json.Unmarshal(data, &inv); err == nil {
+				if strings.HasPrefix(inv.Slug, "demo-") {
+					inv.SetDemo(true)
+				}
+				return &inv, nil
+			}
+		}
+	}
+
+	if g.store != nil {
+		inv, err := g.store.GetInvitation(slug)
+		if err == nil {
+			if strings.HasPrefix(inv.Slug, "demo-") {
+				inv.SetDemo(true)
+			}
+			return inv, nil
+		}
+	}
+
+	return nil, fmt.Errorf("invitation not found: %s", slug)
+}
+
+// listInvitations returns all invitations combining SeedDir templates and store invitations.
+func (g *Generator) listInvitations() ([]*domain.Invitation, error) {
+	seen := make(map[string]bool)
+	var result []*domain.Invitation
+
+	if g.config.SeedDir != "" {
+		files, _ := filepath.Glob(filepath.Join(g.config.SeedDir, "*.json"))
+		for _, file := range files {
+			data, err := os.ReadFile(file)
+			if err != nil {
+				continue
+			}
+			var inv domain.Invitation
+			if err := json.Unmarshal(data, &inv); err != nil {
+				continue
+			}
+			if !seen[inv.Slug] {
+				seen[inv.Slug] = true
+				if strings.HasPrefix(inv.Slug, "demo-") {
+					inv.SetDemo(true)
+				}
+				result = append(result, &inv)
+			}
+		}
+	}
+
+	if g.store != nil {
+		storeInvs, err := g.store.ListInvitations()
+		if err == nil {
+			for _, inv := range storeInvs {
+				if !seen[inv.Slug] {
+					seen[inv.Slug] = true
+					if strings.HasPrefix(inv.Slug, "demo-") {
+						inv.SetDemo(true)
+					}
+					result = append(result, inv)
+				}
+			}
+		}
+	}
+
+	return result, nil
 }

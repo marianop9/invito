@@ -127,6 +127,11 @@ func (s *SQLiteStore) seedIfEmpty(seedDir string) error {
 			return fmt.Errorf("failed to unmarshal seed file %s: %w", file, err)
 		}
 
+		// Skip demo templates from polluting SQLite database
+		if inv.IsDemo() {
+			continue
+		}
+
 		if err := inv.Validate(); err != nil {
 			return fmt.Errorf("seed invitation %s validation failed: %w", file, err)
 		}

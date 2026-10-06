@@ -510,6 +510,8 @@ type Invitation struct {
 	Music        *MusicConfig        `json:"music,omitempty"`
 	SplashScreen *SplashScreenConfig `json:"splash_screen,omitempty"`
 	Sections     []Section           `json:"sections"`
+
+	isDemo bool
 }
 
 // UnmarshalJSON unmarshals an Invitation, supporting both ordered []Section arrays and legacy section maps.
@@ -732,6 +734,22 @@ func (inv *Invitation) IsRSVPOpen() bool {
 		return re.IsOpen()
 	}
 	return false
+}
+
+// IsDemo reports whether this invitation is a demo template.
+// Slugs prefixed with "demo-" or explicitly flagged via SetDemo are treated as demos.
+func (inv *Invitation) IsDemo() bool {
+	if inv == nil {
+		return false
+	}
+	return inv.isDemo || strings.HasPrefix(inv.Slug, "demo-")
+}
+
+// SetDemo updates the in-memory demo status of the invitation.
+func (inv *Invitation) SetDemo(demo bool) {
+	if inv != nil {
+		inv.isDemo = demo
+	}
 }
 
 // HostsDisplay returns a formatted string of hosts.

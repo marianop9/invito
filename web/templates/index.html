@@ -33,7 +33,7 @@
 
   <div class="feature-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
     {{ range .Invitations }}
-    {{ if or (eq .Slug "sarah-and-alex-wedding") (eq .Slug "lucas-30th-birthday-sunset-fiesta") }}
+    {{ if or (eq .Slug "sarah-and-alex-wedding") .IsDemo }}
     <div class="feature-item" style="display: flex; flex-direction: column; justify-content: space-between; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden; padding: 0;">
       {{ if .HasCoverImage }}
       <div style="width: 100%; height: 160px; overflow: hidden; background: var(--bg-subtle); position: relative;">

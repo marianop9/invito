@@ -148,7 +148,7 @@ func (s *Server) setupRoutes() {
 
 // handleIndex renders the showcase platform home page.
 func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
-	invitations, err := s.store.ListInvitations()
+	invitations, err := s.listInvitations()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to list invitations: %v", err), http.StatusInternalServerError)
 		return
@@ -169,7 +169,7 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleRenderInvitation(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 
-	inv, err := s.store.GetInvitation(slug)
+	inv, err := s.getInvitation(slug)
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -185,7 +185,7 @@ func (s *Server) handleRenderInvitation(w http.ResponseWriter, r *http.Request) 
 func (s *Server) handleDownloadICS(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 
-	inv, err := s.store.GetInvitation(slug)
+	inv, err := s.getInvitation(slug)
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -202,9 +202,18 @@ func (s *Server) handleDownloadICS(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleRSVPSubmit(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 
-	inv, err := s.store.GetInvitation(slug)
+	inv, err := s.getInvitation(slug)
 	if err != nil {
 		http.NotFound(w, r)
+		return
+	}
+
+	if inv.IsDemo() {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusForbidden)
+		_ = json.NewEncoder(w).Encode(map[string]string{
+			"error": "RSVP submissions are disabled for demo invitations.",
+		})
 		return
 	}
 
@@ -280,7 +289,7 @@ func (s *Server) handleRSVPSubmit(w http.ResponseWriter, r *http.Request) {
 
 // handleAPIListInvitations returns all invitations in JSON format.
 func (s *Server) handleAPIListInvitations(w http.ResponseWriter, r *http.Request) {
-	invitations, err := s.store.ListInvitations()
+	invitations, err := s.listInvitations()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to list invitations: %v", err), http.StatusInternalServerError)
 		return
@@ -294,7 +303,7 @@ func (s *Server) handleAPIListInvitations(w http.ResponseWriter, r *http.Request
 func (s *Server) handleAPIGetInvitation(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 
-	inv, err := s.store.GetInvitation(slug)
+	inv, err := s.getInvitation(slug)
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -576,6 +585,106 @@ func (s *Server) handleServeUpload(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "public, max-age=86400")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	http.ServeFile(w, r, fullPath)
+}
+
+// loadSeedInvitation loads a seed file in SeedDir matching the given slug by filename (<slug>.json).
+func (s *Server) loadSeedInvitation(slug string) (*domain.Invitation, error) {
+	if s.config.SeedDir == "" {
+		return nil, os.ErrNotExist
+	}
+
+	cleanSlug := filepath.Base(slug)
+	targetFile := filepath.Join(s.config.SeedDir, cleanSlug+".json")
+	data, err := os.ReadFile(targetFile)
+	if err != nil {
+		return nil, err
+	}
+
+	var inv domain.Invitation
+	if err := json.Unmarshal(data, &inv); err != nil {
+		return nil, err
+	}
+
+	inv.SetDemo(true)
+	return &inv, nil
+}
+
+// loadSeedInvitations loads all seed invitations from SeedDir.
+func (s *Server) loadSeedInvitations() ([]*domain.Invitation, error) {
+	if s.config.SeedDir == "" {
+		return nil, nil
+	}
+	files, err := filepath.Glob(filepath.Join(s.config.SeedDir, "*.json"))
+	if err != nil {
+		return nil, err
+	}
+	var res []*domain.Invitation
+	for _, file := range files {
+		data, err := os.ReadFile(file)
+		if err != nil {
+			continue
+		}
+		var inv domain.Invitation
+		if err := json.Unmarshal(data, &inv); err != nil {
+			continue
+		}
+		inv.SetDemo(true)
+		res = append(res, &inv)
+	}
+	return res, nil
+}
+
+// getInvitation resolves an invitation by slug, checking seed templates first for demo invitations.
+func (s *Server) getInvitation(slug string) (*domain.Invitation, error) {
+	if strings.HasPrefix(slug, "demo-") {
+		if inv, err := s.loadSeedInvitation(slug); err == nil {
+			return inv, nil
+		}
+	}
+
+	inv, err := s.store.GetInvitation(slug)
+	if err == nil {
+		if strings.HasPrefix(slug, "demo-") {
+			inv.SetDemo(true)
+		}
+		return inv, nil
+	}
+
+	// Fallback to seed directory
+	if seedInv, err := s.loadSeedInvitation(slug); err == nil {
+		return seedInv, nil
+	}
+
+	return nil, err
+}
+
+// listInvitations returns both persistent store invitations and seed demo invitations.
+func (s *Server) listInvitations() ([]*domain.Invitation, error) {
+	seen := make(map[string]bool)
+	var result []*domain.Invitation
+
+	// Persistent invitations
+	if invs, err := s.store.ListInvitations(); err == nil {
+		for _, inv := range invs {
+			seen[inv.Slug] = true
+			if strings.HasPrefix(inv.Slug, "demo-") {
+				inv.SetDemo(true)
+			}
+			result = append(result, inv)
+		}
+	}
+
+	// Seed templates (add if not already present)
+	if seedInvs, err := s.loadSeedInvitations(); err == nil {
+		for _, inv := range seedInvs {
+			if !seen[inv.Slug] {
+				seen[inv.Slug] = true
+				result = append(result, inv)
+			}
+		}
+	}
+
+	return result, nil
 }
 
 // Router returns the configured chi.Mux.

@@ -117,6 +117,41 @@ func TestServerEndpoints(t *testing.T) {
 		}
 	})
 
+	t.Run("GET /i/{slug} loads demo from seed without SQLite database entry", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/i/demo-recepcion-xyz", nil)
+		rec := httptest.NewRecorder()
+
+		srv.Router().ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusOK {
+			t.Errorf("expected status 200, got %d", rec.Code)
+		}
+
+		body := rec.Body.String()
+		if !strings.Contains(body, "Promo 2026") {
+			t.Errorf("expected response to contain 'Promo 2026'")
+		}
+	})
+
+	t.Run("POST /i/{slug}/rsvp rejects submissions for demo invitations with 403 Forbidden", func(t *testing.T) {
+		payload := map[string]any{
+			"name":      "Invitado Prueba",
+			"email":     "test@example.com",
+			"attending": true,
+		}
+		jsonBytes, _ := json.Marshal(payload)
+
+		req := httptest.NewRequest(http.MethodPost, "/i/demo-recepcion-xyz/rsvp", bytes.NewReader(jsonBytes))
+		req.Header.Set("Content-Type", "application/json")
+		rec := httptest.NewRecorder()
+
+		srv.Router().ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusForbidden {
+			t.Errorf("expected status 403 Forbidden for demo RSVP, got %d: %s", rec.Code, rec.Body.String())
+		}
+	})
+
 	t.Run("GET /api/invitations returns JSON list", func(t *testing.T) {
 		req := httptest.NewRequest(http.MethodGet, "/api/invitations", nil)
 		rec := httptest.NewRecorder()

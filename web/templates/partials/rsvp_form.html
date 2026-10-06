@@ -61,8 +61,8 @@
         {{ end }}
 
         <!-- Submit Button -->
-        <button type="submit" class="btn-submit-rsvp" id="btn-submit-rsvp">
-          Confirm Attendance
+        <button type="submit" class="btn-submit-rsvp" id="btn-submit-rsvp"{{ if .Invitation.IsDemo }} disabled style="opacity: 0.65; cursor: not-allowed;" title="Modo Demo &mdash; Confirmaciones deshabilitadas"{{ end }}>
+          {{ if .Invitation.IsDemo }}Confirmación Deshabilitada (Modo Demo){{ else }}Confirm Attendance{{ end }}
         </button>
       </form>
     {{ else }}
