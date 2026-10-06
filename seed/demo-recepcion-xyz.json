@@ -32,7 +32,7 @@
       "layout": "full-bleed",
       "eyebrow": "Fiesta de Egresados",
       "vibe": "Una noche para celebrar el final del secundario y el comienzo de todo lo que viene",
-      "cover_image_url": "/uploads/images/demo-recepcion-xyz/demo-recepcion-xyz-formal.webp",
+      "cover_image_url": "/static/img/demo-recepcion-xyz/demo-recepcion-xyz-formal.webp",
       "show_countdown": true
     },
     {
@@ -85,13 +85,11 @@
       "fit": "cover",
       "images": [
         {
-          "url": "/uploads/images/demo-recepcion-xyz/demo-recepcion-xyz-brindis1.webp",
-          "caption": "Brindis de la Promo",
+          "url": "/static/img/demo-recepcion-xyz/demo-recepcion-xyz-brindis1.webp",
           "alt": "Brindis de egresados"
         },
         {
-          "url": "/uploads/images/demo-recepcion-xyz/demo-recepcion-xyz-fiesta1.webp",
-          "caption": "Nuestra fiesta",
+          "url": "/static/img/demo-recepcion-xyz/demo-recepcion-xyz-fiesta1.webp",
           "alt": "Fiesta de egresados"
         }
       ]
@@ -114,12 +112,12 @@
       "fit": "cover",
       "images": [
         {
-          "url": "/uploads/images/demo-recepcion-xyz/demo-recepcion-xyz-brindis2.webp",
+          "url": "/static/img/demo-recepcion-xyz/demo-recepcion-xyz-brindis2.webp",
           "caption": "Celebrando juntos",
           "alt": "Celebración de la promo"
         },
         {
-          "url": "/uploads/images/demo-recepcion-xyz/demo-recepcion-xyz-fiesta2.webp",
+          "url": "/static/img/demo-recepcion-xyz/demo-recepcion-xyz-fiesta2.webp",
           "caption": "La noche de la promo",
           "alt": "Egresados festejando"
         }

@@ -417,6 +417,49 @@ func TestCarouselSectionHelperMethods(t *testing.T) {
 	}
 }
 
+func TestMultipleCarousels(t *testing.T) {
+	c1 := &CarouselSection{
+		SectionType: SectionCarousel,
+		Title:       "Gallery 1",
+		Images: []CarouselImage{
+			{URL: "/img/1.webp"},
+			{URL: "/img/2.webp"},
+		},
+	}
+	c2 := &CarouselSection{
+		SectionType: SectionCarousel,
+		Title:       "Gallery 2",
+		Images: []CarouselImage{
+			{URL: "/img/3.webp"},
+			{URL: "/img/4.webp"},
+			{URL: "/img/5.webp"},
+		},
+	}
+
+	inv := &Invitation{
+		Slug:  "multi-carousel-test",
+		Title: "Multi Carousel Test",
+		Sections: []Section{
+			c1,
+			&TextSection{SectionType: SectionText, Title: "Interlude", Text: "Some text"},
+			c2,
+		},
+	}
+
+	if !inv.HasCarousel() {
+		t.Errorf("expected HasCarousel to be true")
+	}
+
+	sections := inv.CarouselSections()
+	if len(sections) != 2 {
+		t.Fatalf("expected 2 carousel sections, got %d", len(sections))
+	}
+
+	if inv.TotalCarouselImages() != 5 {
+		t.Errorf("expected 5 total carousel images, got %d", inv.TotalCarouselImages())
+	}
+}
+
 func TestRSVPExternalSection(t *testing.T) {
 	future := time.Now().Add(24 * time.Hour)
 	past := time.Now().Add(-24 * time.Hour)

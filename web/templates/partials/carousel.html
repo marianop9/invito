@@ -1,12 +1,12 @@
 {{ define "partial_carousel" }}
 {{ if .Section.HasImages }}
-<section class="inv-section inv-carousel-section" id="section-gallery">
+<section class="inv-section inv-carousel-section section-gallery">
   {{ if .Section.Title }}
     <h2 class="inv-section-heading">{{ .Section.Title }}</h2>
   {{ end }}
 
   <div class="inv-carousel{{ if .Section.AspectRatio }} inv-carousel-aspect-{{ .Section.AspectRatioClass }}{{ end }}{{ if .Section.IsCoverFit }} inv-carousel-fit-cover{{ end }}" data-carousel="inv-carousel">
-    <div class="inv-carousel-track" id="carousel-track" tabindex="0" role="region" aria-label="Photo gallery">
+    <div class="inv-carousel-track" tabindex="0" role="region" aria-label="{{ if .Section.Title }}{{ .Section.Title }}{{ else }}Photo gallery{{ end }}">
       {{ range $i, $img := .Section.Images }}
       <figure class="inv-carousel-slide{{ if eq $i 0 }} is-active{{ end }}" data-slide-index="{{ $i }}">
         <div class="inv-carousel-img-wrap">
@@ -27,7 +27,7 @@
     </div>
 
     {{ if gt .Section.ImageCount 1 }}
-    <div class="inv-carousel-dots" id="carousel-dots" role="tablist" aria-label="Carousel pagination">
+    <div class="inv-carousel-dots" role="tablist" aria-label="Carousel pagination">
       {{ range $i, $img := .Section.Images }}
         <button type="button" class="inv-carousel-dot{{ if eq $i 0 }} active{{ end }}" data-dot-index="{{ $i }}" aria-label="Go to photo {{ add $i 1 }}" role="tab"></button>
       {{ end }}
