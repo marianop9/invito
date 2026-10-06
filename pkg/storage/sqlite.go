@@ -61,10 +61,10 @@ func NewSQLiteStore(dbPath, seedDir string) (*SQLiteStore, error) {
 	}
 
 	if seedDir != "" {
-		if err := store.seedIfEmpty(seedDir); err != nil {
-			// Log seed warning but allow store initialization to continue
-			fmt.Printf("⚠️ Warning: Failed to seed invitations from %s: %v\n", seedDir, err)
-		}
+		// if err := store.seedIfEmpty(seedDir); err != nil {
+		// 	// Log seed warning but allow store initialization to continue
+		// 	fmt.Printf("⚠️ Warning: Failed to seed invitations from %s: %v\n", seedDir, err)
+		// }
 	}
 
 	return store, nil

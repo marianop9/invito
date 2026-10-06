@@ -691,6 +691,17 @@ func (inv *Invitation) CarouselSection() *CarouselSection {
 	return nil
 }
 
+// CarouselSections returns all CarouselSections configured in the invitation.
+func (inv *Invitation) CarouselSections() []*CarouselSection {
+	var list []*CarouselSection
+	for _, sec := range inv.Sections {
+		if c, ok := sec.(*CarouselSection); ok {
+			list = append(list, c)
+		}
+	}
+	return list
+}
+
 // HasCoverImage returns true if a hero cover image is present.
 func (inv *Invitation) HasCoverImage() bool {
 	h := inv.HeroSection()
@@ -708,8 +719,23 @@ func (inv *Invitation) CoverImage() string {
 
 // HasCarousel returns true if any carousel section contains images.
 func (inv *Invitation) HasCarousel() bool {
-	c := inv.CarouselSection()
-	return c != nil && c.HasImages()
+	for _, sec := range inv.Sections {
+		if c, ok := sec.(*CarouselSection); ok && c.HasImages() {
+			return true
+		}
+	}
+	return false
+}
+
+// TotalCarouselImages returns the total number of images across all carousel sections.
+func (inv *Invitation) TotalCarouselImages() int {
+	total := 0
+	for _, sec := range inv.Sections {
+		if c, ok := sec.(*CarouselSection); ok {
+			total += c.ImageCount()
+		}
+	}
+	return total
 }
 
 // HasMusic returns true if music configuration is present and has a non-empty URL.

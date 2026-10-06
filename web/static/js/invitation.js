@@ -226,13 +226,18 @@ function escapeHTML(str) {
    Auto-Scrolling Photo Carousel (Viewport-Aware & Infinite Wrap)
    ========================================================================== */
 function initCarousel() {
-  const track = document.getElementById('carousel-track');
+  const containers = document.querySelectorAll('[data-carousel="inv-carousel"], .inv-carousel');
+  containers.forEach(container => setupSingleCarousel(container));
+}
+
+function setupSingleCarousel(container) {
+  const track = container.querySelector('.inv-carousel-track');
   if (!track) return;
 
   const slides = track.querySelectorAll('.inv-carousel-slide');
   if (slides.length <= 1) return;
 
-  const dotsContainer = document.getElementById('carousel-dots');
+  const dotsContainer = container.querySelector('.inv-carousel-dots');
   const dots = dotsContainer ? dotsContainer.querySelectorAll('.inv-carousel-dot') : [];
 
   let currentIndex = 0;

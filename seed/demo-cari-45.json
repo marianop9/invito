@@ -1,0 +1,147 @@
+{
+    "version": "1.0",
+    "slug": "demo-cari-45",
+    "title": "Carina",
+    "date_start": "2026-08-30T12:00:00Z",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "location": {
+        "name": "Camping \"Jesús Víctor Almada\"",
+        "address": "San Francisco",
+        "map_url": "https://www.google.com/maps?cid=2632705725022133739\u0026g_mp=CiVnb29nbGUubWFwcy5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAMYASAF\u0026hl=es\u0026gl=AR\u0026source=embed",
+        "directions_note": "Los autos entran por el portón de los corrales."
+    },
+    "theme": {
+        "id": "botanical-elegance",
+        "palette_override": null
+    },
+    "sections": [
+        {
+            "type": "hero",
+            "layout": "full-bleed",
+            "eyebrow": "Mis 45",
+            "vibe": "La Soñada se viste de fiesta",
+            "cover_image_url": "/static/img/hero-cumple2.webp",
+            "show_countdown": true
+        },
+        {
+            "type": "quote",
+            "text": "Que la vida nos encuentre rodeados de gente querida y motivos para brindar."
+        },
+        {
+            "type": "details",
+            "date_label": "¿Cuándo?",
+            "location_label": "¿Dónde?",
+            "show_map_link": true,
+            "show_calendar_button": false
+        },
+        {
+            "type": "rsvp_external",
+            "enabled": true,
+            "title": "Confirmá tu Asistencia",
+            "form_url": "https://tally.so/r/81bqzo",
+            "button_label": "Confirmá acá",
+            "receipt_note": "Una vez completado el formulario, por favor envianos el comprobante de transferencia por WhatsApp.",
+            "custom_note": "Confirmar antes del 25 de Agosto"
+        },
+        {
+            "type": "text",
+            "title": "Importante",
+            "text": "Recordar traer cubiertos y bebidas."
+        },
+        {
+            "type": "carousel",
+            "title": "Algo de este último año",
+            "images": [
+                {
+                    "url": "/static/img/demo-cari-45/photo_04.webp"
+                },
+                {
+                    "url": "/static/img/demo-cari-45/photo_05.webp"
+                },
+                {
+                    "url": "/static/img/demo-cari-45/photo_08.webp"
+                },
+                {
+                    "url": "/static/img/demo-cari-45/photo_09.webp"
+                },
+                {
+                    "url": "/static/img/demo-cari-45/photo_13.webp"
+                },
+                {
+                    "url": "/static/img/demo-cari-45/photo_14.webp"
+                }
+            ]
+        },
+        {
+            "type": "timeline",
+            "title": "Cronograma",
+            "items": [
+                {
+                    "time": "12:00",
+                    "title": "Bienvenida",
+                    "description": "Recepción con aperitivos en la pulpería"
+                },
+                {
+                    "time": "13:00",
+                    "title": "Almuerzo Criollo",
+                    "description": "Empanadas de la Ilda y costillar a la estaca con ensaladas"
+                },
+                {
+                    "time": "14:00",
+                    "title": "Mesa Dulce",
+                    "description": "Momento de la torta y cosas ricas"
+                },
+                {
+                    "time": "14:30",
+                    "title": "Música y Sobremesa",
+                    "description": "Show en vivo y mateada"
+                }
+            ]
+        },
+        {
+            "type": "image",
+            "url": "/static/img/demo-cari-45/cumple-static.webp"
+        },
+        {
+            "type": "text",
+            "title": "Una pausa para celebrar",
+            "text": "Cumplir 45 es una linda excusa para juntar a la gente que quiero y agradecer un año más compartido. Es mi regalo, una tarde para celebrar la vida con quienes quiero tener cerca.\n¡No faltes!"
+        },
+        {
+            "type": "dress_code",
+            "title": "Vestimenta Sugerida",
+            "name": "Casual de Campo",
+            "description": "Ropa casual para pasar el día en el patio de la matera y una prenda de abrigo para el atardecer",
+            "palette_hints": [
+                "#2A4738",
+                "#D4AF37",
+                "#EFEBE4",
+                "#8A9A86"
+            ]
+        },
+        {
+            "type": "faqs",
+            "title": "Preguntas frecuentes",
+            "items": [
+                {
+                    "question": "¿Se suspende por mal tiempo?",
+                    "answer": "Si, en caso de mal clima se reprograma el evento."
+                },
+                {
+                    "question": "¿Hay estacionamiento en el lugar?",
+                    "answer": "Sí, el predio cuenta con estacionamiento privado."
+                },
+                {
+                    "question": "¿Puedo ir con niños?",
+                    "answer": "Si, es un festejo para toda la familia."
+                }
+            ]
+        },
+        {
+            "type": "closing",
+            "message": "¡Te espero en La Soñada! \nPodés traer tu equipo de mate",
+            "signoff": "Saludos,",
+            "hosts": "Carina"
+        }
+    ]
+}
