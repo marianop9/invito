@@ -137,7 +137,7 @@
               <div class="field">
                 <label for="field-description" class="label is-small">Description / Summary</label>
                 <div class="control">
-                  <textarea id="field-description" class="textarea" rows="2" placeholder="Brief event summary for messaging and calendar invites..." x-model="invitation.description"></textarea>
+                  <textarea id="field-description" class="textarea" rows="2" placeholder="Brief event summary for messaging and invites..." x-model="invitation.description"></textarea>
                 </div>
               </div>
             </div>
@@ -576,16 +576,10 @@
                   <!-- 2. Details Quick Strip -->
                   <template x-if="sec.type === 'details'">
                     <div class="columns is-multiline">
-                      <div class="column is-6">
+                      <div class="column is-12">
                         <label class="checkbox is-size-7">
                           <input type="checkbox" :id="'details-map-' + (sec._uid || idx)" x-model="sec.show_map_link">
                           Show Google Maps Link
-                        </label>
-                      </div>
-                      <div class="column is-6">
-                        <label class="checkbox is-size-7">
-                          <input type="checkbox" :id="'details-cal-' + (sec._uid || idx)" x-model="sec.show_calendar_button">
-                          Show Add to Calendar Button
                         </label>
                       </div>
                     </div>

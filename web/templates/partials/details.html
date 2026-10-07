@@ -9,19 +9,6 @@
       <div class="detail-label">{{ if .Section.DateLabel }}{{ .Section.DateLabel }}{{ else }}When{{ end }}</div>
       <div class="detail-primary">{{ capitalizeFirst .Invitation.FormattedFullDate }}</div>
       <div class="detail-secondary">{{ .Invitation.FormattedTime }}</div>
-
-      {{ if .Section.ShowCalendarButton }}
-      <div class="detail-chip-group">
-        <a href="{{ .Invitation.GoogleCalendarURL }}" target="_blank" rel="noopener noreferrer" class="detail-chip detail-chip-primary" id="btn-add-google-calendar">
-          {{ icon "calendar-plus" }}
-          <span>Google Calendar</span>
-        </a>
-        <a href="/i/{{ .Invitation.Slug }}/calendar.ics" class="detail-chip detail-chip-secondary" id="btn-download-ics">
-          {{ icon "download" }}
-          <span>Archivo .ics</span>
-        </a>
-      </div>
-      {{ end }}
     </div>
   </div>
 

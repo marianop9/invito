@@ -7,7 +7,7 @@
 ### Core Principles
 - **Schema-Driven**: Invitations are defined via a structured JSON Schema (`schema/invitation.schema.json`) specifying metadata, schedule/timeline, location, dress code, RSVP rules, images, and theme configuration.
 - **Mobile-First Continuous Canvas**: Invitations render as a single, fluid sheet / digital event pass (`.inv-sheet`), eliminating disjointed floating cards and excessive spacing.
-- **Concise & Scannable**: Punchy copy, immediate access to Date, Time, Venue, 1-click Map, Calendar Sync, and RSVP.
+- **Concise & Scannable**: Punchy copy, immediate access to Date, Time, Venue, 1-click Map, and RSVP.
 - **Softer, Elegant Aesthetics**: Focus on warm, inviting palettes (Botanical Elegance & Golden Sunset) over aggressive dark or high-contrast neon tones.
 - **Single-Binary Deployment**: HTML templates, CSS themes, client scripts, and images compile into a single standalone binary using Go's `embed.FS`.
 
@@ -19,7 +19,6 @@
 - [x] **Go Server Foundation**: Chi router, production middlewares (Logger, Recoverer, Compress), and graceful shutdown.
 - [x] **Embedded Template System**: `embed.FS` configuration in `web/embed.go`.
 - [x] **JSON Schema & Domain Layer**: `schema/invitation.schema.json` and `pkg/domain` models with strict validation.
-- [x] **Calendar Sync**: Dynamic RFC 5545 iCalendar (`.ics`) generator and Google Calendar URL builder.
 - [x] **Streamlined Mobile Canvas**: Continuous single-sheet layout (`.inv-sheet`), compact quick details strip, inline time badges, and AJAX RSVP confirmation.
 - [x] **Modular Content Sections & Interface-Driven Building Blocks**: Extensible `domain.Section` contract (`Type()`, `Validate()`, `TemplateName()`), dynamic `renderSection` template helper, supporting arbitrary sequence and multiple instances of quotes, plain text/announcements, images, carousels, and custom blocks with full backward compatibility.
 
@@ -57,7 +56,6 @@
 
 - [x] **Standalone Static Site Exporter (SSG)**:
   - [x] Export invitations and embedded static assets into a standalone static bundle (`_demo/`).
-  - [x] Generate RFC 5545 iCalendar (`.ics`) files in each invitation's static folder.
   - [x] Render showcase landing page (`index.html`) at root.
   - [x] Support optional ZIP archive creation (`-zip` flag / `CreateZipArchive`).
   - [x] CLI integration in `main.go` with `-export`, `-zip`, `-seed`, `-slug`, and `-no-index` flags.
@@ -112,7 +110,6 @@
 │   └── img/                     # Demo images (hero.webp, carousel-1..3.webp)
 ├── pkg/
 │   ├── domain/                  # Go domain models & validation
-│   ├── calendar/                # RFC 5545 iCal generator
 │   ├── renderer/                # SSR template engine
 │   ├── storage/                 # MemoryStore seed loader
 │   ├── ssg/                     # Static Site Generator & ZIP bundler
