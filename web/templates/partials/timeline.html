@@ -1,7 +1,10 @@
 {{ define "partial_timeline" }}
 {{ if .Section.Items }}
-<div class="inv-section inv-timeline-section" id="section-timeline">
-  <div class="inv-section-heading">{{ if .Section.Title }}{{ .Section.Title }}{{ else }}Cronograma{{ end }}</div>
+<section class="inv-section inv-timeline-section inv-block {{ .SurfaceClass }}" id="section-timeline">
+  <div class="inv-block-icon" aria-hidden="true">
+    {{ icon "calendar-plus" }}
+  </div>
+  <h3 class="inv-block-heading">{{ if .Section.Title }}{{ .Section.Title }}{{ else }}CRONOGRAMA{{ end }}</h3>
 
   <div class="timeline-track-container">
     <div class="timeline-track-line" aria-hidden="true"></div>
@@ -22,6 +25,6 @@
       {{ end }}
     </div>
   </div>
-</div>
+</section>
 {{ end }}
 {{ end }}

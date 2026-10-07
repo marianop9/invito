@@ -1,10 +1,10 @@
 {{ define "partial_rsvp_external" }}
 {{ if .Section.Enabled }}
-<div class="inv-section inv-rsvp-section" id="section-rsvp-external">
+<section class="inv-section inv-rsvp-section inv-block {{ .SurfaceClass }}" id="section-rsvp-external">
   <div class="rsvp-conversion-card" id="rsvp-external-card-inner">
-    <div class="inv-section-heading">
+    <h3 class="inv-block-heading">
       {{ if .Section.Title }}{{ .Section.Title }}{{ else }}Confirmación de Asistencia{{ end }}
-    </div>
+    </h3>
 
     {{ if .Section.IsOpen }}
       {{ if .Section.CustomNote }}
@@ -56,6 +56,6 @@
       </div>
     {{ end }}
   </div>
-</div>
+</section>
 {{ end }}
 {{ end }}

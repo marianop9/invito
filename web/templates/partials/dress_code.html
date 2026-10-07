@@ -1,10 +1,10 @@
 {{ define "partial_dress_code" }}
   {{ if or .Section.Title .Section.Name }}
-  <div class="inv-section inv-dress-code-section" id="section-dress-code">
+  <section class="inv-section inv-dress-code-section inv-block {{ .SurfaceClass }}" id="section-dress-code">
     <div class="inv-block-icon" aria-hidden="true">
       {{ icon "diamond" }}
     </div>
-    <div class="inv-section-heading">{{ if .Section.Title }}{{ .Section.Title }}{{ else }}DRESS CODE{{ end }}</div>
+    <h3 class="inv-block-heading">{{ if .Section.Title }}{{ .Section.Title }}{{ else }}DRESS CODE{{ end }}</h3>
     {{ if .Section.Name }}
       <div class="dress-code-badge">{{ .Section.Name }}</div>
     {{ end }}
@@ -20,6 +20,6 @@
         {{ end }}
       </div>
     {{ end }}
-  </div>
+  </section>
   {{ end }}
 {{ end }}

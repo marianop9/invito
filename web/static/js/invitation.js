@@ -263,7 +263,7 @@ function setupSingleCarousel(container) {
   let currentIndex = 0;
   let autoScrollTimer = null;
   let isVisible = false;
-  const INTERVAL_MS = 3200; // Briefly display each image
+  const INTERVAL_MS = 2500; // Briefly display each image
 
   function getActiveIndex() {
     const trackRect = track.getBoundingClientRect();

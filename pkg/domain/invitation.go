@@ -67,11 +67,19 @@ const (
 	SectionClosing      SectionType = "closing"
 )
 
+// Surface tone identifiers for section styling.
+const (
+	SurfaceAuto     = "auto"
+	SurfaceLight    = "light"
+	SurfaceContrast = "contrast"
+)
+
 // Section defines the interface contract for any self-contained, ordered invitation building block.
 type Section interface {
 	Type() SectionType
 	Validate() error
 	TemplateName() string
+	GetSurface() string
 }
 
 // SectionFactory instantiates a fresh concrete Section implementation.
@@ -98,6 +106,7 @@ var sectionRegistry = map[SectionType]SectionFactory{
 // HeroSection configures the top introductory card (supports full-bleed overlay and split banner layouts).
 type HeroSection struct {
 	SectionType    SectionType `json:"type"`
+	Surface        string      `json:"surface,omitempty"`
 	Layout         string      `json:"layout,omitempty"`
 	Eyebrow        string      `json:"eyebrow,omitempty"`
 	Vibe           string      `json:"vibe,omitempty"`
@@ -108,6 +117,12 @@ type HeroSection struct {
 }
 
 func (h *HeroSection) Type() SectionType { return SectionHero }
+func (h *HeroSection) GetSurface() string {
+	if h == nil {
+		return ""
+	}
+	return h.Surface
+}
 
 func (h *HeroSection) TemplateName() string {
 	if h != nil && h.Layout == "banner" {
@@ -127,24 +142,38 @@ func (h *HeroSection) HasBannerImage() bool {
 // DetailsSection configures the Date, Time, and Venue quick strip.
 type DetailsSection struct {
 	SectionType        SectionType `json:"type"`
+	Surface            string      `json:"surface,omitempty"`
 	DateLabel          string      `json:"date_label,omitempty"`
 	LocationLabel      string      `json:"location_label,omitempty"`
 	ShowMapLink        bool        `json:"show_map_link"`
 	ShowCalendarButton bool        `json:"show_calendar_button"`
 }
 
-func (d *DetailsSection) Type() SectionType    { return SectionDetails }
+func (d *DetailsSection) Type() SectionType { return SectionDetails }
+func (d *DetailsSection) GetSurface() string {
+	if d == nil {
+		return ""
+	}
+	return d.Surface
+}
 func (d *DetailsSection) TemplateName() string { return "partial_details" }
 func (d *DetailsSection) Validate() error      { return nil }
 
 // QuoteSection represents an elegant quote or literary excerpt with quotation marks and author attribution.
 type QuoteSection struct {
 	SectionType SectionType `json:"type"`
+	Surface     string      `json:"surface,omitempty"`
 	Text        string      `json:"text"`
 	Author      string      `json:"author,omitempty"`
 }
 
-func (q *QuoteSection) Type() SectionType    { return SectionQuote }
+func (q *QuoteSection) Type() SectionType { return SectionQuote }
+func (q *QuoteSection) GetSurface() string {
+	if q == nil {
+		return ""
+	}
+	return q.Surface
+}
 func (q *QuoteSection) TemplateName() string { return "partial_quote" }
 func (q *QuoteSection) Validate() error {
 	if strings.TrimSpace(q.Text) == "" {
@@ -156,12 +185,19 @@ func (q *QuoteSection) Validate() error {
 // TextSection represents a clean, plain text block for announcements, instructions, or notes.
 type TextSection struct {
 	SectionType SectionType `json:"type"`
+	Surface     string      `json:"surface,omitempty"`
 	Title       string      `json:"title,omitempty"`
 	Text        string      `json:"text"`
 	Align       string      `json:"align,omitempty"`
 }
 
-func (t *TextSection) Type() SectionType    { return SectionText }
+func (t *TextSection) Type() SectionType { return SectionText }
+func (t *TextSection) GetSurface() string {
+	if t == nil {
+		return ""
+	}
+	return t.Surface
+}
 func (t *TextSection) TemplateName() string { return "partial_text" }
 func (t *TextSection) Validate() error {
 	if strings.TrimSpace(t.Text) == "" {
@@ -173,12 +209,19 @@ func (t *TextSection) Validate() error {
 // ImageSection represents a standalone static image block.
 type ImageSection struct {
 	SectionType SectionType `json:"type"`
+	Surface     string      `json:"surface,omitempty"`
 	URL         string      `json:"url"`
 	Caption     string      `json:"caption,omitempty"`
 	Alt         string      `json:"alt,omitempty"`
 }
 
-func (img *ImageSection) Type() SectionType    { return SectionImage }
+func (img *ImageSection) Type() SectionType { return SectionImage }
+func (img *ImageSection) GetSurface() string {
+	if img == nil {
+		return ""
+	}
+	return img.Surface
+}
 func (img *ImageSection) TemplateName() string { return "partial_image" }
 func (img *ImageSection) Validate() error {
 	if strings.TrimSpace(img.URL) == "" {
@@ -217,13 +260,20 @@ func (img *CarouselImage) AltText(defaultAlt string) string {
 // CarouselSection configures an image gallery or carousel section.
 type CarouselSection struct {
 	SectionType SectionType     `json:"type"`
+	Surface     string          `json:"surface,omitempty"`
 	Title       string          `json:"title,omitempty"`
 	AspectRatio string          `json:"aspect_ratio,omitempty"`
 	Fit         string          `json:"fit,omitempty"`
 	Images      []CarouselImage `json:"images,omitempty"`
 }
 
-func (c *CarouselSection) Type() SectionType    { return SectionCarousel }
+func (c *CarouselSection) Type() SectionType { return SectionCarousel }
+func (c *CarouselSection) GetSurface() string {
+	if c == nil {
+		return ""
+	}
+	return c.Surface
+}
 func (c *CarouselSection) TemplateName() string { return "partial_carousel" }
 func (c *CarouselSection) Validate() error {
 	if len(c.Images) == 0 {
@@ -277,11 +327,18 @@ type TimelineItem struct {
 // TimelineSection holds a schedule of events.
 type TimelineSection struct {
 	SectionType SectionType    `json:"type"`
+	Surface     string         `json:"surface,omitempty"`
 	Title       string         `json:"title,omitempty"`
 	Items       []TimelineItem `json:"items"`
 }
 
-func (t *TimelineSection) Type() SectionType    { return SectionTimeline }
+func (t *TimelineSection) Type() SectionType { return SectionTimeline }
+func (t *TimelineSection) GetSurface() string {
+	if t == nil {
+		return ""
+	}
+	return t.Surface
+}
 func (t *TimelineSection) TemplateName() string { return "partial_timeline" }
 func (t *TimelineSection) Validate() error {
 	if len(t.Items) == 0 {
@@ -301,19 +358,27 @@ func (t *TimelineSection) Validate() error {
 // DressCodeSection details the dress code guidelines and color palette suggestions.
 type DressCodeSection struct {
 	SectionType  SectionType `json:"type"`
+	Surface      string      `json:"surface,omitempty"`
 	Title        string      `json:"title,omitempty"`
 	Name         string      `json:"name,omitempty"`
 	Description  string      `json:"description,omitempty"`
 	PaletteHints []string    `json:"palette_hints,omitempty"`
 }
 
-func (d *DressCodeSection) Type() SectionType    { return SectionDressCode }
+func (d *DressCodeSection) Type() SectionType { return SectionDressCode }
+func (d *DressCodeSection) GetSurface() string {
+	if d == nil {
+		return ""
+	}
+	return d.Surface
+}
 func (d *DressCodeSection) TemplateName() string { return "partial_dress_code" }
 func (d *DressCodeSection) Validate() error      { return nil }
 
 // RSVPSection configures the attendance confirmation form.
 type RSVPSection struct {
 	SectionType    SectionType `json:"type"`
+	Surface        string      `json:"surface,omitempty"`
 	Enabled        bool        `json:"enabled"`
 	Deadline       *time.Time  `json:"deadline,omitempty"`
 	MaxPartySize   int         `json:"max_party_size"`
@@ -322,7 +387,13 @@ type RSVPSection struct {
 	CustomNote     string      `json:"custom_note,omitempty"`
 }
 
-func (r *RSVPSection) Type() SectionType    { return SectionRSVP }
+func (r *RSVPSection) Type() SectionType { return SectionRSVP }
+func (r *RSVPSection) GetSurface() string {
+	if r == nil {
+		return ""
+	}
+	return r.Surface
+}
 func (r *RSVPSection) TemplateName() string { return "partial_rsvp_form" }
 func (r *RSVPSection) Validate() error {
 	if r.MaxPartySize <= 0 {
@@ -334,6 +405,7 @@ func (r *RSVPSection) Validate() error {
 // RSVPExternalSection configures RSVP delegation to an external platform (Google Forms, Tally, etc.)
 type RSVPExternalSection struct {
 	SectionType      SectionType `json:"type"`
+	Surface          string      `json:"surface,omitempty"`
 	Enabled          bool        `json:"enabled"`
 	Title            string      `json:"title,omitempty"`
 	Prompt           string      `json:"prompt,omitempty"`
@@ -345,7 +417,13 @@ type RSVPExternalSection struct {
 	CustomNote       string      `json:"custom_note,omitempty"`
 }
 
-func (r *RSVPExternalSection) Type() SectionType    { return SectionRSVPExternal }
+func (r *RSVPExternalSection) Type() SectionType { return SectionRSVPExternal }
+func (r *RSVPExternalSection) GetSurface() string {
+	if r == nil {
+		return ""
+	}
+	return r.Surface
+}
 func (r *RSVPExternalSection) TemplateName() string { return "partial_rsvp_external" }
 func (r *RSVPExternalSection) Validate() error {
 	if strings.TrimSpace(r.FormURL) == "" {
@@ -381,11 +459,18 @@ type FAQItem struct {
 // FAQsSection holds frequently asked questions.
 type FAQsSection struct {
 	SectionType SectionType `json:"type"`
+	Surface     string      `json:"surface,omitempty"`
 	Title       string      `json:"title,omitempty"`
 	Items       []FAQItem   `json:"items"`
 }
 
-func (f *FAQsSection) Type() SectionType    { return SectionFAQs }
+func (f *FAQsSection) Type() SectionType { return SectionFAQs }
+func (f *FAQsSection) GetSurface() string {
+	if f == nil {
+		return ""
+	}
+	return f.Surface
+}
 func (f *FAQsSection) TemplateName() string { return "partial_faqs" }
 func (f *FAQsSection) Validate() error {
 	for i, item := range f.Items {
@@ -408,11 +493,18 @@ type RegistryLink struct {
 // GiftRegistrySection describes gift registry instructions and URLs.
 type GiftRegistrySection struct {
 	SectionType SectionType    `json:"type"`
+	Surface     string         `json:"surface,omitempty"`
 	Message     string         `json:"message,omitempty"`
 	Links       []RegistryLink `json:"links,omitempty"`
 }
 
-func (g *GiftRegistrySection) Type() SectionType    { return SectionGiftRegistry }
+func (g *GiftRegistrySection) Type() SectionType { return SectionGiftRegistry }
+func (g *GiftRegistrySection) GetSurface() string {
+	if g == nil {
+		return ""
+	}
+	return g.Surface
+}
 func (g *GiftRegistrySection) TemplateName() string { return "partial_registry" }
 func (g *GiftRegistrySection) Validate() error {
 	for i, link := range g.Links {
@@ -429,12 +521,19 @@ func (g *GiftRegistrySection) Validate() error {
 // ClosingSection configures the final warm greeting and sign-off at the end of the invitation.
 type ClosingSection struct {
 	SectionType SectionType `json:"type"`
+	Surface     string      `json:"surface,omitempty"`
 	Message     string      `json:"message,omitempty"`
 	Signoff     string      `json:"signoff,omitempty"`
 	Hosts       string      `json:"hosts,omitempty"`
 }
 
-func (c *ClosingSection) Type() SectionType    { return SectionClosing }
+func (c *ClosingSection) Type() SectionType { return SectionClosing }
+func (c *ClosingSection) GetSurface() string {
+	if c == nil {
+		return ""
+	}
+	return c.Surface
+}
 func (c *ClosingSection) TemplateName() string { return "partial_closing" }
 func (c *ClosingSection) Validate() error      { return nil }
 
@@ -776,6 +875,55 @@ func (inv *Invitation) SetDemo(demo bool) {
 	if inv != nil {
 		inv.isDemo = demo
 	}
+}
+
+// ComputeSectionSurfaces calculates the resolved surface tone ("light" or "contrast")
+// for each section in the invitation, enforcing an alternating visual rhythm while
+// respecting explicit user overrides ("light" or "contrast").
+func (inv *Invitation) ComputeSectionSurfaces() map[Section]string {
+	surfaces := make(map[Section]string)
+	if inv == nil {
+		return surfaces
+	}
+
+	currentTone := SurfaceLight
+
+	for _, sec := range inv.Sections {
+		if sec == nil {
+			continue
+		}
+		raw := strings.ToLower(strings.TrimSpace(sec.GetSurface()))
+
+		// Details has two internal blocks: When (light) and Where (contrast).
+		if sec.Type() == SectionDetails {
+			surfaces[sec] = SurfaceLight
+			currentTone = SurfaceContrast // Where finishes on contrast
+			continue
+		}
+
+		if sec.Type() == SectionHero {
+			surfaces[sec] = SurfaceContrast
+			currentTone = SurfaceContrast
+			continue
+		}
+
+		var resolved string
+		if raw == SurfaceLight || raw == SurfaceContrast {
+			resolved = raw
+		} else {
+			// Auto alternation: flip previous tone
+			if currentTone == SurfaceLight {
+				resolved = SurfaceContrast
+			} else {
+				resolved = SurfaceLight
+			}
+		}
+
+		surfaces[sec] = resolved
+		currentTone = resolved
+	}
+
+	return surfaces
 }
 
 // HostsDisplay returns a formatted string of hosts.

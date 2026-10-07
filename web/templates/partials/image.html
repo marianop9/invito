@@ -1,5 +1,5 @@
 {{ define "partial_image" }}
-<section class="inv-section inv-image-section" id="section-image">
+<section class="inv-section inv-image-section inv-block {{ .SurfaceClass }}" id="section-image">
   <figure class="inv-static-image-wrap">
     <img src="{{ .Section.URL }}" alt="{{ .Section.AltText .Invitation.Title }}" class="inv-static-img" loading="lazy" decoding="async">
     {{ if .Section.Caption }}

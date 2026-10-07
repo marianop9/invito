@@ -121,6 +121,12 @@
     }
   },
   "definitions": {
+    "section_surface": {
+      "type": "string",
+      "enum": ["auto", "light", "contrast"],
+      "default": "auto",
+      "description": "Visual surface background tone ('auto' alternates dynamically, 'light' forces bright background, 'contrast' forces dark/tinted background)"
+    },
     "music_config": {
       "type": "object",
       "required": ["url"],
@@ -177,6 +183,7 @@
       "required": ["type"],
       "properties": {
         "type": { "type": "string", "enum": ["hero"] },
+        "surface": { "$ref": "#/definitions/section_surface" },
         "layout": {
           "type": "string",
           "enum": ["full-bleed", "banner"],
@@ -196,6 +203,7 @@
       "required": ["type"],
       "properties": {
         "type": { "type": "string", "enum": ["details"] },
+        "surface": { "$ref": "#/definitions/section_surface" },
         "date_label": { "type": "string", "description": "Optional custom header label for date/time (defaults to 'When')" },
         "location_label": { "type": "string", "description": "Optional custom header label for location (defaults to 'Where')" },
         "show_map_link": { "type": "boolean", "default": true },
@@ -207,6 +215,7 @@
       "required": ["type", "text"],
       "properties": {
         "type": { "type": "string", "enum": ["quote"] },
+        "surface": { "$ref": "#/definitions/section_surface" },
         "text": { "type": "string", "description": "Quote or literary statement" },
         "author": { "type": "string", "description": "Optional author or attribution for quotes" }
       }
@@ -216,6 +225,7 @@
       "required": ["type", "text"],
       "properties": {
         "type": { "type": "string", "enum": ["text"] },
+        "surface": { "$ref": "#/definitions/section_surface" },
         "title": { "type": "string", "description": "Optional announcement or note title" },
         "text": { "type": "string", "description": "Plain text content or announcement" },
         "align": { "type": "string", "enum": ["left", "center", "right"], "description": "Text alignment" }
@@ -226,6 +236,7 @@
       "required": ["type", "url"],
       "properties": {
         "type": { "type": "string", "enum": ["image"] },
+        "surface": { "$ref": "#/definitions/section_surface" },
         "url": { "type": "string", "description": "Image URL or static asset path" },
         "caption": { "type": "string", "description": "Optional caption below image" },
         "alt": { "type": "string", "description": "Accessible alt text for the image" }
@@ -236,6 +247,7 @@
       "required": ["type", "images"],
       "properties": {
         "type": { "type": "string", "enum": ["carousel"] },
+        "surface": { "$ref": "#/definitions/section_surface" },
         "title": { "type": "string", "description": "Optional heading for the gallery/carousel section" },
         "aspect_ratio": {
           "type": "string",
@@ -269,6 +281,7 @@
       "required": ["type", "items"],
       "properties": {
         "type": { "type": "string", "enum": ["timeline"] },
+        "surface": { "$ref": "#/definitions/section_surface" },
         "title": { "type": "string", "description": "Timeline section heading" },
         "items": {
           "type": "array",
@@ -290,6 +303,7 @@
       "required": ["type"],
       "properties": {
         "type": { "type": "string", "enum": ["dress_code"] },
+        "surface": { "$ref": "#/definitions/section_surface" },
         "title": { "type": "string", "description": "Section title (e.g. Dress Code)" },
         "name": { "type": "string", "description": "Dress code label/name (e.g. Formal Black Tie, Cocktail Attire)" },
         "description": { "type": "string" },
@@ -305,6 +319,7 @@
       "required": ["type"],
       "properties": {
         "type": { "type": "string", "enum": ["rsvp"] },
+        "surface": { "$ref": "#/definitions/section_surface" },
         "enabled": { "type": "boolean", "default": true },
         "deadline": { "type": "string", "format": "date-time" },
         "max_party_size": { "type": "integer", "default": 2, "minimum": 1, "maximum": 10 },
@@ -318,6 +333,7 @@
       "required": ["type", "form_url"],
       "properties": {
         "type": { "type": "string", "enum": ["rsvp_external"] },
+        "surface": { "$ref": "#/definitions/section_surface" },
         "enabled": { "type": "boolean", "default": true },
         "title": { "type": "string", "description": "RSVP section heading" },
         "prompt": { "type": "string", "description": "Prompt text inviting guests to confirm attendance" },
@@ -334,6 +350,7 @@
       "required": ["type", "items"],
       "properties": {
         "type": { "type": "string", "enum": ["faqs"] },
+        "surface": { "$ref": "#/definitions/section_surface" },
         "title": { "type": "string", "description": "FAQs section heading" },
         "items": {
           "type": "array",
@@ -353,6 +370,7 @@
       "required": ["type"],
       "properties": {
         "type": { "type": "string", "enum": ["gift_registry"] },
+        "surface": { "$ref": "#/definitions/section_surface" },
         "message": { "type": "string" },
         "links": {
           "type": "array",
@@ -372,6 +390,7 @@
       "required": ["type"],
       "properties": {
         "type": { "type": "string", "enum": ["closing"] },
+        "surface": { "$ref": "#/definitions/section_surface" },
         "message": { "type": "string", "description": "Warm farewell or excitement message" },
         "signoff": { "type": "string", "description": "Sign-off phrase (e.g. With love, Warmly, Cheers)" },
         "hosts": { "type": "string", "description": "Custom host sign-off names (e.g. Sarah & Alex)" }

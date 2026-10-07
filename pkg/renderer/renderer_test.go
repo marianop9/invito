@@ -603,6 +603,9 @@ func TestRenderer(t *testing.T) {
 						"invitation.music.autoplay",
 						"invitation.music.loop",
 						"🎵 Upload Audio",
+						"sec.surface",
+						"Fondo:",
+						"Automático",
 					}
 					for _, exp := range expectedStrings {
 						if !strings.Contains(output, exp) {
@@ -614,3 +617,123 @@ func TestRenderer(t *testing.T) {
 		}
 	})
 }
+
+func TestRendererAlternatingSurfaces(t *testing.T) {
+	r, err := New()
+	if err != nil {
+		t.Fatalf("failed to initialize renderer: %v", err)
+	}
+
+	date := time.Date(2026, time.September, 19, 16, 0, 0, 0, time.UTC)
+
+	t.Run("Alternates tones automatically and injects surface classes", func(t *testing.T) {
+		inv := &domain.Invitation{
+			Version:   "1.0",
+			Slug:      "test-surfaces",
+			Title:     "Surface Test Party",
+			DateStart: date,
+			Location: domain.Location{
+				Name:    "Venue",
+				Address: "123 Main St",
+			},
+			Theme: domain.ThemeConfig{
+				ID: domain.ThemeBotanicalElegance,
+			},
+			Sections: []domain.Section{
+				&domain.HeroSection{
+					SectionType: domain.SectionHero,
+				},
+				&domain.DetailsSection{
+					SectionType: domain.SectionDetails,
+				},
+				&domain.QuoteSection{
+					SectionType: domain.SectionQuote,
+					Text:        "A wonderful quotation about life",
+					Author:      "Author Name",
+				},
+				&domain.CarouselSection{
+					SectionType: domain.SectionCarousel,
+					Title:       "Memories",
+					Images: []domain.CarouselImage{
+						{URL: "/img/1.webp", Caption: "First image"},
+					},
+				},
+				&domain.TimelineSection{
+					SectionType: domain.SectionTimeline,
+					Title:       "Program",
+					Items: []domain.TimelineItem{
+						{Time: "19:00", Title: "Arrival"},
+					},
+				},
+			},
+		}
+
+		var buf bytes.Buffer
+		if err := r.RenderInvitation(&buf, inv); err != nil {
+			t.Fatalf("RenderInvitation error: %v", err)
+		}
+
+		html := buf.String()
+
+		// Quote follows Details (where-strip ends on contrast), so quote should be light
+		if !strings.Contains(html, `inv-quote-section inv-block inv-block--light`) {
+			t.Errorf("expected quote section to have inv-block--light class, got: %s", html)
+		}
+
+		// Carousel follows quote (light), so it alternates to contrast
+		if !strings.Contains(html, `inv-carousel-section section-gallery inv-block inv-block--contrast`) {
+			t.Errorf("expected carousel section to have inv-block--contrast class, got: %s", html)
+		}
+
+		// Timeline follows carousel (contrast), so it alternates to light
+		if !strings.Contains(html, `inv-timeline-section inv-block inv-block--light`) {
+			t.Errorf("expected timeline section to have inv-block--light class, got: %s", html)
+		}
+	})
+
+	t.Run("Explicit user surface override is rendered in HTML", func(t *testing.T) {
+		inv := &domain.Invitation{
+			Version:   "1.0",
+			Slug:      "test-surfaces-override",
+			Title:     "Surface Override Party",
+			DateStart: date,
+			Location: domain.Location{
+				Name:    "Venue",
+				Address: "123 Main St",
+			},
+			Theme: domain.ThemeConfig{
+				ID: domain.ThemeBotanicalElegance,
+			},
+			Sections: []domain.Section{
+				&domain.QuoteSection{
+					SectionType: domain.SectionQuote,
+					Surface:     "contrast", // forced contrast
+					Text:        "Dark moody quote",
+				},
+				&domain.CarouselSection{
+					SectionType: domain.SectionCarousel,
+					Surface:     "contrast", // two consecutive contrast blocks
+					Title:       "Dark moody gallery",
+					Images: []domain.CarouselImage{
+						{URL: "/img/photo.webp"},
+					},
+				},
+			},
+		}
+
+		var buf bytes.Buffer
+		if err := r.RenderInvitation(&buf, inv); err != nil {
+			t.Fatalf("RenderInvitation error: %v", err)
+		}
+
+		html := buf.String()
+
+		if !strings.Contains(html, `inv-quote-section inv-block inv-block--contrast`) {
+			t.Errorf("expected overridden quote to have inv-block--contrast")
+		}
+		if !strings.Contains(html, `inv-carousel-section section-gallery inv-block inv-block--contrast`) {
+			t.Errorf("expected overridden carousel to have inv-block--contrast")
+		}
+	})
+}
+

@@ -48,9 +48,10 @@
   }
 
   function createDefaultSection(type) {
+    let sec;
     switch (type) {
       case 'hero':
-        return {
+        sec = {
           type: 'hero',
           layout: 'full-bleed',
           eyebrow: 'Celebration',
@@ -58,42 +59,48 @@
           cover_image_url: '',
           show_countdown: true,
         };
+        break;
       case 'details':
-        return {
+        sec = {
           type: 'details',
           show_map_link: true,
           show_calendar_button: true,
         };
+        break;
       case 'quote':
-        return {
+        sec = {
           type: 'quote',
           text: 'Whatever our souls are made of, his and mine are the same.',
           author: 'Emily Brontë',
         };
+        break;
       case 'text':
-        return {
+        sec = {
           type: 'text',
           title: 'Special Note',
           text: 'We are thrilled to celebrate with you.',
           align: 'center',
         };
+        break;
       case 'image':
-        return {
+        sec = {
           type: 'image',
           url: '',
           caption: '',
           alt: '',
         };
+        break;
       case 'carousel':
-        return {
+        sec = {
           type: 'carousel',
           title: 'Moments & Memories',
           aspect_ratio: '4-3',
           fit: 'cover',
           images: [],
         };
+        break;
       case 'timeline':
-        return {
+        sec = {
           type: 'timeline',
           title: 'Schedule of Events',
           items: [
@@ -102,8 +109,9 @@
             { time: '7:00 PM', title: 'Dinner & Celebration', description: 'Grand Hall' },
           ],
         };
+        break;
       case 'dress_code':
-        return {
+        sec = {
           type: 'dress_code',
           title: 'Dress Code',
           name: 'Garden Formal',
@@ -111,8 +119,9 @@
           palette_hints: ['#2A4738', '#D4AF37', '#EFEBE4'],
           _palette_hints_raw: '#2A4738, #D4AF37, #EFEBE4',
         };
+        break;
       case 'rsvp':
-        return {
+        sec = {
           type: 'rsvp',
           enabled: true,
           max_party_size: 2,
@@ -122,8 +131,9 @@
           deadline: undefined,
           _deadline_local: '',
         };
+        break;
       case 'rsvp_external':
-        return {
+        sec = {
           type: 'rsvp_external',
           enabled: true,
           title: 'RSVP Confirmation',
@@ -134,8 +144,9 @@
           deadline: undefined,
           _deadline_local: '',
         };
+        break;
       case 'faqs':
-        return {
+        sec = {
           type: 'faqs',
           title: 'Frequently Asked Questions',
           items: [
@@ -143,22 +154,28 @@
             { question: 'Are children welcome?', answer: 'We kindly request an adults-only celebration.' },
           ],
         };
+        break;
       case 'gift_registry':
-        return {
+        sec = {
           type: 'gift_registry',
           message: 'Your presence is our present. If you would like to honor us with a gift:',
           links: [{ label: 'Honeymoon Registry', url: 'https://www.zola.com' }],
         };
+        break;
       case 'closing':
-        return {
+        sec = {
           type: 'closing',
           message: 'We cannot wait to celebrate with you!',
           signoff: 'With love & gratitude,',
           hosts: '',
         };
+        break;
       default:
-        return { type: type };
+        sec = { type: type };
+        break;
     }
+    sec.surface = '';
+    return sec;
   }
 
   function registerInvitationEditor() {
@@ -234,6 +251,7 @@
 
       normalizeSectionForUI(sec) {
         if (!sec._uid) sec._uid = 'sec_' + Math.random().toString(36).slice(2, 9);
+        if (sec.surface === undefined || sec.surface === null) sec.surface = '';
         if (sec.type === 'dress_code') {
           sec._palette_hints_raw = (sec.palette_hints || []).join(', ');
         }
@@ -481,6 +499,9 @@
             if (sec.type === 'rsvp' || sec.type === 'rsvp_external') {
               sec.deadline = parseDateTimeLocalToISO(sec._deadline_local) || undefined;
               delete sec._deadline_local;
+            }
+            if (!sec.surface || sec.surface === 'auto') {
+              delete sec.surface;
             }
             if (sec.images) sec.images.forEach(img => delete img._uid);
             if (sec.items) sec.items.forEach(item => delete item._uid);

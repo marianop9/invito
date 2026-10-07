@@ -790,3 +790,113 @@ func TestInvitationBackwardCompatibility(t *testing.T) {
 		t.Errorf("expected marshaled JSON to omit 'splash_screen', got: %s", string(marshaled))
 	}
 }
+
+func TestComputeSectionSurfaces(t *testing.T) {
+	t.Run("Default Auto Alternation after Hero and Details", func(t *testing.T) {
+		hero := &HeroSection{SectionType: SectionHero}
+		details := &DetailsSection{SectionType: SectionDetails}
+		quote := &QuoteSection{SectionType: SectionQuote, Text: "Love is patient"}
+		carousel := &CarouselSection{SectionType: SectionCarousel, Images: []CarouselImage{{URL: "/img/1.jpg"}}}
+		timeline := &TimelineSection{SectionType: SectionTimeline, Items: []TimelineItem{{Time: "18:00", Title: "Arrival"}}}
+		dressCode := &DressCodeSection{SectionType: SectionDressCode, Name: "Formal"}
+
+		inv := &Invitation{
+			Sections: []Section{hero, details, quote, carousel, timeline, dressCode},
+		}
+
+		surfaces := inv.ComputeSectionSurfaces()
+
+		if surfaces[hero] != SurfaceContrast {
+			t.Errorf("expected hero to have contrast surface, got %s", surfaces[hero])
+		}
+		if surfaces[details] != SurfaceLight {
+			t.Errorf("expected details to have light surface, got %s", surfaces[details])
+		}
+		// Details finishes on contrast (where-strip), so next auto block should be light
+		if surfaces[quote] != SurfaceLight {
+			t.Errorf("expected quote following details to alternate to light, got %s", surfaces[quote])
+		}
+		// Carousel follows quote (light), so it should alternate to contrast
+		if surfaces[carousel] != SurfaceContrast {
+			t.Errorf("expected carousel following quote to alternate to contrast, got %s", surfaces[carousel])
+		}
+		// Timeline follows carousel (contrast), so it should alternate to light
+		if surfaces[timeline] != SurfaceLight {
+			t.Errorf("expected timeline to alternate to light, got %s", surfaces[timeline])
+		}
+		// DressCode follows timeline (light), so it should alternate to contrast
+		if surfaces[dressCode] != SurfaceContrast {
+			t.Errorf("expected dressCode to alternate to contrast, got %s", surfaces[dressCode])
+		}
+	})
+
+	t.Run("Explicit User Overrides are Respected", func(t *testing.T) {
+		quote := &QuoteSection{SectionType: SectionQuote, Surface: SurfaceContrast, Text: "Love is patient"}
+		carousel := &CarouselSection{SectionType: SectionCarousel, Surface: SurfaceContrast, Images: []CarouselImage{{URL: "/img/1.jpg"}}}
+		timeline := &TimelineSection{SectionType: SectionTimeline, Surface: SurfaceAuto, Items: []TimelineItem{{Time: "18:00", Title: "Arrival"}}}
+
+		inv := &Invitation{
+			Sections: []Section{quote, carousel, timeline},
+		}
+
+		surfaces := inv.ComputeSectionSurfaces()
+
+		// Both quote and carousel explicitly set contrast
+		if surfaces[quote] != SurfaceContrast {
+			t.Errorf("expected explicit quote contrast surface, got %s", surfaces[quote])
+		}
+		if surfaces[carousel] != SurfaceContrast {
+			t.Errorf("expected explicit carousel contrast surface, got %s", surfaces[carousel])
+		}
+		// Timeline is auto, following carousel (contrast), so it alternates to light
+		if surfaces[timeline] != SurfaceLight {
+			t.Errorf("expected timeline to alternate to light following explicit contrast, got %s", surfaces[timeline])
+		}
+	})
+
+	t.Run("Surface JSON Unmarshaling and Marshaling", func(t *testing.T) {
+		raw := `{
+			"version": "1.0",
+			"slug": "surface-test",
+			"title": "Surface Test",
+			"date_start": "2026-09-19T18:00:00Z",
+			"location": {"name": "Venue", "address": "123 St"},
+			"theme": {"id": "botanical-elegance"},
+			"sections": [
+				{ "type": "quote", "surface": "contrast", "text": "A great quote" },
+				{ "type": "text", "surface": "light", "text": "Some text" },
+				{ "type": "image", "url": "/test.webp" }
+			]
+		}`
+
+		var inv Invitation
+		if err := json.Unmarshal([]byte(raw), &inv); err != nil {
+			t.Fatalf("failed to unmarshal JSON with surfaces: %v", err)
+		}
+
+		if len(inv.Sections) != 3 {
+			t.Fatalf("expected 3 sections, got %d", len(inv.Sections))
+		}
+
+		if inv.Sections[0].GetSurface() != "contrast" {
+			t.Errorf("expected quote surface 'contrast', got %q", inv.Sections[0].GetSurface())
+		}
+		if inv.Sections[1].GetSurface() != "light" {
+			t.Errorf("expected text surface 'light', got %q", inv.Sections[1].GetSurface())
+		}
+		if inv.Sections[2].GetSurface() != "" {
+			t.Errorf("expected image surface empty, got %q", inv.Sections[2].GetSurface())
+		}
+
+		// Verify re-marshaling respects omitempty when empty
+		marshaled, err := json.Marshal(&inv)
+		if err != nil {
+			t.Fatalf("failed to marshal: %v", err)
+		}
+		marshaledStr := string(marshaled)
+		if !strings.Contains(marshaledStr, `"surface":"contrast"`) {
+			t.Errorf("expected marshaled JSON to retain quote surface contrast")
+		}
+	})
+}
+

@@ -23,14 +23,14 @@ body.invitation-body {
   border-bottom: 1px solid var(--inv-border);
 }
 
-.theme-midnight-soiree .btn-pill-primary,
+.theme-midnight-soiree .btn-rsvp-primary,
 .theme-midnight-soiree .btn-submit-rsvp,
 .theme-midnight-soiree .btn-rsvp-external {
   background: linear-gradient(135deg, #1C3050 0%, #2A4570 100%);
   color: #FFFFFF;
 }
 
-.theme-midnight-soiree .btn-pill-primary:hover,
+.theme-midnight-soiree .btn-rsvp-primary:hover,
 .theme-midnight-soiree .btn-submit-rsvp:hover,
 .theme-midnight-soiree .btn-rsvp-external:hover {
   background: linear-gradient(135deg, #122138 0%, #1E3456 100%);

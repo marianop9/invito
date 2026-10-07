@@ -51,9 +51,20 @@ func New() (*Renderer, error) {
 			if tmplName == "" {
 				return "", nil
 			}
+
+			surfaceTone := domain.SurfaceLight
+			if inv != nil {
+				surfaces := inv.ComputeSectionSurfaces()
+				if s, ok := surfaces[sec]; ok && s != "" {
+					surfaceTone = s
+				}
+			}
+
 			data := map[string]any{
-				"Section":    sec,
-				"Invitation": inv,
+				"Section":      sec,
+				"Invitation":   inv,
+				"SurfaceTone":  surfaceTone,
+				"SurfaceClass": "inv-block--" + surfaceTone,
 			}
 			var buf bytes.Buffer
 			if err := rootTmpl.ExecuteTemplate(&buf, tmplName, data); err != nil {

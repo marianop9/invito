@@ -498,10 +498,20 @@
             <template x-for="(sec, idx) in invitation.sections" :key="sec._uid || idx">
               <div class="card mb-4" style="border: 1px solid var(--bulma-border-weak, #dbdbdb);">
                 <!-- Section Header -->
-                <header class="card-header has-background-light is-align-items-center px-4 py-2">
-                  <div class="card-header-title p-0 is-align-items-center">
+                <header class="card-header has-background-light is-align-items-center px-4 py-2 is-flex-wrap-wrap">
+                  <div class="card-header-title p-0 is-align-items-center mb-0">
                     <span class="tag is-info is-light mr-2 is-uppercase is-size-7 has-text-weight-bold" x-text="sec.type"></span>
                     <span class="is-size-6 has-text-weight-semibold" x-text="getSectionLabel(sec.type)"></span>
+                  </div>
+                  <div class="is-flex is-align-items-center mr-3" x-show="sec.type !== 'hero' && sec.type !== 'details'">
+                    <label class="is-size-7 has-text-grey mr-2 mb-0">Fondo:</label>
+                    <div class="select is-small">
+                      <select x-model="sec.surface">
+                        <option value="">Automático</option>
+                        <option value="light">Claro</option>
+                        <option value="contrast">Contraste</option>
+                      </select>
+                    </div>
                   </div>
                   <div class="buttons has-addons mb-0">
                     <button type="button" class="button is-small is-light" title="Move Up" @click="moveSection(idx, -1)" :disabled="idx === 0">▲</button>

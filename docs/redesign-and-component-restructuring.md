@@ -127,11 +127,24 @@ Analysis of successful production invitations revealed five core structural prin
 
 ---
 
-### Phase 2: Layout & Alternating Rhythm (`CSS Foundation`) — [NEXT]
-1. Introduce alternating section classes (`.inv-block--light`, `.inv-block--contrast`) and automatic `:nth-child` rhythm.
-2. Add clean, centered flexbox/grid layout styles for line icons, headings, and single buttons.
-3. Add smooth accordion disclosure transitions in `faqs.html`.
-4. Style the countdown with large, bold tabular figures and small uppercase tracking labels.
+### Phase 2: Layout & Alternating Rhythm (`CSS Foundation`) — [COMPLETED]
+- [x] **Purge Legacy & Dead CSS**:
+  * Removed ~1,300 lines of obsolete, boxy components (`.inv-details-strip`, `.detail-icon-badge`, `.btn-pill`, `.timeline-compact`, `.dress-code-compact`, `.rsvp-notice-box`, `.faq-compact-list`) with zero backward compatibility baggage.
+- [x] **Alternating Section Rhythm & Collision Prevention**:
+  * Established the `--block-*` token engine supporting explicit light (`.inv-block--light`) and contrast (`.inv-block--contrast`) blocks.
+  * Added dynamic tone computation engine (`ComputeSectionSurfaces()`) in domain model and renderer to prevent monochromatic collisions between consecutive sections.
+  * Added CSS hairline dividers failsafe (`.inv-block--contrast + .inv-block--contrast` and `.inv-block--light + .inv-block--light`).
+- [x] **Manual & Auto Surface Tone Controls**:
+  * Added `surface: "auto" | "light" | "contrast"` in `schema/invitation.schema.json` and domain model structs.
+  * Added compact Bulma surface tone selector (`Fondo: [ Automático | Claro | Contraste ]`) in Admin Studio section cards (`editor.html` & `admin_editor.js`).
+- [x] **Harmonized Line-Art & Centered Typography**:
+  * Centered floating line icons (`.inv-block-icon`), tracked uppercase headings (`.inv-block-heading`), and single outline action buttons (`.inv-btn-outline` `CÓMO LLEGAR`).
+  * Unified all section partials (`details.html`, `quote.html`, `dress_code.html`, `timeline.html`, `faqs.html`, `rsvp_external.html`, `rsvp_form.html`, `carousel.html`, `text.html`, `image.html`, `registry.html`, `closing.html`).
+- [x] **Smooth Accordion Disclosures**:
+  * Added progressive `@supports (interpolate-size: allow-keywords)` and keyframe fallback transitions in `faqs.html`.
+  * Added native HTML5 `name="inv-faqs"` attribute for single-item disclosure grouping.
+- [x] **Celebratory Tabular Countdown**:
+  * Styled live countdown with bold tabular figures (`font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1`), tracked uppercase labels (`DÍAS : HORAS : MIN : SEG`), and glassmorphism on cover images.
 
 ---
 

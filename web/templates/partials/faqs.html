@@ -1,11 +1,11 @@
 {{ define "partial_faqs" }}
 {{ if .Section.Items }}
-<div class="inv-section inv-faqs-section" id="section-faqs">
-  <div class="inv-section-heading">{{ if .Section.Title }}{{ .Section.Title }}{{ else }}Preguntas Frecuentes{{ end }}</div>
+<section class="inv-section inv-faqs-section inv-block {{ .SurfaceClass }}" id="section-faqs">
+  <h3 class="inv-block-heading">{{ if .Section.Title }}{{ .Section.Title }}{{ else }}PREGUNTAS FRECUENTES{{ end }}</h3>
 
   <div class="faq-accordion-list">
     {{ range .Section.Items }}
-      <details class="faq-accordion-item">
+      <details class="faq-accordion-item" name="inv-faqs">
         <summary class="faq-accordion-summary">
           <span class="faq-accordion-question">{{ .Question }}</span>
           <span class="faq-accordion-chevron" aria-hidden="true">{{ icon "chevron-down" }}</span>
@@ -16,6 +16,6 @@
       </details>
     {{ end }}
   </div>
-</div>
+</section>
 {{ end }}
 {{ end }}

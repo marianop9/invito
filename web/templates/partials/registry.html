@@ -1,18 +1,22 @@
 {{ define "partial_registry" }}
-<div class="inv-section" id="section-registry">
-  <div class="inv-section-heading">Registry</div>
+<section class="inv-section inv-registry-section inv-block {{ .SurfaceClass }}" id="section-registry">
+  <div class="inv-block-icon" aria-hidden="true">
+    {{ icon "credit-card" }}
+  </div>
+  <h3 class="inv-block-heading">REGISTRY</h3>
   {{ if .Section.Message }}
-    <p class="dress-code-desc">{{ .Section.Message }}</p>
+    <p class="registry-message">{{ .Section.Message }}</p>
   {{ end }}
 
   {{ if .Section.Links }}
     <div class="registry-chips">
       {{ range .Section.Links }}
         <a href="{{ .URL }}" target="_blank" rel="noopener noreferrer" class="registry-chip">
-          🎁 {{ .Label }} &rarr;
+          <span>🎁 {{ .Label }}</span>
+          {{ icon "arrow-up-right" }}
         </a>
       {{ end }}
     </div>
   {{ end }}
-</div>
+</section>
 {{ end }}
