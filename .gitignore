@@ -3,5 +3,6 @@
 
 _demo
 bin
+tmp
 uploads
 *.db*
