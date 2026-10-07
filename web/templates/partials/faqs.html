@@ -1,14 +1,19 @@
 {{ define "partial_faqs" }}
 {{ if .Section.Items }}
-<div class="inv-section" id="section-faqs">
-  <div class="inv-section-heading">{{ if .Section.Title }}{{ .Section.Title }}{{ else }}Information{{ end }}</div>
+<div class="inv-section inv-faqs-section" id="section-faqs">
+  <div class="inv-section-heading">{{ if .Section.Title }}{{ .Section.Title }}{{ else }}Preguntas Frecuentes{{ end }}</div>
 
-  <div class="faq-compact-list">
+  <div class="faq-accordion-list">
     {{ range .Section.Items }}
-      <div class="faq-compact-item">
-        <span class="faq-compact-q">{{ .Question }}</span>
-        <span class="faq-compact-a">{{ .Answer }}</span>
-      </div>
+      <details class="faq-accordion-item">
+        <summary class="faq-accordion-summary">
+          <span class="faq-accordion-question">{{ .Question }}</span>
+          <span class="faq-accordion-chevron" aria-hidden="true">{{ icon "chevron-down" }}</span>
+        </summary>
+        <div class="faq-accordion-content">
+          <p>{{ .Answer }}</p>
+        </div>
+      </details>
     {{ end }}
   </div>
 </div>

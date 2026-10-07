@@ -1,10 +1,14 @@
 {{ define "partial_quote" }}
 <section class="inv-section inv-quote-section" id="section-quote">
-  <blockquote class="inv-quote-block">
-    <p class="inv-quote-text">&ldquo;{{ .Section.Text }}&rdquo;</p>
-    {{ if .Section.Author }}
-      <cite class="inv-quote-author">&mdash; {{ .Section.Author }}</cite>
-    {{ end }}
-  </blockquote>
+  <div class="inv-quote-frame">
+    <div class="inv-quote-hairline" aria-hidden="true"></div>
+    <blockquote class="inv-quote-block">
+      <p class="inv-quote-text">&ldquo;{{ .Section.Text }}&rdquo;</p>
+      {{ if .Section.Author }}
+        <cite class="inv-quote-author">&mdash; {{ .Section.Author }}</cite>
+      {{ end }}
+    </blockquote>
+    <div class="inv-quote-hairline" aria-hidden="true"></div>
+  </div>
 </section>
 {{ end }}

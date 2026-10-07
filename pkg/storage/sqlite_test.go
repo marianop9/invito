@@ -41,33 +41,21 @@ func createSampleInvitation(slug, title string) *domain.Invitation {
 	}
 }
 
-func TestSQLiteStore_InitializationAndSeeding(t *testing.T) {
-	// Initialize with seed directory
+func TestSQLiteStore_Initialization(t *testing.T) {
+	// Initialize with seed directory - seeds are decoupled from production database
 	store, err := NewSQLiteStore(":memory:", "../../seed")
 	if err != nil {
-		t.Fatalf("failed to initialize sqlite store with seeds: %v", err)
+		t.Fatalf("failed to initialize sqlite store: %v", err)
 	}
 	defer store.Close()
 
-	// List seeded invitations
+	// Initial store starts clean without polluting SQLite with static seeds
 	invs, err := store.ListInvitations()
 	if err != nil {
 		t.Fatalf("ListInvitations failed: %v", err)
 	}
-	if len(invs) < 2 {
-		t.Fatalf("expected at least 2 seeded invitations, got %d", len(invs))
-	}
-
-	// Verify Sarah & Alex exists
-	wedding, err := store.GetInvitation("sarah-and-alex-wedding")
-	if err != nil {
-		t.Fatalf("failed to get wedding invitation: %v", err)
-	}
-	if wedding.Title != "Sarah & Alex" {
-		t.Errorf("expected title 'Sarah & Alex', got %q", wedding.Title)
-	}
-	if wedding.Location.Name != "Willowbrook Botanical Estate" {
-		t.Errorf("expected venue name Willowbrook Botanical Estate, got %q", wedding.Location.Name)
+	if len(invs) != 0 {
+		t.Errorf("expected 0 seeded invitations in clean database, got %d", len(invs))
 	}
 
 	// Verify nonexistent returns error

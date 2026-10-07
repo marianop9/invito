@@ -413,6 +413,27 @@ func (g *Generator) getInvitation(slug string) (*domain.Invitation, error) {
 				return &inv, nil
 			}
 		}
+
+		// Fallback: search all JSON files in SeedDir for matching inv.Slug
+		files, globErr := filepath.Glob(filepath.Join(g.config.SeedDir, "*.json"))
+		if globErr == nil {
+			for _, file := range files {
+				fileData, readErr := os.ReadFile(file)
+				if readErr != nil {
+					continue
+				}
+				var inv domain.Invitation
+				if err := json.Unmarshal(fileData, &inv); err != nil {
+					continue
+				}
+				if inv.Slug == slug {
+					if strings.HasPrefix(inv.Slug, "demo-") {
+						inv.SetDemo(true)
+					}
+					return &inv, nil
+				}
+			}
+		}
 	}
 
 	if g.store != nil {
@@ -446,9 +467,7 @@ func (g *Generator) listInvitations() ([]*domain.Invitation, error) {
 			}
 			if !seen[inv.Slug] {
 				seen[inv.Slug] = true
-				if strings.HasPrefix(inv.Slug, "demo-") {
-					inv.SetDemo(true)
-				}
+				inv.SetDemo(true)
 				result = append(result, &inv)
 			}
 		}

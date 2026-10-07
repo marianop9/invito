@@ -1684,3 +1684,471 @@ body.invitation-body {
     scroll-behavior: auto !important;
   }
 }
+
+/* ==========================================================================
+   Redesign Component Scaffolding (Phase 1 HTML Structural Support)
+   ========================================================================== */
+
+/* Focused Coordinate Blocks (When / Where) */
+.inv-details-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.inv-block {
+  padding: 2.25rem 1.5rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.inv-block--when {
+  background-color: var(--inv-surface, #FFFFFF);
+  border-bottom: 1px solid var(--inv-border-light, #EEEBE3);
+}
+
+.inv-block--where {
+  background-color: var(--inv-surface-alt, #F9F8F5);
+  border-bottom: 1px solid var(--inv-border, #E5E1D8);
+}
+
+.inv-block-icon {
+  margin-bottom: 0.75rem;
+  color: var(--inv-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inv-block-icon svg {
+  width: 2rem;
+  height: 2rem;
+  stroke: currentColor;
+}
+
+.inv-block-heading {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--inv-accent);
+  margin-bottom: 0.5rem;
+}
+
+.inv-block-primary {
+  font-size: 1.1875rem;
+  font-weight: 600;
+  color: var(--inv-text);
+  line-height: 1.35;
+}
+
+.inv-block-secondary {
+  font-size: 0.9375rem;
+  color: var(--inv-text-muted);
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+.inv-block-note {
+  font-size: 0.8125rem;
+  color: var(--inv-text-muted);
+  font-style: italic;
+  margin-top: 0.5rem;
+  max-width: 320px;
+}
+
+.inv-block-action {
+  margin-top: 1.25rem;
+}
+
+.inv-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.5rem;
+  border: 1px solid var(--inv-accent);
+  border-radius: var(--inv-radius-pill, 9999px);
+  color: var(--inv-accent);
+  background: transparent;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.inv-btn-outline:hover {
+  background: var(--inv-accent);
+  color: #FFFFFF;
+}
+
+.inv-btn-outline svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Prominent Celebratory Countdown Block */
+.inv-countdown {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--inv-radius-lg, 20px);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.countdown-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 2.75rem;
+}
+
+.countdown-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--inv-text);
+  font-variant-numeric: tabular-nums;
+  font-family: var(--inv-font-heading, serif);
+}
+
+.countdown-label {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--inv-text-muted);
+  margin-top: 0.2rem;
+}
+
+.countdown-separator {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--inv-text-muted);
+  margin-top: -0.5rem;
+  opacity: 0.6;
+}
+
+/* Collapsible Semantic FAQ Accordions */
+.faq-accordion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.faq-accordion-item {
+  border: 1px solid var(--inv-border);
+  border-radius: var(--inv-radius-md, 12px);
+  background-color: var(--inv-surface, #FFFFFF);
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.faq-accordion-item[open] {
+  border-color: var(--inv-accent);
+}
+
+.faq-accordion-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--inv-text);
+  list-style: none;
+  user-select: none;
+}
+
+.faq-accordion-summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-accordion-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--inv-text-muted);
+  transition: transform 0.25s ease;
+}
+
+.faq-accordion-chevron svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.faq-accordion-item[open] .faq-accordion-chevron {
+  transform: rotate(180deg);
+  color: var(--inv-accent);
+}
+
+.faq-accordion-content {
+  padding: 0 1rem 0.85rem;
+  font-size: 0.875rem;
+  color: var(--inv-text-muted);
+  line-height: 1.5;
+}
+
+/* Centered Dress Code with Tactile Swatches */
+.inv-dress-code-section {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dress-code-badge {
+  display: inline-block;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--inv-text);
+  background: var(--inv-surface-alt, #F9F8F5);
+  border: 1px solid var(--inv-border);
+  padding: 0.35rem 1.15rem;
+  border-radius: var(--inv-radius-pill, 9999px);
+  margin: 0.25rem 0 0.5rem;
+}
+
+.dress-code-palette {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.dress-code-swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  display: inline-block;
+}
+
+/* Unified Conversion Card (RSVP External) */
+.rsvp-conversion-card {
+  background-color: var(--inv-surface, #FFFFFF);
+  border: 1px solid var(--inv-border);
+  border-radius: var(--inv-radius-lg, 20px);
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: var(--inv-shadow);
+}
+
+.rsvp-deadline-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--inv-radius-pill, 9999px);
+  background-color: var(--inv-accent-light, #E7EEEA);
+  color: var(--inv-accent, #264336);
+  margin-bottom: 0.75rem;
+}
+
+.btn-rsvp-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 300px;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--inv-accent);
+  color: #FFFFFF;
+  border-radius: var(--inv-radius-pill, 9999px);
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.btn-rsvp-primary:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.btn-rsvp-primary svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.rsvp-notes-group {
+  width: 100%;
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  text-align: left;
+  background-color: var(--inv-surface-alt, #F9F8F5);
+  border: 1px solid var(--inv-border-light, #EEEBE3);
+  padding: 0.85rem 1rem;
+  border-radius: var(--inv-radius-md, 12px);
+}
+
+.rsvp-note-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--inv-text);
+}
+
+.rsvp-note-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: var(--inv-accent);
+}
+
+.rsvp-note-icon svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.rsvp-note-icon--wa {
+  color: #25D366;
+}
+
+/* Connected Milestone Track (Timeline) */
+.timeline-track-container {
+  position: relative;
+  padding: 0.5rem 0.25rem;
+  margin-top: 0.75rem;
+}
+
+.timeline-track-line {
+  position: absolute;
+  left: 1.15rem;
+  top: 1rem;
+  bottom: 1rem;
+  width: 2px;
+  background: var(--inv-border);
+}
+
+.timeline-nodes {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.timeline-node-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  position: relative;
+}
+
+.timeline-marker {
+  width: 2.3rem;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+  padding-top: 0.2rem;
+  z-index: 1;
+}
+
+.timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--inv-accent);
+  border: 2px solid var(--inv-surface);
+  box-shadow: 0 0 0 2px var(--inv-border);
+}
+
+.timeline-node-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.timeline-time {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--inv-accent);
+  display: inline-block;
+}
+
+.timeline-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--inv-text);
+  margin-top: 0.15rem;
+}
+
+.timeline-desc {
+  font-size: 0.8125rem;
+  color: var(--inv-text-muted);
+  margin-top: 0.2rem;
+  line-height: 1.4;
+}
+
+/* Editorial Framing (Quote & Text) */
+.inv-quote-frame {
+  text-align: center;
+  padding: 0.5rem 0;
+}
+
+.inv-quote-hairline {
+  width: 36px;
+  height: 1px;
+  background: var(--inv-border);
+  margin: 0.75rem auto;
+}
+
+.inv-text-card {
+  padding: 0.5rem 0;
+  text-align: center;
+}
+
+/* Segmented Control for RSVP Form */
+.rsvp-segmented-control {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--inv-surface-alt, #F9F8F5);
+  border: 1px solid var(--inv-border);
+  border-radius: var(--inv-radius-pill, 9999px);
+  padding: 3px;
+  margin-bottom: 1rem;
+}
+
+.segmented-option {
+  flex: 1;
+  text-align: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--inv-radius-pill, 9999px);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.segmented-option input[type="radio"] {
+  display: none;
+}
+
+.segmented-option.active {
+  background: var(--inv-accent);
+  color: #FFFFFF;
+}

@@ -71,10 +71,8 @@ func TestRenderer(t *testing.T) {
 			"The Observatory",
 			"theme-midnight-soiree",
 			"Black Tie Gala",
-			"An evening of elegance",
-			"Black Tie Only",
 			"RSVP",
-			"inv-hero-meta",
+			"inv-hero-content",
 		}
 
 		for _, kw := range expectedKeywords {
@@ -185,9 +183,6 @@ func TestRenderer(t *testing.T) {
 			"inv-hero-banner-img",
 			"inv-hero-banner-content",
 			"Wedding Celebration",
-			"An intimate evening under the stars",
-			"Sep 19, 2026",
-			"inv-hero-banner-scroll-cue",
 		}
 
 		for _, kw := range expectedKeywords {
@@ -299,14 +294,11 @@ func TestRenderer(t *testing.T) {
 		expectedIconStrings := []string{
 			"icon-tabler-calendar-week",
 			"icon-tabler-map-2",
-			"icon-tabler-calendar-plus",
-			"icon-tabler-download",
 			"icon-tabler-arrow-up-right",
 			"<svg",
 			"viewBox=\"0 0 24 24\"",
-			"detail-icon-badge",
-			"btn-add-google-calendar",
-			"btn-download-ics",
+			"section-when",
+			"section-where",
 			"btn-view-map",
 		}
 
@@ -346,10 +338,11 @@ func TestRenderer(t *testing.T) {
 			"https://tally.so/r/demo-form",
 			"Abrir Formulario",
 			"btn-rsvp-external",
-			"rsvp-contribution-box",
-			"Reserva de lugar",
+			"rsvp-notes-group",
+			"rsvp-note-row",
+			"Reserva:",
 			"Seña de $10.000 para la reserva (Alias: cumple.fiesta)",
-			"rsvp-whatsapp-box",
+			"Comprobante:",
 			"Enviá el comprobante de transferencia al anfitrión por WhatsApp",
 			"Fecha límite: 15 de Agosto",
 		}

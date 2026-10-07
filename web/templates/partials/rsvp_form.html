@@ -1,44 +1,44 @@
 {{ define "partial_rsvp_form" }}
 {{ if .Section.Enabled }}
-<div class="inv-section" id="section-rsvp">
-  <div id="rsvp-card-inner">
-    <div class="inv-section-heading">RSVP</div>
+<div class="inv-section inv-rsvp-form-section" id="section-rsvp">
+  <div class="rsvp-form-card" id="rsvp-card-inner">
+    <div class="inv-section-heading">Confirmar Asistencia (RSVP)</div>
 
     {{ if .Invitation.IsRSVPOpen }}
       <form id="rsvp-form" action="/i/{{ .Invitation.Slug }}/rsvp" method="POST" class="rsvp-compact-form">
-        <!-- Attendance Toggle -->
-        <div class="toggle-pair">
-          <label class="toggle-option active" id="label-attending-yes">
+        <!-- Segmented Attendance Switch -->
+        <div class="rsvp-segmented-control toggle-pair" role="radiogroup">
+          <label class="segmented-option toggle-option active" id="label-attending-yes">
             <input type="radio" name="attending" value="true" checked>
-            <span>✓ Attending</span>
+            <span>✓ Sí, asistiré</span>
           </label>
-          <label class="toggle-option" id="label-attending-no">
+          <label class="segmented-option toggle-option" id="label-attending-no">
             <input type="radio" name="attending" value="false">
-            <span>✕ Decline</span>
+            <span>✕ No podré asistir</span>
           </label>
         </div>
 
         <!-- Name -->
         <div class="form-field">
-          <label for="input-name" class="field-label">Full Name</label>
-          <input type="text" id="input-name" name="name" class="field-input" placeholder="Your name" required autocomplete="name">
+          <label for="input-name" class="field-label">Nombre y Apellido</label>
+          <input type="text" id="input-name" name="name" class="field-input" placeholder="Tu nombre completo" required autocomplete="name">
         </div>
 
         <!-- Email -->
         <div class="form-field">
-          <label for="input-email" class="field-label">Email</label>
-          <input type="email" id="input-email" name="email" class="field-input" placeholder="you@example.com" required autocomplete="email">
+          <label for="input-email" class="field-label">Correo Electrónico</label>
+          <input type="email" id="input-email" name="email" class="field-input" placeholder="tu@email.com" required autocomplete="email">
         </div>
 
         <!-- Party Size -->
         {{ if gt .Section.MaxPartySize 1 }}
         <div class="form-field" id="rsvp-guests-group">
-          <label for="input-guests" class="field-label">Guests</label>
+          <label for="input-guests" class="field-label">Acompañantes</label>
           <select id="input-guests" name="guest_count" class="field-select">
-            <option value="1">1 person</option>
-            <option value="2" selected>2 people</option>
-            {{ if ge .Section.MaxPartySize 3 }}<option value="3">3 people</option>{{ end }}
-            {{ if ge .Section.MaxPartySize 4 }}<option value="4">4 people</option>{{ end }}
+            <option value="1">1 persona</option>
+            <option value="2" selected>2 personas</option>
+            {{ if ge .Section.MaxPartySize 3 }}<option value="3">3 personas</option>{{ end }}
+            {{ if ge .Section.MaxPartySize 4 }}<option value="4">4 personas</option>{{ end }}
           </select>
         </div>
         {{ else }}
@@ -48,27 +48,28 @@
         <!-- Dietary Requirements -->
         {{ if .Section.AskDietary }}
         <div class="form-field" id="rsvp-dietary-group">
-          <label for="input-dietary" class="field-label">Dietary / Notes (Optional)</label>
-          <input type="text" id="input-dietary" name="dietary_needs" class="field-input" placeholder="Vegetarian, allergies...">
+          <label for="input-dietary" class="field-label">Restricciones alimentarias / Notas (Opcional)</label>
+          <input type="text" id="input-dietary" name="dietary_needs" class="field-input" placeholder="Vegetariano, celíaco, alergias...">
         </div>
         {{ end }}
 
         <!-- Custom Note -->
         {{ if .Section.CustomNote }}
-        <p style="font-size: 0.75rem; color: var(--inv-text-muted); margin-top: 0.25rem;">
+        <p class="rsvp-form-note">
           {{ .Section.CustomNote }}
         </p>
         {{ end }}
 
-        <!-- Submit Button -->
+        <!-- High-Contrast Submit Button -->
         <button type="submit" class="btn-submit-rsvp" id="btn-submit-rsvp"{{ if .Invitation.IsDemo }} disabled style="opacity: 0.65; cursor: not-allowed;" title="Modo Demo &mdash; Confirmaciones deshabilitadas"{{ end }}>
-          {{ if .Invitation.IsDemo }}Confirmación Deshabilitada (Modo Demo){{ else }}Confirm Attendance{{ end }}
+          {{ if .Invitation.IsDemo }}Confirmación Deshabilitada (Modo Demo){{ else }}Confirmar Asistencia{{ end }}
         </button>
       </form>
     {{ else }}
-      <div class="rsvp-success-compact">
-        <p style="font-size: 0.8125rem; color: var(--inv-text-muted);">
-          The RSVP deadline for this event has passed.
+      <div class="rsvp-closed-state">
+        <div class="rsvp-closed-badge">Plazo Finalizado</div>
+        <p class="rsvp-closed-text">
+          El plazo para confirmar asistencia para este evento ha finalizado.
         </p>
       </div>
     {{ end }}

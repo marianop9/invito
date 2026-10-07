@@ -1,21 +1,27 @@
 {{ define "partial_timeline" }}
 {{ if .Section.Items }}
-<div class="inv-section" id="section-timeline">
-  <div class="inv-section-heading">{{ if .Section.Title }}{{ .Section.Title }}{{ else }}Schedule{{ end }}</div>
+<div class="inv-section inv-timeline-section" id="section-timeline">
+  <div class="inv-section-heading">{{ if .Section.Title }}{{ .Section.Title }}{{ else }}Cronograma{{ end }}</div>
 
-  <ul class="timeline-compact">
-    {{ range .Section.Items }}
-      <li class="timeline-compact-item">
-        <span class="timeline-time-badge">{{ .Time }}</span>
-        <div class="timeline-compact-content">
-          <div class="timeline-compact-title">{{ .Title }}</div>
-          {{ if .Description }}
-            <div class="timeline-compact-desc">{{ .Description }}</div>
-          {{ end }}
+  <div class="timeline-track-container">
+    <div class="timeline-track-line" aria-hidden="true"></div>
+    <div class="timeline-nodes">
+      {{ range .Section.Items }}
+        <div class="timeline-node-item">
+          <div class="timeline-marker" aria-hidden="true">
+            <span class="timeline-dot"></span>
+          </div>
+          <div class="timeline-node-body">
+            <span class="timeline-time">{{ .Time }}</span>
+            <div class="timeline-title">{{ .Title }}</div>
+            {{ if .Description }}
+              <div class="timeline-desc">{{ .Description }}</div>
+            {{ end }}
+          </div>
         </div>
-      </li>
-    {{ end }}
-  </ul>
+      {{ end }}
+    </div>
+  </div>
 </div>
 {{ end }}
 {{ end }}

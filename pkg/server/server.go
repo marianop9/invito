@@ -587,7 +587,7 @@ func (s *Server) handleServeUpload(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, fullPath)
 }
 
-// loadSeedInvitation loads a seed file in SeedDir matching the given slug by filename (<slug>.json).
+// loadSeedInvitation loads a seed file in SeedDir matching the given slug by filename (<slug>.json) or by inv.Slug.
 func (s *Server) loadSeedInvitation(slug string) (*domain.Invitation, error) {
 	if s.config.SeedDir == "" {
 		return nil, os.ErrNotExist
@@ -596,17 +596,37 @@ func (s *Server) loadSeedInvitation(slug string) (*domain.Invitation, error) {
 	cleanSlug := filepath.Base(slug)
 	targetFile := filepath.Join(s.config.SeedDir, cleanSlug+".json")
 	data, err := os.ReadFile(targetFile)
+	if err == nil {
+		var inv domain.Invitation
+		if err := json.Unmarshal(data, &inv); err == nil {
+			inv.SetDemo(true)
+			return &inv, nil
+		}
+	}
+
+	// Fallback: search all JSON files in SeedDir for matching inv.Slug
+	files, globErr := filepath.Glob(filepath.Join(s.config.SeedDir, "*.json"))
+	if globErr == nil {
+		for _, file := range files {
+			fileData, readErr := os.ReadFile(file)
+			if readErr != nil {
+				continue
+			}
+			var inv domain.Invitation
+			if err := json.Unmarshal(fileData, &inv); err != nil {
+				continue
+			}
+			if inv.Slug == slug {
+				inv.SetDemo(true)
+				return &inv, nil
+			}
+		}
+	}
+
 	if err != nil {
 		return nil, err
 	}
-
-	var inv domain.Invitation
-	if err := json.Unmarshal(data, &inv); err != nil {
-		return nil, err
-	}
-
-	inv.SetDemo(true)
-	return &inv, nil
+	return nil, os.ErrNotExist
 }
 
 // loadSeedInvitations loads all seed invitations from SeedDir.

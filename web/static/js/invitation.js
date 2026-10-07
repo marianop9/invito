@@ -15,7 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
    Countdown & Meta Details Badge (Interactive Toggle & Live Timer)
    ========================================================================== */
 function initCountdown() {
-  const container = document.getElementById('inv-hero-meta') || document.getElementById('inv-countdown');
+  const countdownEl = document.getElementById('inv-countdown');
+  const metaContainer = document.getElementById('inv-hero-meta');
+  const container = countdownEl || metaContainer;
   if (!container) return;
 
   const targetDateStr = container.getAttribute('data-target-date');
@@ -24,24 +26,42 @@ function initCountdown() {
   const targetDate = new Date(targetDateStr).getTime();
   if (isNaN(targetDate)) return;
 
+  const daysEl = document.getElementById('cd-days');
+  const hoursEl = document.getElementById('cd-hours');
+  const minsEl = document.getElementById('cd-mins');
+  const secsEl = document.getElementById('cd-secs');
+
   const summaryEl = document.getElementById('cd-summary');
   const metaLabel = document.getElementById('inv-meta-label');
   const countdownWrap = document.getElementById('inv-meta-countdown');
-  const hasCountdown = container.getAttribute('data-countdown') === 'true';
+
+  function pad(num) {
+    return String(num).padStart(2, '0');
+  }
 
   function update() {
     const now = new Date().getTime();
     const distance = targetDate - now;
 
     if (distance <= 0) {
-      if (summaryEl) summaryEl.textContent = 'Today!';
-      if (countdownWrap) countdownWrap.innerHTML = '🎉 <strong>Today is the day!</strong>';
+      if (daysEl) daysEl.textContent = '00';
+      if (hoursEl) hoursEl.textContent = '00';
+      if (minsEl) minsEl.textContent = '00';
+      if (secsEl) secsEl.textContent = '00';
+      if (summaryEl) summaryEl.textContent = '¡Hoy!';
+      if (countdownWrap) countdownWrap.innerHTML = '🎉 <strong>¡Llegó el gran día!</strong>';
       return;
     }
 
     const days = Math.floor(distance / (1000 * 60 * 60 * 24));
     const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const mins = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const secs = Math.floor((distance % (1000 * 60)) / 1000);
+
+    if (daysEl) daysEl.textContent = pad(days);
+    if (hoursEl) hoursEl.textContent = pad(hours);
+    if (minsEl) minsEl.textContent = pad(mins);
+    if (secsEl) secsEl.textContent = pad(secs);
 
     if (summaryEl) {
       if (days > 0) {
@@ -53,23 +73,23 @@ function initCountdown() {
   }
 
   update();
-  setInterval(update, 60000);
+  setInterval(update, 1000);
 
-  // If countdown is enabled, allow clicking/tapping the badge to toggle between Date/Time and Countdown
-  if (hasCountdown && metaLabel && countdownWrap) {
+  // If legacy countdown toggle exists on meta container
+  if (metaContainer && metaContainer.getAttribute('data-countdown') === 'true' && metaLabel && countdownWrap) {
     let showingCountdown = false;
-    container.setAttribute('title', 'Click to view countdown');
+    metaContainer.setAttribute('title', 'Tocar para ver cuenta regresiva');
 
-    container.addEventListener('click', () => {
+    metaContainer.addEventListener('click', () => {
       showingCountdown = !showingCountdown;
       if (showingCountdown) {
         metaLabel.style.display = 'none';
         countdownWrap.style.display = 'inline-flex';
-        container.setAttribute('title', 'Click to view event date');
+        metaContainer.setAttribute('title', 'Tocar para ver fecha');
       } else {
         metaLabel.style.display = 'inline-flex';
         countdownWrap.style.display = 'none';
-        container.setAttribute('title', 'Click to view countdown');
+        metaContainer.setAttribute('title', 'Tocar para ver cuenta regresiva');
       }
     });
   }

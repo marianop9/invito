@@ -1,23 +1,25 @@
 {{ define "partial_dress_code" }}
-  {{ if .Section.Title }}
-  <div class="inv-section" id="section-dress-code">
-    <div class="inv-section-heading">{{ .Section.Title }}</div>
-    <div class="dress-code-compact">
-      <div class="dress-code-header">
-        <span class="dress-code-title">{{ .Section.Name }}</span>
-        {{ if .Section.PaletteHints }}
-          <div class="swatches-inline" title="Palette suggestions">
-            {{ range .Section.PaletteHints }}
-              <span class="swatch-dot" style="background-color: {{ . }};"></span>
-            {{ end }}
-          </div>
+  {{ if or .Section.Title .Section.Name }}
+  <div class="inv-section inv-dress-code-section" id="section-dress-code">
+    <div class="inv-block-icon" aria-hidden="true">
+      {{ icon "diamond" }}
+    </div>
+    <div class="inv-section-heading">{{ if .Section.Title }}{{ .Section.Title }}{{ else }}DRESS CODE{{ end }}</div>
+    {{ if .Section.Name }}
+      <div class="dress-code-badge">{{ .Section.Name }}</div>
+    {{ end }}
+
+    {{ if .Section.Description }}
+      <p class="dress-code-desc">{{ .Section.Description }}</p>
+    {{ end }}
+
+    {{ if .Section.PaletteHints }}
+      <div class="dress-code-palette" title="Sugerencia de paleta">
+        {{ range .Section.PaletteHints }}
+          <span class="dress-code-swatch" style="background-color: {{ . }};" title="{{ . }}"></span>
         {{ end }}
       </div>
-
-      {{ if .Section.Description }}
-        <p class="dress-code-desc">{{ .Section.Description }}</p>
-      {{ end }}
-    </div>
+    {{ end }}
   </div>
   {{ end }}
 {{ end }}

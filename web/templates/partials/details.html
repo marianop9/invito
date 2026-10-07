@@ -1,41 +1,35 @@
 {{ define "partial_details" }}
-<div class="inv-details-strip" id="section-details">
-  <!-- Date & Time Block -->
-  <div class="detail-block">
-    <div class="detail-icon-badge" aria-hidden="true">
+<div class="inv-details-container" id="section-details">
+  <!-- When Block (Date & Time coordinates only, zero button clutter) -->
+  <section class="inv-block inv-block--when" id="section-when">
+    <div class="inv-block-icon" aria-hidden="true">
       {{ icon "calendar-week" }}
     </div>
-    <div class="detail-body">
-      <div class="detail-label">{{ if .Section.DateLabel }}{{ .Section.DateLabel }}{{ else }}When{{ end }}</div>
-      <div class="detail-primary">{{ capitalizeFirst .Invitation.FormattedFullDate }}</div>
-      <div class="detail-secondary">{{ .Invitation.FormattedTime }}</div>
-    </div>
-  </div>
+    <h3 class="inv-block-heading">{{ if .Section.DateLabel }}{{ .Section.DateLabel }}{{ else }}¿CUÁNDO?{{ end }}</h3>
+    <div class="inv-block-primary">{{ capitalizeFirst .Invitation.FormattedFullDate }}</div>
+    <div class="inv-block-secondary">{{ .Invitation.FormattedTime }}</div>
+  </section>
 
-  <div class="detail-divider" role="separator"></div>
-
-  <!-- Location Block -->
-  <div class="detail-block">
-    <div class="detail-icon-badge" aria-hidden="true">
+  <!-- Where Block (Venue coordinates and single navigation action) -->
+  <section class="inv-block inv-block--where" id="section-where">
+    <div class="inv-block-icon" aria-hidden="true">
       {{ icon "map" }}
     </div>
-    <div class="detail-body">
-      <div class="detail-label">{{ if .Section.LocationLabel }}{{ .Section.LocationLabel }}{{ else }}Where{{ end }}</div>
-      <div class="detail-primary">{{ .Invitation.Location.Name }}</div>
-      <div class="detail-secondary">{{ .Invitation.Location.Address }}</div>
-      {{ if .Invitation.Location.DirectionsNote }}
-        <div class="detail-note">{{ .Invitation.Location.DirectionsNote }}</div>
-      {{ end }}
+    <h3 class="inv-block-heading">{{ if .Section.LocationLabel }}{{ .Section.LocationLabel }}{{ else }}¿DÓNDE?{{ end }}</h3>
+    <div class="inv-block-primary">{{ .Invitation.Location.Name }}</div>
+    <div class="inv-block-secondary">{{ .Invitation.Location.Address }}</div>
+    {{ if .Invitation.Location.DirectionsNote }}
+      <div class="inv-block-note">{{ .Invitation.Location.DirectionsNote }}</div>
+    {{ end }}
 
-      {{ if and .Section.ShowMapLink .Invitation.Location.MapURL }}
-      <div class="detail-chip-group">
-        <a href="{{ .Invitation.Location.MapURL }}" target="_blank" rel="noopener noreferrer" class="detail-chip detail-chip-primary" id="btn-view-map">
-          <span>Abrir en Maps</span>
-          {{ icon "arrow-up-right" }}
-        </a>
-      </div>
-      {{ end }}
+    {{ if and .Section.ShowMapLink .Invitation.Location.MapURL }}
+    <div class="inv-block-action">
+      <a href="{{ .Invitation.Location.MapURL }}" target="_blank" rel="noopener noreferrer" class="inv-btn-outline" id="btn-view-map">
+        <span>CÓMO LLEGAR</span>
+        {{ icon "arrow-up-right" }}
+      </a>
     </div>
-  </div>
+    {{ end }}
+  </section>
 </div>
 {{ end }}

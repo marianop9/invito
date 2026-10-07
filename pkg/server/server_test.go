@@ -10,6 +10,8 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"invitation/pkg/domain"
 )
 
 func TestServerEndpoints(t *testing.T) {
@@ -26,6 +28,19 @@ func TestServerEndpoints(t *testing.T) {
 	})
 	if err != nil {
 		t.Fatalf("failed to create server: %v", err)
+	}
+
+	// Seed test invitation directly into the database store for persistent tests
+	weddingData, err := os.ReadFile("../../seed/wedding.json")
+	if err != nil {
+		t.Fatalf("failed to read test wedding seed file: %v", err)
+	}
+	var testInv domain.Invitation
+	if err := json.Unmarshal(weddingData, &testInv); err != nil {
+		t.Fatalf("failed to unmarshal test wedding seed: %v", err)
+	}
+	if err := srv.store.SaveInvitation(&testInv); err != nil {
+		t.Fatalf("failed to save test wedding invitation to store: %v", err)
 	}
 
 	t.Run("GET / renders showcase page with template links", func(t *testing.T) {
