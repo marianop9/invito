@@ -113,6 +113,19 @@ func TestSSG_ExportAll(t *testing.T) {
 	if !strings.Contains(string(recepcionHTML), "Promo 2026") {
 		t.Errorf("recepcion HTML missing title")
 	}
+
+	// 5. Verify Save the Date Standalone HTML (s/demo-quince-julieta/index.html)
+	stdHTMLPath := filepath.Join(tempDir, "s", "demo-quince-julieta", "index.html")
+	stdHTML, err := os.ReadFile(stdHTMLPath)
+	if err != nil {
+		t.Fatalf("failed to read save the date index.html: %v", err)
+	}
+	if !strings.Contains(string(stdHTML), "std-card") {
+		t.Errorf("save the date HTML missing std-card container")
+	}
+	if !strings.Contains(string(stdHTML), "Julieta") {
+		t.Errorf("save the date HTML missing Julieta")
+	}
 }
 
 func TestSSG_ExportAll_WithZip(t *testing.T) {

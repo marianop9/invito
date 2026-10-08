@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Save the Date &mdash; {{ .Title }}</title>
+  <meta name="description" content="{{ .SaveTheDate.DisplayPhrase }} &bull; {{ .SaveTheDate.DisplayName . }} &bull; {{ .SaveTheDate.DisplayDate . }}">
+
+  <!-- OpenGraph Metadata for Social & Messaging Previews (WhatsApp, iMessage, Instagram) -->
+  <meta property="og:title" content="{{ .SaveTheDate.DisplayPhrase }} &bull; {{ .SaveTheDate.DisplayName . }}">
+  <meta property="og:description" content="{{ .SaveTheDate.DisplayDate . }} &bull; {{ .SaveTheDate.DisplayLocation . }}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="/s/{{ .Slug }}">
+  {{ if .SaveTheDate.CoverImageURL }}
+    <meta property="og:image" content="{{ .SaveTheDate.CoverImageURL }}">
+  {{ else if .HasCoverImage }}
+    <meta property="og:image" content="{{ .CoverImage }}">
+  {{ end }}
+
+  <!-- Standalone Stylesheet -->
+  <link rel="stylesheet" href="/static/css/save_the_date.css">
+<body class="std-body">
+  <!-- Top utility bar -->
+  <!-- <nav class="std-top-bar">
+    <a href="/" id="btn-back-home">&larr; Invito</a>
+    <span>Save the Date</span>
+  </nav> -->
+
+  <main class="std-card {{ .SaveTheDate.LayoutClass }} {{ .SaveTheDate.PlacementClass }} {{ .SaveTheDate.StylePresetClass }}">
+    {{ if .SaveTheDate.CoverImageURL }}
+      <div class="std-media">
+        <img src="{{ .SaveTheDate.CoverImageURL }}" alt="{{ .Title }}" class="std-img" loading="eager" decoding="async">
+        <div class="std-scrim" aria-hidden="true"></div>
+      </div>
+    {{ else if .HasCoverImage }}
+      <div class="std-media">
+        <img src="{{ .CoverImage }}" alt="{{ .Title }}" class="std-img" loading="eager" decoding="async">
+        <div class="std-scrim" aria-hidden="true"></div>
+      </div>
+    {{ else }}
+      <div class="std-media">
+        <div class="std-scrim" aria-hidden="true"></div>
+      </div>
+    {{ end }}
+
+    <div class="std-lockup">
+      <p class="std-phrase">{{ .SaveTheDate.DisplayPhrase }}</p>
+
+      <div class="std-hero">
+        {{ if .SaveTheDate.DisplayEventType }}
+          <span class="std-kicker">{{ .SaveTheDate.DisplayEventType }}</span>
+        {{ end }}
+        <h1 class="std-name">{{ .SaveTheDate.DisplayName . }}</h1>
+      </div>
+
+      <div class="std-logistics">
+        <time class="std-date" datetime="{{ .DateStart.Format "2006-01-02" }}">{{ .SaveTheDate.DisplayDate . }}</time>
+        {{ if .SaveTheDate.DisplayLocation . }}
+          <span class="std-city">{{ .SaveTheDate.DisplayLocation . }}</span>
+        {{ end }}
+      </div>
+
+      {{ if .SaveTheDate.ShowCountdown }}
+      <div class="std-countdown" id="std-countdown" data-target-date="{{ .DateStart.Format "2006-01-02T15:04:05Z07:00" }}" aria-label="Cuenta regresiva">
+        <div class="std-cd-col">
+          <span class="std-cd-num" id="std-cd-days">00</span>
+          <span class="std-cd-label">Días</span>
+        </div>
+        <span class="std-cd-sep" aria-hidden="true">:</span>
+        <div class="std-cd-col">
+          <span class="std-cd-num" id="std-cd-hours">00</span>
+          <span class="std-cd-label">Hs</span>
+        </div>
+        <span class="std-cd-sep" aria-hidden="true">:</span>
+        <div class="std-cd-col">
+          <span class="std-cd-num" id="std-cd-mins">00</span>
+          <span class="std-cd-label">Min</span>
+        </div>
+        <span class="std-cd-sep" aria-hidden="true">:</span>
+        <div class="std-cd-col">
+          <span class="std-cd-num" id="std-cd-secs">00</span>
+          <span class="std-cd-label">Seg</span>
+        </div>
+      </div>
+      {{ end }}
+
+      {{ if .SaveTheDate.DisplayFooterNote }}
+        <p class="std-footer-note">{{ .SaveTheDate.DisplayFooterNote }}</p>
+      {{ end }}
+    </div>
+  </main>
+
+  {{ if .SaveTheDate.ShowCountdown }}
+  <script src="/static/js/save_the_date.js" defer></script>
+  {{ end }}
+</body>
+</html>

@@ -754,4 +754,92 @@ func TestServerEndpoints(t *testing.T) {
 			t.Errorf("expected status 404 after deletion, got %d", getRec.Code)
 		}
 	})
+
+	t.Run("Save the Date Routes", func(t *testing.T) {
+		stdInv := &domain.Invitation{
+			Version:   "1.0",
+			Slug:      "test-quince-julieta",
+			Title:     "Mis 15 Julieta",
+			DateStart: testInv.DateStart,
+			Location: domain.Location{
+				Name:    "Salón La Reserva",
+				Address: "Pilar, Buenos Aires",
+			},
+			Theme: domain.ThemeConfig{
+				ID: domain.ThemeBotanicalElegance,
+			},
+			SaveTheDate: &domain.SaveTheDateConfig{
+				Enabled:       true,
+				Layout:        "full-bleed",
+				Placement:     "bottom-left",
+				Phrase:        "Reserva la fecha",
+				EventType:     "Mis 15",
+				Name:          "Julieta",
+				LocationHint:  "Buenos Aires",
+				FooterNote:    "Invitación formal próximamente",
+				CoverImageURL: "/static/img/hero-cumple.webp",
+			},
+			Sections: nil, // Standalone Save the Date only
+		}
+		if err := srv.store.SaveInvitation(stdInv); err != nil {
+			t.Fatalf("failed to save save the date test invitation: %v", err)
+		}
+
+		// 1. GET /s/{slug}
+		reqS := httptest.NewRequest(http.MethodGet, "/s/test-quince-julieta", nil)
+		recS := httptest.NewRecorder()
+		srv.Router().ServeHTTP(recS, reqS)
+
+		if recS.Code != http.StatusOK {
+			t.Errorf("expected status 200 for /s/test-quince-julieta, got %d", recS.Code)
+		}
+		bodyS := recS.Body.String()
+		if !strings.Contains(bodyS, "std-card") {
+			t.Errorf("expected /s/test-quince-julieta to render std-card")
+		}
+		if !strings.Contains(bodyS, "Reserva la fecha") {
+			t.Errorf("expected /s/test-quince-julieta to contain phrase")
+		}
+		if !strings.Contains(bodyS, "Julieta") {
+			t.Errorf("expected /s/test-quince-julieta to contain name")
+		}
+
+		// 2. GET /i/{slug}/save-the-date
+		reqAlt := httptest.NewRequest(http.MethodGet, "/i/test-quince-julieta/save-the-date", nil)
+		recAlt := httptest.NewRecorder()
+		srv.Router().ServeHTTP(recAlt, reqAlt)
+
+		if recAlt.Code != http.StatusOK {
+			t.Errorf("expected status 200 for /i/test-quince-julieta/save-the-date, got %d", recAlt.Code)
+		}
+
+		// 3. GET /i/{slug} for a save-the-date-only invitation renders save the date directly
+		reqI := httptest.NewRequest(http.MethodGet, "/i/test-quince-julieta", nil)
+		recI := httptest.NewRecorder()
+		srv.Router().ServeHTTP(recI, reqI)
+
+		if recI.Code != http.StatusOK {
+			t.Errorf("expected status 200 for /i/test-quince-julieta fallback, got %d", recI.Code)
+		}
+		bodyI := recI.Body.String()
+		if !strings.Contains(bodyI, "std-card") {
+			t.Errorf("expected /i/test-quince-julieta fallback to render std-card")
+		}
+
+		// 4. GET /s/{slug} for invitation without save_the_date returns 404
+		reqNoSTD := httptest.NewRequest(http.MethodGet, "/s/sarah-and-alex-wedding", nil)
+		recNoSTD := httptest.NewRecorder()
+		srv.Router().ServeHTTP(recNoSTD, reqNoSTD)
+		if recNoSTD.Code != http.StatusNotFound {
+			t.Errorf("expected status 404 for event without save the date, got %d", recNoSTD.Code)
+		}
+
+		// 5. GET /s/nonexistent returns 404
+		reqNonExistent := httptest.NewRequest(http.MethodGet, "/s/nonexistent-event-slug", nil)
+		recNonExistent := httptest.NewRecorder()
+		srv.Router().ServeHTTP(recNonExistent, reqNonExistent)
+		if recNonExistent.Code != http.StatusNotFound {
+			t.Errorf("expected status 404 for nonexistent slug, got %d", recNonExistent.Code)
+		}
+	})
 }

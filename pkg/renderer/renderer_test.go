@@ -738,3 +738,76 @@ func TestRendererAlternatingSurfaces(t *testing.T) {
 	})
 }
 
+func TestRenderSaveTheDate(t *testing.T) {
+	r, err := New()
+	if err != nil {
+		t.Fatalf("failed to initialize renderer: %v", err)
+	}
+
+	date := time.Date(2026, time.November, 14, 21, 0, 0, 0, time.UTC)
+	inv := &domain.Invitation{
+		Version:   "1.0",
+		Slug:      "julieta-mis-15",
+		Title:     "Mis 15 Julieta",
+		DateStart: date,
+		Location: domain.Location{
+			Name:    "Salón La Reserva",
+			Address: "Pilar, Buenos Aires",
+		},
+		Theme: domain.ThemeConfig{
+			ID: domain.ThemeBotanicalElegance,
+		},
+		SaveTheDate: &domain.SaveTheDateConfig{
+			Enabled:       true,
+			Layout:        "full-bleed",
+			Placement:     "bottom-left",
+			Phrase:        "Reserva la fecha",
+			EventType:     "Mis 15",
+			Name:          "Julieta",
+			LocationHint:  "Buenos Aires",
+			FooterNote:    "Invitación formal próximamente",
+			CoverImageURL: "/static/img/hero-cumple.webp",
+			ShowCountdown: true,
+		},
+	}
+
+	var buf bytes.Buffer
+	if err := r.RenderSaveTheDate(&buf, inv); err != nil {
+		t.Fatalf("failed to render save the date: %v", err)
+	}
+
+	html := buf.String()
+
+	// Assertions for crucial structure and elements
+	if !strings.Contains(html, `std-layout--full-bleed`) {
+		t.Errorf("expected html to contain std-layout--full-bleed")
+	}
+	if !strings.Contains(html, `std-place--bottom-left`) {
+		t.Errorf("expected html to contain std-place--bottom-left")
+	}
+	if !strings.Contains(html, `Reserva la fecha`) {
+		t.Errorf("expected html to contain phrase 'Reserva la fecha'")
+	}
+	if !strings.Contains(html, `Mis 15`) {
+		t.Errorf("expected html to contain event type 'Mis 15'")
+	}
+	if !strings.Contains(html, `Julieta`) {
+		t.Errorf("expected html to contain name 'Julieta'")
+	}
+	if !strings.Contains(html, `Buenos Aires`) {
+		t.Errorf("expected html to contain location 'Buenos Aires'")
+	}
+	if !strings.Contains(html, `Invitación formal próximamente`) {
+		t.Errorf("expected html to contain footnote 'Invitación formal próximamente'")
+	}
+	if !strings.Contains(html, `/static/css/save_the_date.css`) {
+		t.Errorf("expected html to reference save_the_date.css")
+	}
+	if !strings.Contains(html, `std-countdown`) {
+		t.Errorf("expected html to contain std-countdown")
+	}
+	if !strings.Contains(html, `/static/js/save_the_date.js`) {
+		t.Errorf("expected html to reference save_the_date.js")
+	}
+}
+

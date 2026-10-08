@@ -1,0 +1,34 @@
+{
+  "$schema": "../schema/invitation.schema.json",
+  "version": "1.0",
+  "slug": "demo-quince-julieta",
+  "title": "Mis 15 Julieta",
+  "subtitle": "Reserva la fecha para celebrar juntos",
+  "hosts": [
+    "Julieta Gómez"
+  ],
+  "description": "Una noche inolvidable para celebrar mis 15 años junto a mi familia y amigos.",
+  "date_start": "2026-11-14T21:00:00-03:00",
+  "timezone": "America/Argentina/Buenos_Aires",
+  "location": {
+    "name": "Salón La Reserva",
+    "address": "Pilar, Buenos Aires, Argentina"
+  },
+  "theme": {
+    "id": "botanical-elegance"
+  },
+  "save_the_date": {
+    "enabled": true,
+    "layout": "full-bleed",
+    "placement": "bottom-center",
+    "phrase": "Save the Date",
+    "event_type": "Mis 15",
+    "name": "Julieta",
+    "location_hint": "Buenos Aires, Argentina",
+    "footer_note": "Invitación formal próximamente",
+    "cover_image_url": "/static/img/hero-cumple.webp",
+    "style_preset": "classic-script",
+    "show_countdown": true
+  },
+  "sections": []
+}

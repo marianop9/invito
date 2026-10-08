@@ -291,8 +291,14 @@ func (g *Generator) exportSingleInvitation(inv *domain.Invitation, res *Result) 
 
 	// 1. Render HTML
 	var htmlBuf bytes.Buffer
-	if err := g.renderer.RenderInvitation(&htmlBuf, inv); err != nil {
-		return fmt.Errorf("failed to render HTML for %s: %w", inv.Slug, err)
+	if len(inv.Sections) == 0 && inv.HasSaveTheDate() {
+		if err := g.renderer.RenderSaveTheDate(&htmlBuf, inv); err != nil {
+			return fmt.Errorf("failed to render Save the Date HTML for %s: %w", inv.Slug, err)
+		}
+	} else {
+		if err := g.renderer.RenderInvitation(&htmlBuf, inv); err != nil {
+			return fmt.Errorf("failed to render HTML for %s: %w", inv.Slug, err)
+		}
 	}
 
 	htmlPath := filepath.Join(invDir, "index.html")
@@ -304,7 +310,29 @@ func (g *Generator) exportSingleInvitation(inv *domain.Invitation, res *Result) 
 	res.FilesWritten = append(res.FilesWritten, relHTMLPath)
 	res.TotalBytes += int64(htmlBuf.Len())
 
-	// 2. Generate and write iCalendar .ics
+	// 2. Generate and write Save the Date standalone export under <OutputDir>/s/<slug>/index.html
+	if inv.HasSaveTheDate() {
+		stdDir := filepath.Join(g.config.OutputDir, "s", inv.Slug)
+		if err := os.MkdirAll(stdDir, 0755); err != nil {
+			return fmt.Errorf("failed to create save the date dir %s: %w", stdDir, err)
+		}
+
+		var stdBuf bytes.Buffer
+		if err := g.renderer.RenderSaveTheDate(&stdBuf, inv); err != nil {
+			return fmt.Errorf("failed to render Save the Date HTML for %s: %w", inv.Slug, err)
+		}
+
+		stdPath := filepath.Join(stdDir, "index.html")
+		if err := os.WriteFile(stdPath, stdBuf.Bytes(), 0644); err != nil {
+			return fmt.Errorf("failed to write %s: %w", stdPath, err)
+		}
+
+		relSTDPath := filepath.Join("s", inv.Slug, "index.html")
+		res.FilesWritten = append(res.FilesWritten, relSTDPath)
+		res.TotalBytes += int64(stdBuf.Len())
+	}
+
+	// 3. Generate and write iCalendar .ics
 	icsContent := calendar.GenerateICS(inv)
 	icsPath := filepath.Join(invDir, "calendar.ics")
 	if err := os.WriteFile(icsPath, []byte(icsContent), 0644); err != nil {

@@ -125,6 +125,11 @@ func (r *Renderer) RenderInvitation(w io.Writer, inv *domain.Invitation) error {
 	return r.tmpl.ExecuteTemplate(w, "invitation.html", inv)
 }
 
+// RenderSaveTheDate renders the dedicated single-screen Save the Date card.
+func (r *Renderer) RenderSaveTheDate(w io.Writer, inv *domain.Invitation) error {
+	return r.tmpl.ExecuteTemplate(w, "save_the_date.html", inv)
+}
+
 // RenderIndex renders the landing page.
 func (r *Renderer) RenderIndex(w io.Writer, data any) error {
 	return r.tmpl.ExecuteTemplate(w, "index.html", data)

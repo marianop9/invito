@@ -70,6 +70,13 @@ func (inv *Invitation) Validate() error {
 		}
 	}
 
+	// Validate save the date config if present
+	if inv.SaveTheDate != nil {
+		if err := inv.SaveTheDate.Validate(); err != nil {
+			errs = append(errs, err.Error())
+		}
+	}
+
 	// Validate each section block using its own Section.Validate() contract
 	for idx, sec := range inv.Sections {
 		if sec == nil {

@@ -90,6 +90,10 @@
       "$ref": "#/definitions/splash_screen_config",
       "description": "Optional tap-to-open welcome screen and envelope gate"
     },
+    "save_the_date": {
+      "$ref": "#/definitions/save_the_date_config",
+      "description": "Optional standalone Save the Date card configuration"
+    },
     "sections": {
       "description": "Ordered list of modular invitation section building blocks",
       "oneOf": [
@@ -175,6 +179,69 @@
         "background_image_url": {
           "type": "string",
           "description": "Optional custom background or envelope texture photo"
+        }
+      }
+    },
+    "save_the_date_config": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether the save the date card is active"
+        },
+        "layout": {
+          "type": "string",
+          "enum": ["full-bleed", "framed", "split-banner"],
+          "default": "full-bleed",
+          "description": "Visual layout style: 'full-bleed' (edge-to-edge photo overlay), 'framed' (fine border inset), or 'split-banner' (photo banner + card body)"
+        },
+        "placement": {
+          "type": "string",
+          "enum": ["bottom-center", "bottom-left", "top-center"],
+          "default": "bottom-center",
+          "description": "Anchor placement of the typographic lockup: 'bottom-center', 'bottom-left', or 'top-center'"
+        },
+        "phrase": {
+          "type": "string",
+          "default": "Save the Date",
+          "description": "Delicate script phrase (e.g. 'Save the Date', 'Reserva la fecha', 'Agendá este día')"
+        },
+        "event_type": {
+          "type": "string",
+          "description": "Optional kicker above the name (e.g. 'Mis 15', 'Mis XV', 'Nuestra Boda')"
+        },
+        "name": {
+          "type": "string",
+          "description": "Celebrant name(s). If omitted, falls back to invitation title"
+        },
+        "date_override": {
+          "type": "string",
+          "description": "Optional custom formatted date string"
+        },
+        "location_hint": {
+          "type": "string",
+          "description": "Short city or region string (e.g. 'Buenos Aires', 'Córdoba'). Defaults to location name or address"
+        },
+        "footer_note": {
+          "type": "string",
+          "default": "Invitación formal próximamente",
+          "description": "Subtle reassurance footnote"
+        },
+        "cover_image_url": {
+          "type": "string",
+          "description": "URL or path to background photo"
+        },
+        "style_preset": {
+          "type": "string",
+          "enum": ["classic-script", "editorial-rose", "modern-minimal", "gold-glamour"],
+          "default": "classic-script",
+          "description": "Typography and color preset for the card"
+        },
+        "show_countdown": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether to display a minimal countdown component (days to seconds)"
         }
       }
     },

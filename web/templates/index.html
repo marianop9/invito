@@ -75,9 +75,15 @@
         </div>
 
         <div style="display: flex; gap: 0.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+          {{ if and .HasSaveTheDate (eq (len .Sections) 0) }}
+          <a href="/s/{{ .Slug }}" class="btn btn-primary" style="flex: 1; font-size: 0.875rem; padding: 0.55rem;" target="_blank" rel="noopener noreferrer">
+            Ver Save the Date &nearr;
+          </a>
+          {{ else }}
           <a href="/i/{{ .Slug }}" class="btn btn-primary" style="flex: 1; font-size: 0.875rem; padding: 0.55rem;" target="_blank" rel="noopener noreferrer">
             Open Digital Invitation &nearr;
           </a>
+          {{ end }}
         </div>
       </div>
     </div>

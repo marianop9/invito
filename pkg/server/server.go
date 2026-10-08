@@ -115,9 +115,13 @@ func (s *Server) setupRoutes() {
 	// Public Invitation Routes
 	s.router.Route("/i/{slug}", func(r chi.Router) {
 		r.Get("/", s.handleRenderInvitation)
+		r.Get("/save-the-date", s.handleRenderSaveTheDate)
 		r.Get("/calendar.ics", s.handleDownloadICS)
 		r.Post("/rsvp", s.handleRSVPSubmit)
 	})
+
+	// Public Save the Date Short Route
+	s.router.Get("/s/{slug}", s.handleRenderSaveTheDate)
 
 	// JSON API Routes
 	s.router.Route("/api", func(r chi.Router) {
@@ -175,9 +179,39 @@ func (s *Server) handleRenderInvitation(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// If no sections are configured and a Save the Date is active, render Save the Date directly
+	if len(inv.Sections) == 0 && inv.HasSaveTheDate() {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		if err := s.renderer.RenderSaveTheDate(w, inv); err != nil {
+			http.Error(w, fmt.Sprintf("Failed to render save the date: %v", err), http.StatusInternalServerError)
+		}
+		return
+	}
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := s.renderer.RenderInvitation(w, inv); err != nil {
 		http.Error(w, fmt.Sprintf("Failed to render invitation: %v", err), http.StatusInternalServerError)
+	}
+}
+
+// handleRenderSaveTheDate dynamically renders the single-screen Save the Date card.
+func (s *Server) handleRenderSaveTheDate(w http.ResponseWriter, r *http.Request) {
+	slug := chi.URLParam(r, "slug")
+
+	inv, err := s.getInvitation(slug)
+	if err != nil {
+		http.NotFound(w, r)
+		return
+	}
+
+	if !inv.HasSaveTheDate() {
+		http.NotFound(w, r)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := s.renderer.RenderSaveTheDate(w, inv); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to render save the date: %v", err), http.StatusInternalServerError)
 	}
 }
 

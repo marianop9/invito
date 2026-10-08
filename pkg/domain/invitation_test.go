@@ -912,3 +912,107 @@ func TestComputeSectionSurfaces(t *testing.T) {
 	})
 }
 
+func TestSaveTheDateConfig(t *testing.T) {
+	t.Run("JSON Unmarshaling and Defaults", func(t *testing.T) {
+		raw := `{
+			"version": "1.0",
+			"slug": "julieta-mis-15",
+			"title": "Mis 15 Julieta",
+			"date_start": "2026-11-14T21:00:00Z",
+			"location": {"name": "Salón La Reserva", "address": "Pilar, Buenos Aires"},
+			"theme": {"id": "botanical-elegance"},
+			"save_the_date": {
+				"enabled": true,
+				"layout": "full-bleed",
+				"placement": "bottom-left",
+				"phrase": "Reserva la fecha",
+				"event_type": "Mis 15",
+				"name": "Julieta",
+				"location_hint": "Buenos Aires",
+				"footer_note": "Invitación formal próximamente",
+				"cover_image_url": "/static/img/hero-cumple.webp",
+				"show_countdown": true
+			}
+		}`
+
+		var inv Invitation
+		if err := json.Unmarshal([]byte(raw), &inv); err != nil {
+			t.Fatalf("failed to unmarshal JSON with save_the_date: %v", err)
+		}
+
+		if !inv.HasSaveTheDate() {
+			t.Errorf("expected HasSaveTheDate to be true")
+		}
+
+		std := inv.SaveTheDate
+		if std.DisplayPhrase() != "Reserva la fecha" {
+			t.Errorf("expected phrase 'Reserva la fecha', got %q", std.DisplayPhrase())
+		}
+		if std.DisplayName(&inv) != "Julieta" {
+			t.Errorf("expected name 'Julieta', got %q", std.DisplayName(&inv))
+		}
+		if std.DisplayLocation(&inv) != "Buenos Aires" {
+			t.Errorf("expected location 'Buenos Aires', got %q", std.DisplayLocation(&inv))
+		}
+		if std.DisplayFooterNote() != "Invitación formal próximamente" {
+			t.Errorf("expected footer note 'Invitación formal próximamente', got %q", std.DisplayFooterNote())
+		}
+		if std.PlacementClass() != "std-place--bottom-left" {
+			t.Errorf("expected placement class 'std-place--bottom-left', got %q", std.PlacementClass())
+		}
+		if std.LayoutClass() != "std-layout--full-bleed" {
+			t.Errorf("expected layout class 'std-layout--full-bleed', got %q", std.LayoutClass())
+		}
+		if !std.ShowCountdown {
+			t.Errorf("expected ShowCountdown to be true")
+		}
+	})
+
+	t.Run("Fallbacks when fields are omitted", func(t *testing.T) {
+		inv := Invitation{
+			Title:     "Event Title Fallback",
+			DateStart: time.Date(2026, time.November, 14, 20, 0, 0, 0, time.UTC),
+			Location: Location{
+				Name:    "Venue Name",
+				Address: "City, Country",
+			},
+			SaveTheDate: &SaveTheDateConfig{
+				Enabled: true,
+			},
+		}
+
+		std := inv.SaveTheDate
+		if std.DisplayPhrase() != "Save the Date" {
+			t.Errorf("expected default phrase 'Save the Date', got %q", std.DisplayPhrase())
+		}
+		if std.DisplayName(&inv) != "Event Title Fallback" {
+			t.Errorf("expected fallback name from title, got %q", std.DisplayName(&inv))
+		}
+		if std.DisplayLocation(&inv) != "City, Country" {
+			t.Errorf("expected fallback location from address, got %q", std.DisplayLocation(&inv))
+		}
+		if std.PlacementClass() != "std-place--bottom-center" {
+			t.Errorf("expected default placement class 'std-place--bottom-center', got %q", std.PlacementClass())
+		}
+		if std.LayoutClass() != "std-layout--full-bleed" {
+			t.Errorf("expected default layout class 'std-layout--full-bleed', got %q", std.LayoutClass())
+		}
+		// Formatted date should contain Saturday and Noviembre in Spanish
+		dateStr := std.DisplayDate(&inv)
+		if !strings.Contains(dateStr, "14") || !strings.Contains(dateStr, "2026") {
+			t.Errorf("expected formatted date with 14 and 2026, got %q", dateStr)
+		}
+	})
+
+	t.Run("Disabled SaveTheDate", func(t *testing.T) {
+		inv := Invitation{
+			SaveTheDate: &SaveTheDateConfig{
+				Enabled: false,
+			},
+		}
+		if inv.HasSaveTheDate() {
+			t.Errorf("expected HasSaveTheDate to be false when enabled=false")
+		}
+	})
+}
+

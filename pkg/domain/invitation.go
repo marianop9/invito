@@ -597,6 +597,121 @@ func (s *SplashScreenConfig) CTAButtonText() string {
 	return "Open Invitation"
 }
 
+// SaveTheDateConfig configures a dedicated, single-screen Save the Date card.
+type SaveTheDateConfig struct {
+	Enabled       bool   `json:"enabled"`
+	Layout        string `json:"layout,omitempty"`
+	Placement     string `json:"placement,omitempty"`
+	Phrase        string `json:"phrase,omitempty"`
+	EventType     string `json:"event_type,omitempty"`
+	Name          string `json:"name,omitempty"`
+	DateOverride  string `json:"date_override,omitempty"`
+	LocationHint  string `json:"location_hint,omitempty"`
+	FooterNote    string `json:"footer_note,omitempty"`
+	CoverImageURL string `json:"cover_image_url,omitempty"`
+	StylePreset   string `json:"style_preset,omitempty"`
+	ShowCountdown bool   `json:"show_countdown"`
+}
+
+func (s *SaveTheDateConfig) Validate() error {
+	return nil
+}
+
+func (s *SaveTheDateConfig) IsActive() bool {
+	return s != nil && s.Enabled
+}
+
+func (s *SaveTheDateConfig) DisplayPhrase() string {
+	if s != nil && strings.TrimSpace(s.Phrase) != "" {
+		return s.Phrase
+	}
+	return "Save the Date"
+}
+
+func (s *SaveTheDateConfig) DisplayEventType() string {
+	if s != nil && strings.TrimSpace(s.EventType) != "" {
+		return s.EventType
+	}
+	return ""
+}
+
+func (s *SaveTheDateConfig) DisplayName(inv *Invitation) string {
+	if s != nil && strings.TrimSpace(s.Name) != "" {
+		return s.Name
+	}
+	if inv != nil {
+		return inv.Title
+	}
+	return ""
+}
+
+func (s *SaveTheDateConfig) DisplayDate(inv *Invitation) string {
+	if s != nil && strings.TrimSpace(s.DateOverride) != "" {
+		return s.DateOverride
+	}
+	if inv == nil || inv.DateStart.IsZero() {
+		return ""
+	}
+	return monday.Format(inv.DateStart, "Monday, 2 de January de 2006", monday.LocaleEsES)
+}
+
+func (s *SaveTheDateConfig) DisplayLocation(inv *Invitation) string {
+	if s != nil && strings.TrimSpace(s.LocationHint) != "" {
+		return s.LocationHint
+	}
+	if inv != nil {
+		if strings.TrimSpace(inv.Location.Address) != "" {
+			return inv.Location.Address
+		}
+		if strings.TrimSpace(inv.Location.Name) != "" {
+			return inv.Location.Name
+		}
+	}
+	return ""
+}
+
+func (s *SaveTheDateConfig) DisplayFooterNote() string {
+	if s != nil && strings.TrimSpace(s.FooterNote) != "" {
+		return s.FooterNote
+	}
+	return "Invitación formal próximamente"
+}
+
+func (s *SaveTheDateConfig) LayoutClass() string {
+	if s == nil {
+		return "std-layout--full-bleed"
+	}
+	switch strings.TrimSpace(s.Layout) {
+	case "framed", "card", "card-framed":
+		return "std-layout--framed"
+	case "split-banner", "split", "banner":
+		return "std-layout--split-banner"
+	default:
+		return "std-layout--full-bleed"
+	}
+}
+
+func (s *SaveTheDateConfig) PlacementClass() string {
+	if s == nil {
+		return "std-place--bottom-center"
+	}
+	switch strings.TrimSpace(s.Placement) {
+	case "bottom-left":
+		return "std-place--bottom-left"
+	case "top-center", "top":
+		return "std-place--top-center"
+	default:
+		return "std-place--bottom-center"
+	}
+}
+
+func (s *SaveTheDateConfig) StylePresetClass() string {
+	if s == nil || strings.TrimSpace(s.StylePreset) == "" {
+		return "std-preset--classic-script"
+	}
+	return "std-preset--" + strings.TrimSpace(s.StylePreset)
+}
+
 // Invitation is the top-level structured event invitation entity.
 type Invitation struct {
 	Version      string              `json:"version"`
@@ -612,6 +727,7 @@ type Invitation struct {
 	Theme        ThemeConfig         `json:"theme"`
 	Music        *MusicConfig        `json:"music,omitempty"`
 	SplashScreen *SplashScreenConfig `json:"splash_screen,omitempty"`
+	SaveTheDate  *SaveTheDateConfig  `json:"save_the_date,omitempty"`
 	Sections     []Section           `json:"sections"`
 
 	isDemo bool
@@ -633,6 +749,7 @@ func (inv *Invitation) UnmarshalJSON(data []byte) error {
 		Theme        ThemeConfig         `json:"theme"`
 		Music        *MusicConfig        `json:"music,omitempty"`
 		SplashScreen *SplashScreenConfig `json:"splash_screen,omitempty"`
+		SaveTheDate  *SaveTheDateConfig  `json:"save_the_date,omitempty"`
 		Sections     json.RawMessage     `json:"sections"`
 	}
 
@@ -654,6 +771,7 @@ func (inv *Invitation) UnmarshalJSON(data []byte) error {
 	inv.Theme = raw.Theme
 	inv.Music = raw.Music
 	inv.SplashScreen = raw.SplashScreen
+	inv.SaveTheDate = raw.SaveTheDate
 	inv.Sections = nil
 
 	if len(raw.Sections) == 0 {
@@ -805,17 +923,23 @@ func (inv *Invitation) CarouselSections() []*CarouselSection {
 	return list
 }
 
-// HasCoverImage returns true if a hero cover image is present.
+// HasCoverImage returns true if a hero cover image or save the date cover image is present.
 func (inv *Invitation) HasCoverImage() bool {
 	h := inv.HeroSection()
-	return h != nil && h.HasCoverImage()
+	if h != nil && h.HasCoverImage() {
+		return true
+	}
+	return inv != nil && inv.SaveTheDate != nil && strings.TrimSpace(inv.SaveTheDate.CoverImageURL) != ""
 }
 
-// CoverImage returns the hero cover image URL or empty string.
+// CoverImage returns the hero or save the date cover image URL or empty string.
 func (inv *Invitation) CoverImage() string {
 	h := inv.HeroSection()
-	if h != nil {
+	if h != nil && h.HasCoverImage() {
 		return h.CoverImageURL
+	}
+	if inv != nil && inv.SaveTheDate != nil && strings.TrimSpace(inv.SaveTheDate.CoverImageURL) != "" {
+		return inv.SaveTheDate.CoverImageURL
 	}
 	return ""
 }
@@ -849,6 +973,11 @@ func (inv *Invitation) HasMusic() bool {
 // HasSplashScreen returns true if splash screen configuration is present and enabled.
 func (inv *Invitation) HasSplashScreen() bool {
 	return inv != nil && inv.SplashScreen.IsActive()
+}
+
+// HasSaveTheDate returns true if save the date configuration is present and enabled.
+func (inv *Invitation) HasSaveTheDate() bool {
+	return inv != nil && inv.SaveTheDate.IsActive()
 }
 
 // IsRSVPOpen checks if RSVP is enabled and if the deadline has not passed.

@@ -1,0 +1,474 @@
+/* ==========================================================================
+   Save the Date — Isolated Mobile-First Zero-Scroll Stylesheet
+   Designed for single-screen digital cards (Quinceañeras, Weddings, Milestones)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=Montserrat:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body.std-body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  height: 100svh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #0b0b0d;
+  color: #ffffff;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   Top Utility Bar (matches invitation canvas on desktop and mobile)
+   ========================================================================== */
+.std-top-bar {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.65);
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.std-top-bar a {
+  color: rgba(255, 255, 255, 0.65);
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: color 0.15s ease;
+}
+
+.std-top-bar a:hover {
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   Main Card Container
+   ========================================================================== */
+.std-card {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  height: 100%;
+  height: 100svh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Larger screens adjustment (> 520px) — mirrors invitation.html */
+@media (min-width: 521px) {
+  body.std-body {
+    padding: 1.25rem 0.75rem;
+    background-color: #F5F4EF;
+    background: radial-gradient(circle at 50% 25%, #FAF9F5 0%, #EBE7DD 100%);
+  }
+
+  .std-top-bar {
+    color: #5C6661;
+  }
+
+  .std-top-bar a {
+    color: #5C6661;
+  }
+
+  .std-top-bar a:hover {
+    color: #171C1A;
+  }
+
+  .std-top-bar span {
+    color: #7A8580;
+  }
+
+  .std-card {
+    height: min(calc(100svh - 4.5rem), 820px);
+    aspect-ratio: 9 / 16;
+    border-radius: 24px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 24px 55px rgba(23, 28, 26, 0.16), 0 4px 16px rgba(23, 28, 26, 0.08);
+  }
+}
+
+/* Mobile full-bleed (< 520px) */
+@media (max-width: 520px) {
+  body.std-body {
+    padding: 0;
+    justify-content: flex-start;
+  }
+
+  .std-top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: calc(0.75rem + env(safe-area-inset-top, 0px)) 1rem;
+    background: transparent;
+    pointer-events: none;
+    max-width: 100%;
+  }
+
+  .std-top-bar a,
+  .std-top-bar span {
+    pointer-events: auto;
+    background: rgba(15, 15, 18, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 0.25rem 0.65rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .std-card {
+    max-width: 100%;
+    height: 100svh;
+    height: 100dvh;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+  }
+}
+
+/* ==========================================================================
+   Media & Background Photo
+   ========================================================================== */
+.std-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  overflow: hidden;
+  background-color: #121214;
+}
+
+.std-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 25%;
+  display: block;
+}
+
+.std-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   Placement Presets & Adaptive Contrast Scrims
+   ========================================================================== */
+
+/* 1. Bottom-Center (Default: portraits with subject in upper two-thirds) */
+.std-place--bottom-center {
+  justify-content: flex-end;
+  align-items: center;
+  padding: 2rem 1.5rem calc(2.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.std-place--bottom-center .std-scrim {
+  background: linear-gradient(
+    to top,
+    rgba(10, 10, 12, 0.92) 0%,
+    rgba(10, 10, 12, 0.70) 35%,
+    rgba(10, 10, 12, 0.25) 60%,
+    transparent 85%
+  );
+}
+
+.std-place--bottom-center .std-lockup {
+  text-align: center;
+  align-items: center;
+}
+
+/* 2. Bottom-Left (Subject stands on the right side) */
+.std-place--bottom-left {
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding: 2rem 1.75rem calc(2.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.std-place--bottom-left .std-scrim {
+  background: radial-gradient(
+    ellipse 95% 75% at bottom left,
+    rgba(10, 10, 12, 0.94) 0%,
+    rgba(10, 10, 12, 0.65) 45%,
+    rgba(10, 10, 12, 0.20) 75%,
+    transparent 100%
+  );
+}
+
+.std-place--bottom-left .std-lockup {
+  text-align: left;
+  align-items: flex-start;
+}
+
+/* 3. Top-Center (Subject sits low / open sky background) */
+.std-place--top-center {
+  justify-content: flex-start;
+  align-items: center;
+  padding: calc(3rem + env(safe-area-inset-top, 0px)) 1.5rem 2rem;
+}
+
+.std-place--top-center .std-scrim {
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 10, 12, 0.92) 0%,
+    rgba(10, 10, 12, 0.65) 40%,
+    rgba(10, 10, 12, 0.20) 65%,
+    transparent 85%
+  );
+}
+
+.std-place--top-center .std-lockup {
+  text-align: center;
+  align-items: center;
+}
+
+/* ==========================================================================
+   Typographic Lockup (Indivisible Unit)
+   ========================================================================== */
+.std-lockup {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  max-width: 440px;
+  width: 100%;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.65);
+}
+
+/* Cluster 1: The Whisper */
+.std-phrase {
+  font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  font-style: italic;
+  font-size: 1.45rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0 0 0.85rem;
+  line-height: 1.2;
+}
+
+/* Cluster 2: The Hero */
+.std-hero {
+  margin-bottom: 1.35rem;
+}
+
+.std-kicker {
+  display: block;
+  font-family: "Montserrat", -apple-system, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
+  margin-bottom: 0.35rem;
+}
+
+.std-name {
+  font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
+  font-size: 2.85rem;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  margin: 0;
+  color: #ffffff;
+}
+
+/* Cluster 3: Logistics */
+.std-logistics {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.std-date {
+  font-family: "Montserrat", -apple-system, sans-serif;
+  font-size: 1.05rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  text-transform: capitalize;
+}
+
+.std-city {
+  font-family: "Montserrat", -apple-system, sans-serif;
+  font-size: 0.9rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Cluster 4: Minimalist Typographic Countdown Component */
+.std-countdown {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin-top: 1.25rem;
+  padding: 0;
+  background: none;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  width: fit-content;
+}
+
+.std-place--bottom-center .std-countdown,
+.std-place--top-center .std-countdown {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.std-place--bottom-left .std-countdown {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.std-cd-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 2.1rem;
+}
+
+.std-cd-num {
+  font-family: "Montserrat", -apple-system, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+}
+
+.std-cd-label {
+  font-family: "Montserrat", -apple-system, sans-serif;
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  margin-top: 0.25rem;
+}
+
+.std-cd-sep {
+  font-family: "Montserrat", -apple-system, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 300;
+  line-height: 1.1;
+  color: rgba(255, 255, 255, 0.35);
+  user-select: none;
+  margin-top: 1px;
+}
+
+/* Footnote: Reassurance */
+.std-footer-note {
+  font-family: "Montserrat", -apple-system, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 1.35rem;
+  margin-bottom: 0;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   Layout Variations
+   ========================================================================== */
+
+/* Framed / Stationery Paper Inset */
+.std-layout--framed {
+  padding: 1.25rem;
+}
+
+.std-layout--framed::after {
+  content: "";
+  position: absolute;
+  inset: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+  z-index: 4;
+  border-radius: 4px;
+}
+
+/* Split Banner Layout */
+.std-layout--split-banner .std-media {
+  height: 48%;
+  top: 0;
+}
+
+.std-layout--split-banner .std-lockup {
+  margin-top: auto;
+  background-color: #121215;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 2rem 1.5rem calc(2rem + env(safe-area-inset-bottom, 0px));
+  max-width: 100%;
+}
+
+.std-layout--split-banner .std-scrim {
+  background: linear-gradient(to bottom, transparent 60%, rgba(18, 18, 21, 0.95) 100%);
+}
+
+/* ==========================================================================
+   Style Presets
+   ========================================================================== */
+.std-preset--editorial-rose .std-phrase {
+  color: #f7d2db;
+}
+
+.std-preset--editorial-rose .std-kicker {
+  color: #f0b8c6;
+}
+
+.std-preset--gold-glamour .std-phrase {
+  color: #fae7b5;
+}
+
+.std-preset--gold-glamour .std-kicker {
+  color: #dfbf68;
+}
+
+.std-preset--modern-minimal .std-name {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  font-size: 2.35rem;
+}
