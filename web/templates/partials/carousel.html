@@ -2,7 +2,7 @@
 {{ if .Section.HasImages }}
 <section class="inv-section inv-carousel-section section-gallery inv-block {{ .SurfaceClass }}" id="section-carousel">
   {{ if .Section.Title }}
-    <h3 class="inv-block-heading">{{ .Section.Title }}</h3>
+    <h3 class="inv-block-title">{{ .Section.Title }}</h3>
   {{ end }}
 
   <div class="inv-carousel{{ if .Section.AspectRatio }} inv-carousel-aspect-{{ .Section.AspectRatioClass }}{{ end }}{{ if .Section.IsCoverFit }} inv-carousel-fit-cover{{ end }}" data-carousel="inv-carousel">

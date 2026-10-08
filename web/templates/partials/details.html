@@ -5,8 +5,8 @@
     <div class="inv-block-icon" aria-hidden="true">
       {{ icon "calendar-week" }}
     </div>
-    <h3 class="inv-block-heading">{{ if .Section.DateLabel }}{{ .Section.DateLabel }}{{ else }}¿CUÁNDO?{{ end }}</h3>
-    <div class="inv-block-primary">{{ capitalizeFirst .Invitation.FormattedFullDate }}</div>
+    <div class="inv-block-eyebrow">{{ if .Section.DateLabel }}{{ .Section.DateLabel }}{{ else }}¿CUÁNDO?{{ end }}</div>
+    <h3 class="inv-block-primary">{{ capitalizeFirst .Invitation.FormattedFullDate }}</h3>
     <div class="inv-block-secondary">{{ .Invitation.FormattedTime }}</div>
   </section>
 
@@ -15,8 +15,8 @@
     <div class="inv-block-icon" aria-hidden="true">
       {{ icon "map" }}
     </div>
-    <h3 class="inv-block-heading">{{ if .Section.LocationLabel }}{{ .Section.LocationLabel }}{{ else }}¿DÓNDE?{{ end }}</h3>
-    <div class="inv-block-primary">{{ .Invitation.Location.Name }}</div>
+    <div class="inv-block-eyebrow">{{ if .Section.LocationLabel }}{{ .Section.LocationLabel }}{{ else }}¿DÓNDE?{{ end }}</div>
+    <h3 class="inv-block-primary">{{ .Invitation.Location.Name }}</h3>
     <div class="inv-block-secondary">{{ .Invitation.Location.Address }}</div>
     {{ if .Invitation.Location.DirectionsNote }}
       <div class="inv-block-note">{{ .Invitation.Location.DirectionsNote }}</div>

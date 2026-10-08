@@ -151,13 +151,24 @@ body.invitation-body {
 
   background-color: var(--block-bg);
   color: var(--block-text);
-  padding: 2.5rem 1.75rem;
+  padding: 4.25rem 1.75rem;
+  min-height: 290px;
   text-align: center;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
   transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+@media (min-width: 521px) {
+  .inv-block,
+  .inv-section {
+    padding: 5rem 2.25rem;
+    min-height: 330px;
+  }
 }
 
 /* Explicit Light Block Modifier */
@@ -225,7 +236,7 @@ body.invitation-body {
   align-items: center;
   justify-content: center;
   color: var(--block-accent);
-  margin-bottom: 0.85rem;
+  margin-bottom: 1.15rem;
 }
 
 .inv-block-icon svg {
@@ -236,8 +247,10 @@ body.invitation-body {
   fill: none;
 }
 
-/* Centered Tracked Uppercase Heading */
+/* Centered Tracked Uppercase Eyebrow / Category Tag */
+.inv-block-eyebrow,
 .inv-block-heading {
+  font-family: var(--inv-font-body);
   font-size: 0.8125rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -247,20 +260,32 @@ body.invitation-body {
   line-height: 1.25;
 }
 
-/* Primary Information Coordinate */
+/* Primary Section Title / Headline (Generous baseline across blocks) */
+.inv-block-title,
 .inv-block-primary {
-  font-size: 1.25rem;
+  font-family: var(--inv-font-heading);
+  font-size: 1.45rem;
   font-weight: 600;
   color: var(--block-text);
-  line-height: 1.35;
+  line-height: 1.3;
+  margin-bottom: 0.35rem;
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 480px) {
+  .inv-block-title,
+  .inv-block-primary {
+    font-size: 1.3rem;
+  }
 }
 
 /* Secondary Information Coordinate */
 .inv-block-secondary {
+  font-family: var(--inv-font-body);
   font-size: 0.9375rem;
   color: var(--block-text-muted);
   margin-top: 0.3rem;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 /* Subtle Note Badge */
@@ -277,7 +302,7 @@ body.invitation-body {
 
 /* Single Action Button Container */
 .inv-block-action {
-  margin-top: 1.35rem;
+  margin-top: 1.65rem;
 }
 
 /* Single Clear Outline Action Button */
@@ -612,10 +637,10 @@ body.invitation-body {
 }
 
 .inv-quote-hairline {
-  width: 48px;
+  width: 56px;
   height: 1px;
   background-color: var(--block-border);
-  margin: 0.85rem auto;
+  margin: 1.25rem auto;
 }
 
 .inv-quote-block {
@@ -625,7 +650,7 @@ body.invitation-body {
 .inv-quote-text {
   font-family: var(--inv-font-heading);
   font-style: italic;
-  font-size: 1.35rem;
+  font-size: 1.45rem;
   line-height: 1.45;
   color: var(--block-text);
   font-weight: 500;
@@ -635,12 +660,12 @@ body.invitation-body {
   display: block;
   font-family: var(--inv-font-body);
   font-style: normal;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--block-text-muted);
-  margin-top: 0.65rem;
+  margin-top: 0.85rem;
 }
 
 /* ==========================================================================
@@ -737,21 +762,22 @@ body.invitation-body {
 
 .dress-code-badge {
   display: inline-block;
-  font-size: 1.125rem;
+  font-family: var(--inv-font-heading);
+  font-size: 1.35rem;
   font-weight: 600;
   color: var(--block-text);
   background-color: var(--block-card-bg);
   border: 1px solid var(--block-border);
-  padding: 0.4rem 1.25rem;
+  padding: 0.45rem 1.4rem;
   border-radius: var(--inv-radius-pill);
   margin: 0.35rem 0 0.5rem;
 }
 
 .dress-code-desc {
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   color: var(--block-text-muted);
   max-width: 360px;
-  line-height: 1.45;
+  line-height: 1.5;
 }
 
 .dress-code-palette {
@@ -788,11 +814,11 @@ body.invitation-body {
 .rsvp-conversion-card,
 .rsvp-form-card {
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   background-color: var(--block-bg);
   border: 1px solid var(--block-border);
   border-radius: var(--inv-radius-lg);
-  padding: 1.85rem 1.35rem;
+  padding: 2.25rem 1.65rem;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -1096,7 +1122,7 @@ body.invitation-body {
   justify-content: space-between;
   padding: 1rem 1.15rem;
   cursor: pointer;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--block-text);
   list-style: none;
@@ -1170,7 +1196,7 @@ body.invitation-body {
    Auto-Scrolling Photo Carousel & Gallery
    ========================================================================== */
 .inv-carousel-section {
-  padding-bottom: 2rem;
+  padding-bottom: 3.5rem;
   border-bottom: 1px solid var(--block-border);
 }
 
@@ -1344,8 +1370,9 @@ body.invitation-body {
 .inv-text-section.text-align-right .inv-text-card { text-align: right; }
 
 .inv-text-body {
-  font-size: 0.9375rem;
-  line-height: 1.55;
+  font-family: var(--inv-font-body);
+  font-size: 1rem;
+  line-height: 1.6;
   color: var(--block-text);
   white-space: pre-line;
 }

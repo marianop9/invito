@@ -2,7 +2,7 @@
 {{ if .Section.Enabled }}
 <section class="inv-section inv-rsvp-form-section inv-block {{ .SurfaceClass }}" id="section-rsvp">
   <div class="rsvp-form-card" id="rsvp-card-inner">
-    <h3 class="inv-block-heading">CONFIRMAR ASISTENCIA (RSVP)</h3>
+    <h3 class="inv-block-title">Confirmación de Asistencia (RSVP)</h3>
 
     {{ if .Invitation.IsRSVPOpen }}
       <form id="rsvp-form" action="/i/{{ .Invitation.Slug }}/rsvp" method="POST" class="rsvp-compact-form">

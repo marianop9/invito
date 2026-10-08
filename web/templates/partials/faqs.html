@@ -1,7 +1,7 @@
 {{ define "partial_faqs" }}
 {{ if .Section.Items }}
 <section class="inv-section inv-faqs-section inv-block {{ .SurfaceClass }}" id="section-faqs">
-  <h3 class="inv-block-heading">{{ if .Section.Title }}{{ .Section.Title }}{{ else }}PREGUNTAS FRECUENTES{{ end }}</h3>
+  <h3 class="inv-block-title">{{ if .Section.Title }}{{ .Section.Title }}{{ else }}Preguntas Frecuentes{{ end }}</h3>
 
   <div class="faq-accordion-list">
     {{ range .Section.Items }}
