@@ -2,6 +2,7 @@
 .vscode
 
 _demo
+_deploy
 bin
 tmp
 uploads

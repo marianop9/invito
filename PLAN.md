@@ -58,7 +58,7 @@
   - [x] Export invitations and embedded static assets into a standalone static bundle (`_demo/`).
   - [x] Render showcase landing page (`index.html`) at root.
   - [x] Support optional ZIP archive creation (`-zip` flag / `CreateZipArchive`).
-  - [x] CLI integration in `main.go` with `-export`, `-zip`, `-seed`, `-slug`, and `-no-index` flags.
+  - [x] CLI integration in `cmd/export` with `-export`, `-zip`, `-seed`, `-slug`, and `-no-index` flags.
 - [x] **Upload Demos to Static Site Hosting**
   - [x] Host the generated static sites. Potential targets include GitHub Pages, which should already be setup for this project, configuration in `.github/workflows/static.yml`.
 - [ ] **Use Demo Feedback and Implement MVP**
@@ -101,7 +101,12 @@
 
 ```
 /home/nano/projects/invitation/
-├── plan.md                      # Roadmap, priority checklist & context
+├── PLAN.md                      # Roadmap, priority checklist & context
+├── cmd/
+│   ├── server/
+│   │   └── main.go              # HTTP server daemon
+│   └── export/
+│       └── main.go              # Standalone SSG exporter & ZIP bundler
 ├── schema/
 │   └── invitation.schema.json   # JSON Schema definition (including images/carousel)
 ├── seed/                        # Active demo templates & assets
@@ -135,13 +140,14 @@
 go test ./... -v
 
 # Run the local server (listens on http://localhost:8080)
-go run main.go --port 8080
+go run ./cmd/server --port 8080
 
 # Export invitations to static directory (_demo) + create ZIP bundle
-go run main.go -export=_demo -zip
+go run ./cmd/export -export=_demo -zip
 
-# Build standalone binary
-go build -o bin/invitation main.go
+# Build standalone binaries
+go build -o bin/server ./cmd/server
+go build -o bin/export ./cmd/export
 ```
 
 NOTE: It is not necessary to run the build or tests. After implementing the code for the requested features and updating the test suite, I will manually verify the results and run the tests.  
