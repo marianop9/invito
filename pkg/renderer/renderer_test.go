@@ -116,6 +116,7 @@ func TestRenderer(t *testing.T) {
 			"inv-carousel-backdrop",
 			"inv-carousel-caption",
 			"Engagement at Big Sur",
+			"inv-carousel-aspect-4-3",
 		}
 
 		for _, kw := range expectedImgKeywords {

@@ -51,6 +51,7 @@
         {
             "type": "carousel",
             "title": "Algo de este último año",
+            "aspect_ratio": "9:16",
             "images": [
                 {
                     "url": "/static/img/demo-cari-45/photo_04.webp"

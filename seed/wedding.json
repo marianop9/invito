@@ -50,6 +50,7 @@
     {
       "type": "carousel",
       "title": "Our Story & Moments",
+      "aspect_ratio": "3:4",
       "images": [
         {
           "url": "/static/img/demo-carousel-1.webp",

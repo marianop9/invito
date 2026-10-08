@@ -1196,8 +1196,17 @@ body.invitation-body {
    Auto-Scrolling Photo Carousel & Gallery
    ========================================================================== */
 .inv-carousel-section {
+  padding-left: 0.85rem;
+  padding-right: 0.85rem;
   padding-bottom: 3.5rem;
   border-bottom: 1px solid var(--block-border);
+}
+
+@media (min-width: 521px) {
+  .inv-carousel-section {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
 }
 
 .inv-carousel {
@@ -1259,8 +1268,22 @@ body.invitation-body {
 
 .inv-carousel-aspect-16-9 .inv-carousel-img-wrap { aspect-ratio: 16 / 9; }
 .inv-carousel-aspect-1-1 .inv-carousel-img-wrap  { aspect-ratio: 1 / 1; }
-.inv-carousel-aspect-4-5 .inv-carousel-img-wrap  { aspect-ratio: 4 / 5; }
 .inv-carousel-aspect-4-3 .inv-carousel-img-wrap  { aspect-ratio: 4 / 3; }
+.inv-carousel-aspect-4-5 .inv-carousel-img-wrap  {
+  aspect-ratio: 4 / 5;
+  height: clamp(380px, 58vh, 520px);
+  max-height: 62vh;
+}
+.inv-carousel-aspect-3-4 .inv-carousel-img-wrap  {
+  aspect-ratio: 3 / 4;
+  height: clamp(420px, 64vh, 580px);
+  max-height: 68vh;
+}
+.inv-carousel-aspect-9-16 .inv-carousel-img-wrap {
+  aspect-ratio: 9 / 16;
+  height: clamp(480px, 72vh, 660px);
+  max-height: 75vh;
+}
 
 .inv-carousel-backdrop-wrap {
   position: absolute;

@@ -299,6 +299,10 @@ func (c *CarouselSection) AspectRatioClass() string {
 		return "4-3"
 	}
 	switch strings.TrimSpace(c.AspectRatio) {
+	case "9:16", "9/16", "9-16", "story", "tall":
+		return "9-16"
+	case "3:4", "3/4", "3-4":
+		return "3-4"
 	case "1:1", "1/1", "square":
 		return "1-1"
 	case "16:9", "16/9", "video":

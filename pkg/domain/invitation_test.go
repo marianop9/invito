@@ -401,6 +401,18 @@ func TestCarouselSectionHelperMethods(t *testing.T) {
 		t.Errorf("expected aspect ratio class '4-5', got %q", c.AspectRatioClass())
 	}
 
+	// 3:4 Tall Portrait
+	c.AspectRatio = "3:4"
+	if c.AspectRatioClass() != "3-4" {
+		t.Errorf("expected aspect ratio class '3-4', got %q", c.AspectRatioClass())
+	}
+
+	// 9:16 Cinematic Story
+	c.AspectRatio = "9:16"
+	if c.AspectRatioClass() != "9-16" {
+		t.Errorf("expected aspect ratio class '9-16', got %q", c.AspectRatioClass())
+	}
+
 	// Fit cover
 	c.Fit = "cover"
 	if !c.IsCoverFit() {

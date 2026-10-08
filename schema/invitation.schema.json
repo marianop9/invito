@@ -251,7 +251,7 @@
         "title": { "type": "string", "description": "Optional heading for the gallery/carousel section" },
         "aspect_ratio": {
           "type": "string",
-          "enum": ["4:3", "16:9", "1:1", "4:5"],
+          "enum": ["4:3", "16:9", "1:1", "4:5", "3:4", "9:16"],
           "default": "4:3",
           "description": "Aspect ratio of the carousel slide frame"
         },
