@@ -1,11 +1,14 @@
 package storage
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 	"time"
 
 	"invitation/pkg/domain"
+
+	"github.com/alexedwards/scs/sqlite3store"
 )
 
 func createSampleInvitation(slug, title string) *domain.Invitation {
@@ -298,5 +301,46 @@ func TestSQLiteStore_ValidationAndErrors(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "not found") {
 		t.Errorf("expected 'not found' in error message, got %q", err.Error())
+	}
+}
+
+func TestSQLiteStore_SessionsTableWithSCS(t *testing.T) {
+	store, err := NewSQLiteStore(":memory:", "")
+	if err != nil {
+		t.Fatalf("failed to initialize sqlite store: %v", err)
+	}
+	defer store.Close()
+
+	sessionStore := sqlite3store.NewWithCleanupInterval(store.DB(), 0)
+
+	token := "test-session-token-123"
+	payload := []byte("encoded-session-payload")
+	expiry := time.Now().Add(1 * time.Hour)
+
+	if err := sessionStore.Commit(token, payload, expiry); err != nil {
+		t.Fatalf("Commit failed: %v", err)
+	}
+
+	got, exists, err := sessionStore.Find(token)
+	if err != nil {
+		t.Fatalf("Find failed: %v", err)
+	}
+	if !exists {
+		t.Fatalf("expected session token to exist")
+	}
+	if !bytes.Equal(got, payload) {
+		t.Errorf("expected payload %q, got %q", payload, got)
+	}
+
+	if err := sessionStore.Delete(token); err != nil {
+		t.Fatalf("Delete failed: %v", err)
+	}
+
+	_, existsAfter, err := sessionStore.Find(token)
+	if err != nil {
+		t.Fatalf("Find after delete failed: %v", err)
+	}
+	if existsAfter {
+		t.Errorf("expected session token to be deleted")
 	}
 }

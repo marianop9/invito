@@ -21,27 +21,35 @@ import (
 	"invitation/pkg/storage"
 	"invitation/web"
 
+	"github.com/alexedwards/scs/sqlite3store"
+	"github.com/alexedwards/scs/v2"
+	"github.com/alexedwards/scs/v2/memstore"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
 // Config holds configuration options for the HTTP server.
 type Config struct {
-	Port         string
-	SeedDir      string
-	DatabasePath string
-	Store        storage.Store
-	UploadsDir   string
-	MediaStorage storage.MediaStorage
+	Port          string
+	SeedDir       string
+	DatabasePath  string
+	Store         storage.Store
+	UploadsDir    string
+	MediaStorage  storage.MediaStorage
+	AdminsFile    string
+	Admins        []AdminUser
+	SecureCookies bool
 }
 
-// Server wraps the chi router, template renderer, and storage engine.
+// Server wraps the chi router, template renderer, storage engine, and session manager.
 type Server struct {
-	router       *chi.Mux
-	renderer     *renderer.Renderer
-	store        storage.Store
-	mediaStorage storage.MediaStorage
-	config       Config
+	router         *chi.Mux
+	renderer       *renderer.Renderer
+	store          storage.Store
+	mediaStorage   storage.MediaStorage
+	sessionManager *scs.SessionManager
+	auth           *adminAuthenticator
+	config         Config
 }
 
 // New creates and configures a new Server instance.
@@ -80,12 +88,41 @@ func New(cfg Config) (*Server, error) {
 		mediaStorage = storage.NewLocalMediaStorage(uploadsDir, "/uploads")
 	}
 
+	var auth *adminAuthenticator
+	admins := cfg.Admins
+	if len(admins) == 0 && cfg.AdminsFile != "" {
+		loadedAdmins, err := LoadAdminsFile(cfg.AdminsFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load admin users: %w", err)
+		}
+		admins = loadedAdmins
+	}
+	if len(admins) > 0 {
+		auth, err = newAdminAuthenticator(admins)
+		if err != nil {
+			return nil, fmt.Errorf("failed to initialize admin authenticator: %w", err)
+		}
+	}
+
+	sessionManager := scs.New()
+	sessionManager.Lifetime = 24 * time.Hour
+	sessionManager.Cookie.HttpOnly = true
+	sessionManager.Cookie.SameSite = http.SameSiteLaxMode
+	sessionManager.Cookie.Secure = cfg.SecureCookies
+	if sqliteStore, ok := store.(*storage.SQLiteStore); ok {
+		sessionManager.Store = sqlite3store.New(sqliteStore.DB())
+	} else {
+		sessionManager.Store = memstore.New()
+	}
+
 	s := &Server{
-		router:       chi.NewRouter(),
-		renderer:     rnd,
-		store:        store,
-		mediaStorage: mediaStorage,
-		config:       cfg,
+		router:         chi.NewRouter(),
+		renderer:       rnd,
+		store:          store,
+		mediaStorage:   mediaStorage,
+		sessionManager: sessionManager,
+		auth:           auth,
+		config:         cfg,
 	}
 
 	s.setupMiddlewares()
@@ -100,6 +137,7 @@ func (s *Server) setupMiddlewares() {
 	s.router.Use(middleware.Logger)
 	s.router.Use(middleware.Recoverer)
 	s.router.Use(middleware.Compress(5))
+	s.router.Use(s.sessionManager.LoadAndSave)
 }
 
 func (s *Server) setupRoutes() {
@@ -127,12 +165,16 @@ func (s *Server) setupRoutes() {
 	// JSON API Routes
 	s.router.Route("/api", func(r chi.Router) {
 		r.Get("/invitations", s.handleAPIListInvitations)
-		r.Post("/invitations", s.handleAPICreateInvitation)
 		r.Get("/invitations/{slug}", s.handleAPIGetInvitation)
-		r.Put("/invitations/{slug}", s.handleAPIUpdateInvitation)
-		r.Delete("/invitations/{slug}", s.handleAPIDeleteInvitation)
-		r.Get("/invitations/{slug}/rsvps", s.handleAPIListRSVPs)
-		r.Post("/upload", s.handleAPIUpload)
+
+		r.Group(func(r chi.Router) {
+			r.Use(s.requireAdminAPI)
+			r.Post("/invitations", s.handleAPICreateInvitation)
+			r.Put("/invitations/{slug}", s.handleAPIUpdateInvitation)
+			r.Delete("/invitations/{slug}", s.handleAPIDeleteInvitation)
+			r.Get("/invitations/{slug}/rsvps", s.handleAPIListRSVPs)
+			r.Post("/upload", s.handleAPIUpload)
+		})
 	})
 
 	// Uploaded Media Serving Route
@@ -140,14 +182,20 @@ func (s *Server) setupRoutes() {
 
 	// Admin Planner Dashboard Routes
 	s.router.Route("/admin", func(r chi.Router) {
-		r.Get("/", s.handleAdminIndex)
-		r.Get("/invitations/new", s.handleAdminInvitationNew)
-		r.Route("/invitations/{slug}", func(r chi.Router) {
-			r.Get("/edit", s.handleAdminInvitationEdit)
-			r.Get("/rsvps", s.handleAdminRSVPs)
-			r.Get("/rsvps.csv", s.handleAdminExportRSVPsCSV)
+		r.Post("/login", s.handleAdminLogin)
+		r.Post("/logout", s.handleAdminLogout)
+
+		r.Group(func(r chi.Router) {
+			r.Use(s.requireAdminPage)
+			r.Get("/", s.handleAdminIndex)
+			r.Get("/invitations/new", s.handleAdminInvitationNew)
+			r.Route("/invitations/{slug}", func(r chi.Router) {
+				r.Get("/edit", s.handleAdminInvitationEdit)
+				r.Get("/rsvps", s.handleAdminRSVPs)
+				r.Get("/rsvps.csv", s.handleAdminExportRSVPsCSV)
+			})
+			r.Post("/invitations/preview", s.handleAdminInvitationPreview)
 		})
-		r.Post("/invitations/preview", s.handleAdminInvitationPreview)
 	})
 }
 

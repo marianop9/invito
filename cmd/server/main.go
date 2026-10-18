@@ -21,10 +21,19 @@ func main() {
 		defaultPort = "8080"
 	}
 
+	defaultAdminsFile := os.Getenv("ADMINS_FILE")
+	if defaultAdminsFile == "" {
+		defaultAdminsFile = "admins.json"
+	}
+
+	defaultSecureCookies := os.Getenv("ENV") == "production"
+
 	port := flag.String("port", defaultPort, "HTTP server port")
 	dbPath := flag.String("db", "invito.db", "Path to SQLite database file")
 	uploadsDir := flag.String("uploads", "uploads", "Path to directory for user-uploaded media files")
 	seedDir := flag.String("seed", "seed", "Path to seed directory containing invitation JSON files")
+	adminsFile := flag.String("admins", defaultAdminsFile, "Path to JSON config file containing admin credentials")
+	secureCookies := flag.Bool("secure-cookies", defaultSecureCookies, "Set Secure flag on session cookies")
 	flag.Parse()
 
 	// Initialize SQLite persistent storage
@@ -36,11 +45,13 @@ func main() {
 
 	// Normal server mode
 	srv, err := server.New(server.Config{
-		Port:         *port,
-		SeedDir:      *seedDir,
-		DatabasePath: *dbPath,
-		Store:        sqliteStore,
-		UploadsDir:   *uploadsDir,
+		Port:          *port,
+		SeedDir:       *seedDir,
+		DatabasePath:  *dbPath,
+		Store:         sqliteStore,
+		UploadsDir:    *uploadsDir,
+		AdminsFile:    *adminsFile,
+		SecureCookies: *secureCookies,
 	})
 	if err != nil {
 		log.Fatalf("Failed to initialize server: %v", err)

@@ -281,6 +281,11 @@ func (s *SQLiteStore) GetRSVPStats(ctx context.Context, slug string) (RSVPStats,
 	}, nil
 }
 
+// DB returns the underlying *sql.DB connection (e.g. for session storage).
+func (s *SQLiteStore) DB() *sql.DB {
+	return s.db
+}
+
 // Close closes the underlying SQLite database connection.
 func (s *SQLiteStore) Close() error {
 	return s.db.Close()
