@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sync"
+	"strings"
 	"time"
 
 	"invitation/pkg/domain"
@@ -24,7 +24,6 @@ var schemaSQL string
 type SQLiteStore struct {
 	db      *sql.DB
 	queries *db.Queries
-	mu      sync.RWMutex
 }
 
 // NewSQLiteStore initializes a SQLite database at the specified path and runs migrations.
@@ -32,9 +31,15 @@ type SQLiteStore struct {
 // If seedDir is non-empty and the database contains zero invitations, seed files are automatically imported.
 func NewSQLiteStore(dbPath, seedDir string) (*SQLiteStore, error) {
 	isMemory := dbPath == "" || dbPath == ":memory:"
-	dsn := dbPath
+	var dsn string
 	if isMemory {
-		dsn = "file::memory:?cache=shared"
+		dsn = "file::memory:?cache=shared&_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)"
+	} else {
+		sep := "?"
+		if strings.Contains(dbPath, "?") {
+			sep = "&"
+		}
+		dsn = fmt.Sprintf("%s%s_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=foreign_keys(1)", dbPath, sep)
 	}
 
 	sqlDB, err := sql.Open("sqlite", dsn)
@@ -44,21 +49,6 @@ func NewSQLiteStore(dbPath, seedDir string) (*SQLiteStore, error) {
 
 	if isMemory {
 		sqlDB.SetMaxOpenConns(1)
-	} else {
-		// WAL mode and busy timeout for concurrent safety
-		if _, err := sqlDB.Exec("PRAGMA journal_mode = WAL;"); err != nil {
-			_ = sqlDB.Close()
-			return nil, fmt.Errorf("failed to set WAL mode: %w", err)
-		}
-		if _, err := sqlDB.Exec("PRAGMA busy_timeout = 5000;"); err != nil {
-			_ = sqlDB.Close()
-			return nil, fmt.Errorf("failed to set busy_timeout: %w", err)
-		}
-	}
-
-	if _, err := sqlDB.Exec("PRAGMA foreign_keys = ON;"); err != nil {
-		_ = sqlDB.Close()
-		return nil, fmt.Errorf("failed to enable foreign keys: %w", err)
 	}
 
 	store := &SQLiteStore{
@@ -129,9 +119,6 @@ func (s *SQLiteStore) seedIfEmpty(seedDir string) error {
 
 // GetInvitation retrieves an invitation by slug.
 func (s *SQLiteStore) GetInvitation(slug string) (*domain.Invitation, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
 	dataJSON, err := s.queries.GetInvitationJSON(context.Background(), slug)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -150,9 +137,6 @@ func (s *SQLiteStore) GetInvitation(slug string) (*domain.Invitation, error) {
 
 // ListInvitations returns all invitations ordered by creation date.
 func (s *SQLiteStore) ListInvitations() ([]*domain.Invitation, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
 	rows, err := s.queries.ListInvitationsJSON(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("failed to list invitations: %w", err)
@@ -186,9 +170,6 @@ func (s *SQLiteStore) SaveInvitation(inv *domain.Invitation) error {
 		return fmt.Errorf("failed to marshal invitation: %w", err)
 	}
 
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	now := time.Now().UTC()
 	err = s.queries.SaveInvitation(context.Background(), db.SaveInvitationParams{
 		Slug:        inv.Slug,
@@ -207,9 +188,6 @@ func (s *SQLiteStore) SaveInvitation(inv *domain.Invitation) error {
 
 // DeleteInvitation removes an invitation and its associated RSVPs (via CASCADE).
 func (s *SQLiteStore) DeleteInvitation(slug string) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	affected, err := s.queries.DeleteInvitation(context.Background(), slug)
 	if err != nil {
 		return fmt.Errorf("failed to delete invitation %s: %w", slug, err)
@@ -224,9 +202,6 @@ func (s *SQLiteStore) DeleteInvitation(slug string) error {
 
 // SaveRSVP records an RSVP submission for an invitation.
 func (s *SQLiteStore) SaveRSVP(slug string, sub domain.RSVPSubmission) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
 	ctx := context.Background()
 
 	// Verify invitation exists
@@ -261,9 +236,6 @@ func (s *SQLiteStore) SaveRSVP(slug string, sub domain.RSVPSubmission) error {
 
 // ListRSVPs returns all RSVPs for an invitation, ordered newest first.
 func (s *SQLiteStore) ListRSVPs(slug string) ([]domain.RSVPSubmission, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
 	rows, err := s.queries.ListRSVPs(context.Background(), slug)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query RSVPs: %w", err)
@@ -297,9 +269,6 @@ func (s *SQLiteStore) ListRSVPs(slug string) ([]domain.RSVPSubmission, error) {
 
 // GetRSVPStats calculates aggregated metrics for an invitation.
 func (s *SQLiteStore) GetRSVPStats(slug string) (RSVPStats, error) {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
-
 	row, err := s.queries.GetRSVPStats(context.Background(), slug)
 	if err != nil {
 		return RSVPStats{}, fmt.Errorf("failed to calculate RSVP stats: %w", err)
