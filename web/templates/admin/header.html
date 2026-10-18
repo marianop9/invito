@@ -13,6 +13,13 @@
           <a href="/admin" class="navbar-item has-text-weight-medium" id="nav-admin-events">Events</a>
           <a href="/" class="navbar-item" id="nav-admin-public" target="_blank" rel="noopener noreferrer">Public Site &nearr;</a>
           <a href="/health" class="navbar-item" id="nav-admin-health">Status</a>
+          <div class="navbar-item">
+            <form method="POST" action="/admin/logout">
+              <button type="submit" class="button is-light is-small" id="btn-admin-logout">
+                Cerrar sesión
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>

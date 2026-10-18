@@ -179,6 +179,23 @@ func (s *Server) requireAdminAPI(next http.Handler) http.Handler {
 	})
 }
 
+// handleAdminLoginPage renders the HTML login form for /admin/login.
+func (s *Server) handleAdminLoginPage(w http.ResponseWriter, r *http.Request) {
+	if !s.isAuthEnabled() || s.authenticatedAdmin(r) != "" {
+		http.Redirect(w, r, "/admin", http.StatusSeeOther)
+		return
+	}
+
+	data := map[string]any{
+		"Title": "Iniciar Sesión",
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := s.renderer.RenderAdminLogin(w, data); err != nil {
+		http.Error(w, fmt.Sprintf("Failed to render login page: %v", err), http.StatusInternalServerError)
+	}
+}
+
 // handleAdminLogin authenticates an admin user and creates a persistent session.
 func (s *Server) handleAdminLogin(w http.ResponseWriter, r *http.Request) {
 	if !s.isAuthEnabled() {
@@ -219,10 +236,21 @@ func (s *Server) handleAdminLogin(w http.ResponseWriter, r *http.Request) {
 
 	username = strings.TrimSpace(username)
 	if !s.auth.Authenticate(username, password) {
-		w.Header().Set("Content-Type", "application/json")
+		if wantsJSON(r) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusUnauthorized)
+			_ = json.NewEncoder(w).Encode(map[string]string{
+				"error": "Invalid username or password",
+			})
+			return
+		}
+
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusUnauthorized)
-		_ = json.NewEncoder(w).Encode(map[string]string{
-			"error": "Invalid username or password",
+		_ = s.renderer.RenderAdminLogin(w, map[string]any{
+			"Title":    "Iniciar Sesión",
+			"Username": username,
+			"Error":    "Usuario o contraseña incorrectos.",
 		})
 		return
 	}

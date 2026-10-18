@@ -182,6 +182,7 @@ func (s *Server) setupRoutes() {
 
 	// Admin Planner Dashboard Routes
 	s.router.Route("/admin", func(r chi.Router) {
+		r.Get("/login", s.handleAdminLoginPage)
 		r.Post("/login", s.handleAdminLogin)
 		r.Post("/logout", s.handleAdminLogout)
 

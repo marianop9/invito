@@ -186,6 +186,20 @@ func TestAdminAuthFlow(t *testing.T) {
 		}
 	})
 
+	t.Run("GET /admin/login renders login page", func(t *testing.T) {
+		req := httptest.NewRequest(http.MethodGet, "/admin/login", nil)
+		rec := httptest.NewRecorder()
+		srv.Router().ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusOK {
+			t.Fatalf("expected 200 OK for GET /admin/login, got %d", rec.Code)
+		}
+		body := rec.Body.String()
+		if !strings.Contains(body, "Acceso de Administración") {
+			t.Errorf("expected login form heading in body, got: %s", body)
+		}
+	})
+
 	t.Run("POST /admin/login rejects invalid credentials with 401", func(t *testing.T) {
 		payload := `{"username": "planner", "password": "wrong-password"}`
 		req := httptest.NewRequest(http.MethodPost, "/admin/login", strings.NewReader(payload))
@@ -198,6 +212,23 @@ func TestAdminAuthFlow(t *testing.T) {
 		}
 		if len(rec.Result().Cookies()) != 0 {
 			t.Errorf("expected no session cookie on failed login, got %v", rec.Result().Cookies())
+		}
+
+		// Form POST failure renders HTML login page with error notification
+		form := url.Values{
+			"username": {"planner"},
+			"password": {"wrong-password"},
+		}
+		reqForm := httptest.NewRequest(http.MethodPost, "/admin/login", strings.NewReader(form.Encode()))
+		reqForm.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		recForm := httptest.NewRecorder()
+		srv.Router().ServeHTTP(recForm, reqForm)
+
+		if recForm.Code != http.StatusUnauthorized {
+			t.Errorf("expected 401 Unauthorized on failed form login, got %d", recForm.Code)
+		}
+		if !strings.Contains(recForm.Body.String(), "Usuario o contraseña incorrectos.") {
+			t.Errorf("expected Spanish error notification in body, got: %s", recForm.Body.String())
 		}
 	})
 

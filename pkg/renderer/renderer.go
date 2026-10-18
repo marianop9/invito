@@ -150,6 +150,11 @@ func (r *Renderer) RenderAdminEditor(w io.Writer, data any) error {
 	return r.adminTmpl.ExecuteTemplate(w, "editor.html", data)
 }
 
+// RenderAdminLogin renders the admin login page.
+func (r *Renderer) RenderAdminLogin(w io.Writer, data any) error {
+	return r.adminTmpl.ExecuteTemplate(w, "login.html", data)
+}
+
 // RenderToHTMLString performs Static Site Generation (SSG) for a single invitation.
 func (r *Renderer) RenderToHTMLString(inv *domain.Invitation) (string, error) {
 	var buf bytes.Buffer

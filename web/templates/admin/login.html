@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ if .Title }}{{ .Title }} &mdash; {{ end }}Invito Planner</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+</head>
+<body class="admin-body has-background-white-ter">
+  <main class="admin-main is-flex is-align-items-center is-justify-content-center py-6 px-3">
+    <div class="container" style="max-width: 420px; width: 100%;">
+      <div class="has-text-centered mb-5">
+        <a href="/" class="is-size-4 has-text-weight-bold has-text-dark">
+          <span class="has-text-primary mr-1">✦</span> Invito
+          <span class="tag is-primary is-light is-rounded ml-1 is-size-7 has-text-weight-semibold">Planner</span>
+        </a>
+      </div>
+
+      <div class="box p-5">
+        <h1 class="title is-4 mb-1">Acceso de Administración</h1>
+
+        {{ if .Error }}
+        <div class="notification is-danger is-light py-3 px-4 mb-4 is-size-7">
+          {{ .Error }}
+        </div>
+        {{ end }}
+
+        <form method="POST" action="/admin/login">
+          <div class="field">
+            <label class="label" for="field-username">Usuario</label>
+            <div class="control">
+              <input
+                class="input"
+                type="text"
+                id="field-username"
+                name="username"
+                value="{{ .Username }}"
+                placeholder="Tu nombre de usuario"
+                autocomplete="username"
+                required
+                autofocus
+              >
+            </div>
+          </div>
+
+          <div class="field mb-5">
+            <label class="label" for="field-password">Contraseña</label>
+            <div class="control">
+              <input
+                class="input"
+                type="password"
+                id="field-password"
+                name="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+                required
+              >
+            </div>
+          </div>
+
+          <div class="field">
+            <div class="control">
+              <button type="submit" class="button is-primary is-fullwidth has-text-weight-semibold">
+                Iniciar sesión
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
