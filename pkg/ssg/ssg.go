@@ -3,6 +3,7 @@ package ssg
 import (
 	"archive/zip"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -465,7 +466,7 @@ func (g *Generator) getInvitation(slug string) (*domain.Invitation, error) {
 	}
 
 	if g.store != nil {
-		inv, err := g.store.GetInvitation(slug)
+		inv, err := g.store.GetInvitation(context.Background(), slug)
 		if err == nil {
 			if strings.HasPrefix(inv.Slug, "demo-") {
 				inv.SetDemo(true)
@@ -502,7 +503,7 @@ func (g *Generator) listInvitations() ([]*domain.Invitation, error) {
 	}
 
 	if g.store != nil {
-		storeInvs, err := g.store.ListInvitations()
+		storeInvs, err := g.store.ListInvitations(context.Background())
 		if err == nil {
 			for _, inv := range storeInvs {
 				if !seen[inv.Slug] {

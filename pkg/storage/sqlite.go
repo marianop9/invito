@@ -75,8 +75,8 @@ func (s *SQLiteStore) migrate() error {
 	return err
 }
 
-func (s *SQLiteStore) seedIfEmpty(seedDir string) error {
-	count, err := s.queries.CountInvitations(context.Background())
+func (s *SQLiteStore) seedIfEmpty(ctx context.Context, seedDir string) error {
+	count, err := s.queries.CountInvitations(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to query invitation count: %w", err)
 	}
@@ -109,7 +109,7 @@ func (s *SQLiteStore) seedIfEmpty(seedDir string) error {
 			return fmt.Errorf("seed invitation %s validation failed: %w", file, err)
 		}
 
-		if err := s.SaveInvitation(&inv); err != nil {
+		if err := s.SaveInvitation(ctx, &inv); err != nil {
 			return fmt.Errorf("failed to save seed invitation %s: %w", file, err)
 		}
 	}
@@ -118,8 +118,8 @@ func (s *SQLiteStore) seedIfEmpty(seedDir string) error {
 }
 
 // GetInvitation retrieves an invitation by slug.
-func (s *SQLiteStore) GetInvitation(slug string) (*domain.Invitation, error) {
-	dataJSON, err := s.queries.GetInvitationJSON(context.Background(), slug)
+func (s *SQLiteStore) GetInvitation(ctx context.Context, slug string) (*domain.Invitation, error) {
+	dataJSON, err := s.queries.GetInvitationJSON(ctx, slug)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("invitation with slug %q not found", slug)
@@ -136,8 +136,8 @@ func (s *SQLiteStore) GetInvitation(slug string) (*domain.Invitation, error) {
 }
 
 // ListInvitations returns all invitations ordered by creation date.
-func (s *SQLiteStore) ListInvitations() ([]*domain.Invitation, error) {
-	rows, err := s.queries.ListInvitationsJSON(context.Background())
+func (s *SQLiteStore) ListInvitations(ctx context.Context) ([]*domain.Invitation, error) {
+	rows, err := s.queries.ListInvitationsJSON(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list invitations: %w", err)
 	}
@@ -156,7 +156,7 @@ func (s *SQLiteStore) ListInvitations() ([]*domain.Invitation, error) {
 }
 
 // SaveInvitation creates or updates an invitation record.
-func (s *SQLiteStore) SaveInvitation(inv *domain.Invitation) error {
+func (s *SQLiteStore) SaveInvitation(ctx context.Context, inv *domain.Invitation) error {
 	if inv == nil {
 		return fmt.Errorf("invitation cannot be nil")
 	}
@@ -171,7 +171,7 @@ func (s *SQLiteStore) SaveInvitation(inv *domain.Invitation) error {
 	}
 
 	now := time.Now().UTC()
-	err = s.queries.SaveInvitation(context.Background(), db.SaveInvitationParams{
+	err = s.queries.SaveInvitation(ctx, db.SaveInvitationParams{
 		Slug:        inv.Slug,
 		Title:       inv.Title,
 		Description: inv.Description,
@@ -187,8 +187,8 @@ func (s *SQLiteStore) SaveInvitation(inv *domain.Invitation) error {
 }
 
 // DeleteInvitation removes an invitation and its associated RSVPs (via CASCADE).
-func (s *SQLiteStore) DeleteInvitation(slug string) error {
-	affected, err := s.queries.DeleteInvitation(context.Background(), slug)
+func (s *SQLiteStore) DeleteInvitation(ctx context.Context, slug string) error {
+	affected, err := s.queries.DeleteInvitation(ctx, slug)
 	if err != nil {
 		return fmt.Errorf("failed to delete invitation %s: %w", slug, err)
 	}
@@ -201,9 +201,7 @@ func (s *SQLiteStore) DeleteInvitation(slug string) error {
 }
 
 // SaveRSVP records an RSVP submission for an invitation.
-func (s *SQLiteStore) SaveRSVP(slug string, sub domain.RSVPSubmission) error {
-	ctx := context.Background()
-
+func (s *SQLiteStore) SaveRSVP(ctx context.Context, slug string, sub domain.RSVPSubmission) error {
 	// Verify invitation exists
 	if _, err := s.queries.InvitationExists(ctx, slug); err != nil {
 		if err == sql.ErrNoRows {
@@ -235,8 +233,8 @@ func (s *SQLiteStore) SaveRSVP(slug string, sub domain.RSVPSubmission) error {
 }
 
 // ListRSVPs returns all RSVPs for an invitation, ordered newest first.
-func (s *SQLiteStore) ListRSVPs(slug string) ([]domain.RSVPSubmission, error) {
-	rows, err := s.queries.ListRSVPs(context.Background(), slug)
+func (s *SQLiteStore) ListRSVPs(ctx context.Context, slug string) ([]domain.RSVPSubmission, error) {
+	rows, err := s.queries.ListRSVPs(ctx, slug)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query RSVPs: %w", err)
 	}
@@ -268,8 +266,8 @@ func (s *SQLiteStore) ListRSVPs(slug string) ([]domain.RSVPSubmission, error) {
 }
 
 // GetRSVPStats calculates aggregated metrics for an invitation.
-func (s *SQLiteStore) GetRSVPStats(slug string) (RSVPStats, error) {
-	row, err := s.queries.GetRSVPStats(context.Background(), slug)
+func (s *SQLiteStore) GetRSVPStats(ctx context.Context, slug string) (RSVPStats, error) {
+	row, err := s.queries.GetRSVPStats(ctx, slug)
 	if err != nil {
 		return RSVPStats{}, fmt.Errorf("failed to calculate RSVP stats: %w", err)
 	}

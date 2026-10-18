@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"context"
+
 	"invitation/pkg/domain"
 )
 
@@ -15,12 +17,12 @@ type RSVPStats struct {
 
 // Store defines the persistent storage interface for invitations and RSVP records.
 type Store interface {
-	GetInvitation(slug string) (*domain.Invitation, error)
-	ListInvitations() ([]*domain.Invitation, error)
-	SaveInvitation(inv *domain.Invitation) error
-	DeleteInvitation(slug string) error
-	SaveRSVP(slug string, sub domain.RSVPSubmission) error
-	ListRSVPs(slug string) ([]domain.RSVPSubmission, error)
-	GetRSVPStats(slug string) (RSVPStats, error)
+	GetInvitation(ctx context.Context, slug string) (*domain.Invitation, error)
+	ListInvitations(ctx context.Context) ([]*domain.Invitation, error)
+	SaveInvitation(ctx context.Context, inv *domain.Invitation) error
+	DeleteInvitation(ctx context.Context, slug string) error
+	SaveRSVP(ctx context.Context, slug string, sub domain.RSVPSubmission) error
+	ListRSVPs(ctx context.Context, slug string) ([]domain.RSVPSubmission, error)
+	GetRSVPStats(ctx context.Context, slug string) (RSVPStats, error)
 	Close() error
 }

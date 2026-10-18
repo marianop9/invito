@@ -39,7 +39,7 @@ func TestServerEndpoints(t *testing.T) {
 	if err := json.Unmarshal(weddingData, &testInv); err != nil {
 		t.Fatalf("failed to unmarshal test wedding seed: %v", err)
 	}
-	if err := srv.store.SaveInvitation(&testInv); err != nil {
+	if err := srv.store.SaveInvitation(t.Context(), &testInv); err != nil {
 		t.Fatalf("failed to save test wedding invitation to store: %v", err)
 	}
 
@@ -781,7 +781,7 @@ func TestServerEndpoints(t *testing.T) {
 			},
 			Sections: nil, // Standalone Save the Date only
 		}
-		if err := srv.store.SaveInvitation(stdInv); err != nil {
+		if err := srv.store.SaveInvitation(t.Context(), stdInv); err != nil {
 			t.Fatalf("failed to save save the date test invitation: %v", err)
 		}
 

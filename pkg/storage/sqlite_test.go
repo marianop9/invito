@@ -42,6 +42,8 @@ func createSampleInvitation(slug, title string) *domain.Invitation {
 }
 
 func TestSQLiteStore_Initialization(t *testing.T) {
+	ctx := t.Context()
+
 	// Initialize with seed directory - seeds are decoupled from production database
 	store, err := NewSQLiteStore(":memory:", "../../seed")
 	if err != nil {
@@ -50,7 +52,7 @@ func TestSQLiteStore_Initialization(t *testing.T) {
 	defer store.Close()
 
 	// Initial store starts clean without polluting SQLite with static seeds
-	invs, err := store.ListInvitations()
+	invs, err := store.ListInvitations(ctx)
 	if err != nil {
 		t.Fatalf("ListInvitations failed: %v", err)
 	}
@@ -59,13 +61,15 @@ func TestSQLiteStore_Initialization(t *testing.T) {
 	}
 
 	// Verify nonexistent returns error
-	_, err = store.GetInvitation("non-existent-invitation")
+	_, err = store.GetInvitation(ctx, "non-existent-invitation")
 	if err == nil {
 		t.Errorf("expected error getting non-existent invitation, got nil")
 	}
 }
 
 func TestSQLiteStore_InvitationCRUD(t *testing.T) {
+	ctx := t.Context()
+
 	store, err := NewSQLiteStore(":memory:", "")
 	if err != nil {
 		t.Fatalf("failed to initialize sqlite store: %v", err)
@@ -74,12 +78,12 @@ func TestSQLiteStore_InvitationCRUD(t *testing.T) {
 
 	// 1. Create
 	inv := createSampleInvitation("gala-night", "Annual Spring Gala")
-	if err := store.SaveInvitation(inv); err != nil {
+	if err := store.SaveInvitation(ctx, inv); err != nil {
 		t.Fatalf("SaveInvitation failed: %v", err)
 	}
 
 	// 2. Read
-	fetched, err := store.GetInvitation("gala-night")
+	fetched, err := store.GetInvitation(ctx, "gala-night")
 	if err != nil {
 		t.Fatalf("GetInvitation failed: %v", err)
 	}
@@ -96,11 +100,11 @@ func TestSQLiteStore_InvitationCRUD(t *testing.T) {
 	// 3. Update (Upsert)
 	inv.Title = "Updated Annual Spring Gala"
 	inv.Description = "Updated gala description"
-	if err := store.SaveInvitation(inv); err != nil {
+	if err := store.SaveInvitation(ctx, inv); err != nil {
 		t.Fatalf("SaveInvitation (update) failed: %v", err)
 	}
 
-	updated, err := store.GetInvitation("gala-night")
+	updated, err := store.GetInvitation(ctx, "gala-night")
 	if err != nil {
 		t.Fatalf("GetInvitation after update failed: %v", err)
 	}
@@ -112,23 +116,25 @@ func TestSQLiteStore_InvitationCRUD(t *testing.T) {
 	}
 
 	// 4. Delete
-	if err := store.DeleteInvitation("gala-night"); err != nil {
+	if err := store.DeleteInvitation(ctx, "gala-night"); err != nil {
 		t.Fatalf("DeleteInvitation failed: %v", err)
 	}
 
 	// 5. Verify deleted
-	_, err = store.GetInvitation("gala-night")
+	_, err = store.GetInvitation(ctx, "gala-night")
 	if err == nil {
 		t.Errorf("expected error getting deleted invitation, got nil")
 	}
 
 	// 6. Delete already deleted should error
-	if err := store.DeleteInvitation("gala-night"); err == nil {
+	if err := store.DeleteInvitation(ctx, "gala-night"); err == nil {
 		t.Errorf("expected error deleting non-existent invitation, got nil")
 	}
 }
 
 func TestSQLiteStore_RSVPSubmissionsAndStats(t *testing.T) {
+	ctx := t.Context()
+
 	store, err := NewSQLiteStore(":memory:", "")
 	if err != nil {
 		t.Fatalf("failed to initialize sqlite store: %v", err)
@@ -136,7 +142,7 @@ func TestSQLiteStore_RSVPSubmissionsAndStats(t *testing.T) {
 	defer store.Close()
 
 	inv := createSampleInvitation("birthday-bash", "Leo's 30th Birthday")
-	if err := store.SaveInvitation(inv); err != nil {
+	if err := store.SaveInvitation(ctx, inv); err != nil {
 		t.Fatalf("SaveInvitation failed: %v", err)
 	}
 
@@ -170,13 +176,13 @@ func TestSQLiteStore_RSVPSubmissionsAndStats(t *testing.T) {
 	}
 
 	for _, sub := range rsvps {
-		if err := store.SaveRSVP("birthday-bash", sub); err != nil {
+		if err := store.SaveRSVP(ctx, "birthday-bash", sub); err != nil {
 			t.Fatalf("SaveRSVP failed for %s: %v", sub.Name, err)
 		}
 	}
 
 	// List RSVPs (should be ordered newest first)
-	list, err := store.ListRSVPs("birthday-bash")
+	list, err := store.ListRSVPs(ctx, "birthday-bash")
 	if err != nil {
 		t.Fatalf("ListRSVPs failed: %v", err)
 	}
@@ -194,7 +200,7 @@ func TestSQLiteStore_RSVPSubmissionsAndStats(t *testing.T) {
 	}
 
 	// Test GetRSVPStats
-	stats, err := store.GetRSVPStats("birthday-bash")
+	stats, err := store.GetRSVPStats(ctx, "birthday-bash")
 	if err != nil {
 		t.Fatalf("GetRSVPStats failed: %v", err)
 	}
@@ -217,6 +223,8 @@ func TestSQLiteStore_RSVPSubmissionsAndStats(t *testing.T) {
 }
 
 func TestSQLiteStore_CascadeDeletion(t *testing.T) {
+	ctx := t.Context()
+
 	store, err := NewSQLiteStore(":memory:", "")
 	if err != nil {
 		t.Fatalf("failed to initialize sqlite store: %v", err)
@@ -224,7 +232,7 @@ func TestSQLiteStore_CascadeDeletion(t *testing.T) {
 	defer store.Close()
 
 	inv := createSampleInvitation("cascade-event", "Cascade Test Event")
-	if err := store.SaveInvitation(inv); err != nil {
+	if err := store.SaveInvitation(ctx, inv); err != nil {
 		t.Fatalf("SaveInvitation failed: %v", err)
 	}
 
@@ -233,23 +241,23 @@ func TestSQLiteStore_CascadeDeletion(t *testing.T) {
 		Email:     "guest@example.com",
 		Attending: true,
 	}
-	if err := store.SaveRSVP("cascade-event", sub); err != nil {
+	if err := store.SaveRSVP(ctx, "cascade-event", sub); err != nil {
 		t.Fatalf("SaveRSVP failed: %v", err)
 	}
 
 	// Verify RSVP is there
-	list, err := store.ListRSVPs("cascade-event")
+	list, err := store.ListRSVPs(ctx, "cascade-event")
 	if err != nil || len(list) != 1 {
 		t.Fatalf("expected 1 RSVP before deletion, got %d (err: %v)", len(list), err)
 	}
 
 	// Delete invitation
-	if err := store.DeleteInvitation("cascade-event"); err != nil {
+	if err := store.DeleteInvitation(ctx, "cascade-event"); err != nil {
 		t.Fatalf("DeleteInvitation failed: %v", err)
 	}
 
 	// Verify RSVPs were cascade-deleted
-	rsvpsAfter, err := store.ListRSVPs("cascade-event")
+	rsvpsAfter, err := store.ListRSVPs(ctx, "cascade-event")
 	if err != nil {
 		t.Fatalf("ListRSVPs failed after invitation deletion: %v", err)
 	}
@@ -259,6 +267,8 @@ func TestSQLiteStore_CascadeDeletion(t *testing.T) {
 }
 
 func TestSQLiteStore_ValidationAndErrors(t *testing.T) {
+	ctx := t.Context()
+
 	store, err := NewSQLiteStore(":memory:", "")
 	if err != nil {
 		t.Fatalf("failed to initialize sqlite store: %v", err)
@@ -266,13 +276,13 @@ func TestSQLiteStore_ValidationAndErrors(t *testing.T) {
 	defer store.Close()
 
 	// 1. Nil invitation
-	if err := store.SaveInvitation(nil); err == nil {
+	if err := store.SaveInvitation(ctx, nil); err == nil {
 		t.Errorf("expected error saving nil invitation, got nil")
 	}
 
 	// 2. Invalid invitation (missing required fields)
 	invalidInv := &domain.Invitation{}
-	if err := store.SaveInvitation(invalidInv); err == nil {
+	if err := store.SaveInvitation(ctx, invalidInv); err == nil {
 		t.Errorf("expected error saving invalid invitation, got nil")
 	}
 
@@ -282,7 +292,7 @@ func TestSQLiteStore_ValidationAndErrors(t *testing.T) {
 		Email:     "ghost@example.com",
 		Attending: true,
 	}
-	err = store.SaveRSVP("non-existent-slug", sub)
+	err = store.SaveRSVP(ctx, "non-existent-slug", sub)
 	if err == nil {
 		t.Errorf("expected error saving RSVP to non-existent invitation, got nil")
 	}

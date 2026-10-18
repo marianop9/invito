@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/csv"
 	"encoding/json"
 	"errors"
@@ -152,7 +153,7 @@ func (s *Server) setupRoutes() {
 
 // handleIndex renders the showcase platform home page.
 func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
-	invitations, err := s.listInvitations()
+	invitations, err := s.listInvitations(r.Context())
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to list invitations: %v", err), http.StatusInternalServerError)
 		return
@@ -173,7 +174,7 @@ func (s *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleRenderInvitation(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 
-	inv, err := s.getInvitation(slug)
+	inv, err := s.getInvitation(r.Context(), slug)
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -198,7 +199,7 @@ func (s *Server) handleRenderInvitation(w http.ResponseWriter, r *http.Request) 
 func (s *Server) handleRenderSaveTheDate(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 
-	inv, err := s.getInvitation(slug)
+	inv, err := s.getInvitation(r.Context(), slug)
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -219,7 +220,7 @@ func (s *Server) handleRenderSaveTheDate(w http.ResponseWriter, r *http.Request)
 func (s *Server) handleDownloadICS(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 
-	inv, err := s.getInvitation(slug)
+	inv, err := s.getInvitation(r.Context(), slug)
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -236,7 +237,7 @@ func (s *Server) handleDownloadICS(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleRSVPSubmit(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 
-	inv, err := s.getInvitation(slug)
+	inv, err := s.getInvitation(r.Context(), slug)
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -303,7 +304,7 @@ func (s *Server) handleRSVPSubmit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := s.store.SaveRSVP(slug, sub); err != nil {
+	if err := s.store.SaveRSVP(r.Context(), slug, sub); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		_ = json.NewEncoder(w).Encode(map[string]string{
@@ -323,7 +324,7 @@ func (s *Server) handleRSVPSubmit(w http.ResponseWriter, r *http.Request) {
 
 // handleAPIListInvitations returns all invitations in JSON format.
 func (s *Server) handleAPIListInvitations(w http.ResponseWriter, r *http.Request) {
-	invitations, err := s.listInvitations()
+	invitations, err := s.listInvitations(r.Context())
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to list invitations: %v", err), http.StatusInternalServerError)
 		return
@@ -337,7 +338,7 @@ func (s *Server) handleAPIListInvitations(w http.ResponseWriter, r *http.Request
 func (s *Server) handleAPIGetInvitation(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 
-	inv, err := s.getInvitation(slug)
+	inv, err := s.getInvitation(r.Context(), slug)
 	if err != nil {
 		http.NotFound(w, r)
 		return
@@ -370,7 +371,7 @@ func (s *Server) handleAPICreateInvitation(w http.ResponseWriter, r *http.Reques
 	}
 
 	// TODO: Implement advanced collision resolution (e.g. auto-suffix suggestions)
-	if existing, _ := s.store.GetInvitation(inv.Slug); existing != nil {
+	if existing, _ := s.store.GetInvitation(r.Context(), inv.Slug); existing != nil {
 		w.WriteHeader(http.StatusConflict)
 		_ = json.NewEncoder(w).Encode(map[string]string{
 			"error": fmt.Sprintf("An invitation with slug %q already exists.", inv.Slug),
@@ -386,7 +387,7 @@ func (s *Server) handleAPICreateInvitation(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if err := s.store.SaveInvitation(&inv); err != nil {
+	if err := s.store.SaveInvitation(r.Context(), &inv); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		_ = json.NewEncoder(w).Encode(map[string]string{
 			"error": fmt.Sprintf("Failed to save invitation: %v", err),
@@ -403,7 +404,7 @@ func (s *Server) handleAPIUpdateInvitation(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-Type", "application/json")
 	slug := chi.URLParam(r, "slug")
 
-	existing, err := s.store.GetInvitation(slug)
+	existing, err := s.store.GetInvitation(r.Context(), slug)
 	if err != nil || existing == nil {
 		w.WriteHeader(http.StatusNotFound)
 		_ = json.NewEncoder(w).Encode(map[string]string{
@@ -432,7 +433,7 @@ func (s *Server) handleAPIUpdateInvitation(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if err := s.store.SaveInvitation(&inv); err != nil {
+	if err := s.store.SaveInvitation(r.Context(), &inv); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		_ = json.NewEncoder(w).Encode(map[string]string{
 			"error": fmt.Sprintf("Failed to update invitation: %v", err),
@@ -449,7 +450,7 @@ func (s *Server) handleAPIDeleteInvitation(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-Type", "application/json")
 	slug := chi.URLParam(r, "slug")
 
-	if _, err := s.store.GetInvitation(slug); err != nil {
+	if _, err := s.store.GetInvitation(r.Context(), slug); err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		_ = json.NewEncoder(w).Encode(map[string]string{
 			"error": fmt.Sprintf("Invitation with slug %q not found", slug),
@@ -457,7 +458,7 @@ func (s *Server) handleAPIDeleteInvitation(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if err := s.store.DeleteInvitation(slug); err != nil {
+	if err := s.store.DeleteInvitation(r.Context(), slug); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		_ = json.NewEncoder(w).Encode(map[string]string{
 			"error": fmt.Sprintf("Failed to delete invitation: %v", err),
@@ -477,13 +478,13 @@ func (s *Server) handleAPIDeleteInvitation(w http.ResponseWriter, r *http.Reques
 func (s *Server) handleAPIListRSVPs(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 
-	_, err := s.store.GetInvitation(slug)
+	_, err := s.store.GetInvitation(r.Context(), slug)
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
 
-	rsvps, err := s.store.ListRSVPs(slug)
+	rsvps, err := s.store.ListRSVPs(r.Context(), slug)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to list RSVPs: %v", err), http.StatusInternalServerError)
 		return
@@ -496,7 +497,7 @@ func (s *Server) handleAPIListRSVPs(w http.ResponseWriter, r *http.Request) {
 // handleHealth returns system status.
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	templateCount := 0
-	if invs, err := s.store.ListInvitations(); err == nil {
+	if invs, err := s.store.ListInvitations(r.Context()); err == nil {
 		templateCount = len(invs)
 	}
 
@@ -689,14 +690,14 @@ func (s *Server) loadSeedInvitations() ([]*domain.Invitation, error) {
 }
 
 // getInvitation resolves an invitation by slug, checking seed templates first for demo invitations.
-func (s *Server) getInvitation(slug string) (*domain.Invitation, error) {
+func (s *Server) getInvitation(ctx context.Context, slug string) (*domain.Invitation, error) {
 	if strings.HasPrefix(slug, "demo-") {
 		if inv, err := s.loadSeedInvitation(slug); err == nil {
 			return inv, nil
 		}
 	}
 
-	inv, err := s.store.GetInvitation(slug)
+	inv, err := s.store.GetInvitation(ctx, slug)
 	if err == nil {
 		if strings.HasPrefix(slug, "demo-") {
 			inv.SetDemo(true)
@@ -713,12 +714,12 @@ func (s *Server) getInvitation(slug string) (*domain.Invitation, error) {
 }
 
 // listInvitations returns both persistent store invitations and seed demo invitations.
-func (s *Server) listInvitations() ([]*domain.Invitation, error) {
+func (s *Server) listInvitations(ctx context.Context) ([]*domain.Invitation, error) {
 	seen := make(map[string]bool)
 	var result []*domain.Invitation
 
 	// Persistent invitations
-	if invs, err := s.store.ListInvitations(); err == nil {
+	if invs, err := s.store.ListInvitations(ctx); err == nil {
 		for _, inv := range invs {
 			seen[inv.Slug] = true
 			if strings.HasPrefix(inv.Slug, "demo-") {
@@ -754,7 +755,7 @@ type AdminEventItem struct {
 
 // handleAdminIndex renders the events management list.
 func (s *Server) handleAdminIndex(w http.ResponseWriter, r *http.Request) {
-	invitations, err := s.store.ListInvitations()
+	invitations, err := s.store.ListInvitations(r.Context())
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to list invitations: %v", err), http.StatusInternalServerError)
 		return
@@ -764,7 +765,7 @@ func (s *Server) handleAdminIndex(w http.ResponseWriter, r *http.Request) {
 	totalConfirmedGuests := 0
 
 	for _, inv := range invitations {
-		stats, err := s.store.GetRSVPStats(inv.Slug)
+		stats, err := s.store.GetRSVPStats(r.Context(), inv.Slug)
 		if err != nil {
 			stats = storage.RSVPStats{}
 		}
@@ -793,19 +794,19 @@ func (s *Server) handleAdminIndex(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleAdminRSVPs(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 
-	inv, err := s.store.GetInvitation(slug)
+	inv, err := s.store.GetInvitation(r.Context(), slug)
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
 
-	rsvps, err := s.store.ListRSVPs(slug)
+	rsvps, err := s.store.ListRSVPs(r.Context(), slug)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to list RSVPs: %v", err), http.StatusInternalServerError)
 		return
 	}
 
-	stats, err := s.store.GetRSVPStats(slug)
+	stats, err := s.store.GetRSVPStats(r.Context(), slug)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to get RSVP stats: %v", err), http.StatusInternalServerError)
 		return
@@ -829,13 +830,13 @@ func (s *Server) handleAdminRSVPs(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleAdminExportRSVPsCSV(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 
-	inv, err := s.store.GetInvitation(slug)
+	inv, err := s.store.GetInvitation(r.Context(), slug)
 	if err != nil {
 		http.NotFound(w, r)
 		return
 	}
 
-	rsvps, err := s.store.ListRSVPs(slug)
+	rsvps, err := s.store.ListRSVPs(r.Context(), slug)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to list RSVPs: %v", err), http.StatusInternalServerError)
 		return
@@ -982,7 +983,7 @@ func (s *Server) handleAdminInvitationNew(w http.ResponseWriter, r *http.Request
 func (s *Server) handleAdminInvitationEdit(w http.ResponseWriter, r *http.Request) {
 	slug := chi.URLParam(r, "slug")
 
-	inv, err := s.store.GetInvitation(slug)
+	inv, err := s.store.GetInvitation(r.Context(), slug)
 	if err != nil {
 		http.NotFound(w, r)
 		return
