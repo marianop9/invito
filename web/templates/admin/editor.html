@@ -947,6 +947,100 @@
                     </div>
                   </template>
 
+                  <!-- 10b. RSVP WhatsApp & Bank Transfer Block -->
+                  <template x-if="sec.type === 'rsvp_whatsapp'">
+                    <div class="columns is-multiline">
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Title</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="Confirmación por WhatsApp" x-model="sec.title">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">WhatsApp URL <span class="has-text-danger">*</span></label>
+                          <div class="control">
+                            <input type="url" class="input is-small" placeholder="https://wa.me/54911... o https://wa.link/..." x-model="sec.whatsapp_url">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Button Label</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="Confirmar por WhatsApp" x-model="sec.button_label">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Deadline</label>
+                          <div class="control">
+                            <input type="datetime-local" class="input is-small" x-model="sec._deadline_local">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Bank Alias / CBU (Copyable)</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="boda.sofia.mateo / 00000031000..." x-model="sec.bank_alias">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Deposit / Seña Amount</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="$15.000 por persona" x-model="sec.deposit_amount">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Bank Holder (Titular)</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="Nombre del Titular" x-model="sec.bank_holder">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Bank / Wallet Name (Banco / Entidad)</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="Mercado Pago / Banco Galicia" x-model="sec.bank_name">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column is-12">
+                        <div class="field">
+                          <label class="label is-small">Prompt Message</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="Confirmá tu asistencia directamente por WhatsApp." x-model="sec.prompt">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Receipt Note (Comprobante)</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="Por favor envianos el comprobante de transferencia por WhatsApp." x-model="sec.receipt_note">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="column is-6">
+                        <div class="field">
+                          <label class="label is-small">Custom Note / Notice</label>
+                          <div class="control">
+                            <input type="text" class="input is-small" placeholder="Confirmar antes del 20 de Septiembre" x-model="sec.custom_note">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+
                   <!-- 11. FAQs Block -->
                   <template x-if="sec.type === 'faqs'">
                     <div class="columns is-multiline">
@@ -1073,6 +1167,7 @@
                     <option value="text">Text Announcement</option>
                     <option value="rsvp">Interactive RSVP Form</option>
                     <option value="rsvp_external">External RSVP Form Link</option>
+                    <option value="rsvp_whatsapp">WhatsApp RSVP & Bank Transfer</option>
                     <option value="faqs">Guest FAQs</option>
                     <option value="gift_registry">Gift Registry</option>
                     <option value="closing">Closing Sign-off</option>

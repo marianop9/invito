@@ -145,6 +145,24 @@
           _deadline_local: '',
         };
         break;
+      case 'rsvp_whatsapp':
+        sec = {
+          type: 'rsvp_whatsapp',
+          enabled: true,
+          title: 'Confirmación por WhatsApp',
+          prompt: 'Confirmá tu presencia directamente por WhatsApp.',
+          whatsapp_url: 'https://wa.me/',
+          button_label: 'Confirmar por WhatsApp',
+          bank_alias: '',
+          bank_holder: '',
+          bank_name: '',
+          deposit_amount: '',
+          receipt_note: 'Por favor envianos el comprobante de transferencia por WhatsApp.',
+          custom_note: '',
+          deadline: undefined,
+          _deadline_local: '',
+        };
+        break;
       case 'faqs':
         sec = {
           type: 'faqs',
@@ -255,7 +273,7 @@
         if (sec.type === 'dress_code') {
           sec._palette_hints_raw = (sec.palette_hints || []).join(', ');
         }
-        if (sec.type === 'rsvp' || sec.type === 'rsvp_external') {
+        if (sec.type === 'rsvp' || sec.type === 'rsvp_external' || sec.type === 'rsvp_whatsapp') {
           sec._deadline_local = formatDateTimeLocal(sec.deadline);
         }
         if (sec.type === 'carousel' && sec.images) {
@@ -298,6 +316,7 @@
           dress_code: 'Dress Code',
           rsvp: 'Interactive RSVP Form',
           rsvp_external: 'External RSVP Form Link',
+          rsvp_whatsapp: 'WhatsApp RSVP & Bank Transfer',
           faqs: 'Guest FAQs',
           gift_registry: 'Gift Registry',
           closing: 'Closing Sign-off',
@@ -496,7 +515,7 @@
                 : [];
               delete sec._palette_hints_raw;
             }
-            if (sec.type === 'rsvp' || sec.type === 'rsvp_external') {
+            if (sec.type === 'rsvp' || sec.type === 'rsvp_external' || sec.type === 'rsvp_whatsapp') {
               sec.deadline = parseDateTimeLocalToISO(sec._deadline_local) || undefined;
               delete sec._deadline_local;
             }

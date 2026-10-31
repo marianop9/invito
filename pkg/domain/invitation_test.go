@@ -551,6 +551,130 @@ func TestRSVPExternalSection(t *testing.T) {
 	}
 }
 
+func TestRSVPWhatsAppSection(t *testing.T) {
+	future := time.Now().Add(24 * time.Hour)
+	past := time.Now().Add(-24 * time.Hour)
+
+	wa := &RSVPWhatsAppSection{
+		SectionType:   SectionRSVPWhatsApp,
+		Enabled:       true,
+		Title:         "Confirmación por WhatsApp",
+		Prompt:        "Confirmá tu asistencia directamente por WhatsApp:",
+		WhatsAppURL:   "https://wa.me/5491112345678?text=Hola%20quiero%20confirmar",
+		ButtonLabel:   "Confirmar por WhatsApp",
+		BankAlias:     "boda.caro.lucas",
+		BankHolder:    "Carolina López",
+		BankName:      "Mercado Pago",
+		DepositAmount: "$12.000 por persona",
+		ReceiptNote:   "Por favor envianos el comprobante de transferencia por WhatsApp.",
+		CustomNote:    "Confirmar antes del 15 de Octubre",
+		Deadline:      &future,
+	}
+
+	if wa.Type() != SectionRSVPWhatsApp {
+		t.Errorf("expected type 'rsvp_whatsapp', got %s", wa.Type())
+	}
+
+	if wa.TemplateName() != "partial_rsvp_whatsapp" {
+		t.Errorf("expected TemplateName 'partial_rsvp_whatsapp', got %s", wa.TemplateName())
+	}
+
+	if err := wa.Validate(); err != nil {
+		t.Fatalf("expected valid rsvp_whatsapp section, got error: %v", err)
+	}
+
+	if !wa.IsOpen() {
+		t.Errorf("expected rsvp_whatsapp to be open with future deadline")
+	}
+
+	if !wa.HasBankDetails() {
+		t.Errorf("expected HasBankDetails to be true")
+	}
+
+	if !wa.HasReceiptNote() {
+		t.Errorf("expected HasReceiptNote to be true")
+	}
+
+	if !wa.HasCustomNote() {
+		t.Errorf("expected HasCustomNote to be true")
+	}
+
+	// Missing whatsapp_url validation error
+	invalidWA := &RSVPWhatsAppSection{
+		SectionType: SectionRSVPWhatsApp,
+		Enabled:     true,
+	}
+	if err := invalidWA.Validate(); err == nil {
+		t.Errorf("expected error when whatsapp_url is empty, got nil")
+	}
+
+	// Past deadline
+	wa.Deadline = &past
+	if wa.IsOpen() {
+		t.Errorf("expected IsOpen to be false with past deadline")
+	}
+
+	// Disabled
+	wa.Enabled = false
+	wa.Deadline = nil
+	if wa.IsOpen() {
+		t.Errorf("expected IsOpen to be false when disabled")
+	}
+
+	// Invitation helper methods and IsRSVPOpen
+	wa.Enabled = true
+	wa.Deadline = &future
+	inv := &Invitation{
+		Slug: "test-rsvp-wa",
+		Sections: []Section{
+			wa,
+		},
+	}
+	if inv.RSVPWhatsAppSection() != wa {
+		t.Errorf("expected inv.RSVPWhatsAppSection() to return wa")
+	}
+	if !inv.IsRSVPOpen() {
+		t.Errorf("expected inv.IsRSVPOpen() to be true")
+	}
+
+	// JSON Polymorphic Unmarshal test
+	rawJSON := []byte(`{
+		"version": "1.0",
+		"slug": "test-rsvp-wa-unmarshal",
+		"title": "Fiesta de 15",
+		"date_start": "2026-12-15T20:00:00Z",
+		"timezone": "America/Argentina/Buenos_Aires",
+		"location": {"name": "Salón Elegance", "address": "Av. Principal 123"},
+		"theme": {"id": "golden-sunset"},
+		"sections": [
+			{
+				"type": "rsvp_whatsapp",
+				"enabled": true,
+				"title": "Confirmá tu Lugar",
+				"whatsapp_url": "https://wa.link/abc123",
+				"bank_alias": "quince.juli.mp",
+				"deposit_amount": "$10.000"
+			}
+		]
+	}`)
+
+	var decoded Invitation
+	if err := json.Unmarshal(rawJSON, &decoded); err != nil {
+		t.Fatalf("failed to unmarshal invitation with rsvp_whatsapp: %v", err)
+	}
+
+	sec := decoded.RSVPWhatsAppSection()
+	if sec == nil {
+		t.Fatalf("expected RSVPWhatsAppSection to be found after unmarshaling")
+	}
+	if sec.BankAlias != "quince.juli.mp" {
+		t.Errorf("expected BankAlias 'quince.juli.mp', got %q", sec.BankAlias)
+	}
+	if sec.WhatsAppURL != "https://wa.link/abc123" {
+		t.Errorf("expected WhatsAppURL 'https://wa.link/abc123', got %q", sec.WhatsAppURL)
+	}
+}
+
 func TestMusicConfig(t *testing.T) {
 	t.Run("Validation", func(t *testing.T) {
 		var nilMusic *MusicConfig

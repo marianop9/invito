@@ -1,0 +1,92 @@
+{{ define "partial_rsvp_whatsapp" }}
+{{ if .Section.Enabled }}
+<section class="inv-section inv-rsvp-section inv-block {{ .SurfaceClass }}" id="section-rsvp-whatsapp">
+  <div class="rsvp-conversion-card rsvp-conversion-card--seamless" id="rsvp-whatsapp-card-inner">
+    <h3 class="inv-block-title">
+      {{ if .Section.Title }}{{ .Section.Title }}{{ else }}Confirmación por WhatsApp{{ end }}
+    </h3>
+
+    {{ if .Section.IsOpen }}
+      {{ if .Section.CustomNote }}
+        <div class="rsvp-deadline-badge">{{ .Section.CustomNote }}</div>
+      {{ end }}
+
+      {{ if .Section.Prompt }}
+        <p class="rsvp-prompt">{{ .Section.Prompt }}</p>
+      {{ end }}
+
+      {{ if .Section.HasBankDetails }}
+      <div class="rsvp-bank-box" id="rsvp-bank-box">
+        <!-- <div class="rsvp-bank-header"> -->
+          <!-- <span class="rsvp-bank-icon" aria-hidden="true">{{ icon "credit-card" }}</span> -->
+          <!-- <span class="rsvp-bank-title">Datos para la transferencia</span> -->
+        <!-- </div> -->
+
+        {{ if .Section.DepositAmount }}
+        <div class="rsvp-bank-field">
+          <span class="rsvp-bank-label">Monto de reserva:</span>
+          <strong class="rsvp-bank-value rsvp-bank-value--amount">{{ .Section.DepositAmount }}</strong>
+        </div>
+        {{ end }}
+
+        {{ if .Section.BankAlias }}
+        <div class="rsvp-bank-field rsvp-bank-field--alias">
+          <span class="rsvp-bank-label">Alias / CBU:</span>
+          <div class="rsvp-alias-box">
+            <span class="rsvp-alias-text" id="bank-alias-val">{{ .Section.BankAlias }}</span>
+            <button type="button" class="btn-copy-alias" data-copy="{{ .Section.BankAlias }}" aria-label="Copiar Alias o CBU" title="Copiar al portapapeles">
+              <span class="copy-icon-wrap" aria-hidden="true">{{ icon "copy" }}</span>
+              <span class="check-icon-wrap" aria-hidden="true" style="display: none;">{{ icon "check" }}</span>
+            </button>
+          </div>
+        </div>
+        {{ end }}
+
+        {{ if .Section.BankHolder }}
+        <div class="rsvp-bank-field">
+          <span class="rsvp-bank-label">Titular:</span>
+          <span class="rsvp-bank-value">{{ .Section.BankHolder }}</span>
+        </div>
+        {{ end }}
+
+        {{ if .Section.BankName }}
+        <div class="rsvp-bank-field">
+          <span class="rsvp-bank-label">Entidad:</span>
+          <span class="rsvp-bank-value">{{ .Section.BankName }}</span>
+        </div>
+        {{ end }}
+      </div>
+      {{ end }}
+
+      {{ if .Section.WhatsAppURL }}
+      <div class="rsvp-action-wrap">
+        <a href="{{ .Section.WhatsAppURL }}" target="_blank" rel="noopener noreferrer" class="btn-rsvp-primary btn-rsvp-whatsapp" id="btn-rsvp-whatsapp">
+          <span class="btn-wa-icon" aria-hidden="true">{{ icon "brand-whatsapp" }}</span>
+          <span>{{ if .Section.ButtonLabel }}{{ .Section.ButtonLabel }}{{ else }}Confirmar por WhatsApp{{ end }}</span>
+          {{ icon "arrow-up-right" }}
+        </a>
+      </div>
+      {{ end }}
+
+      {{ if .Section.HasReceiptNote }}
+      <div class="rsvp-receipt-note">
+        <span class="rsvp-note-icon rsvp-note-icon--wa" aria-hidden="true">{{ icon "brand-whatsapp" }}</span>
+        <div class="rsvp-note-body">
+          <strong>Comprobante:</strong> {{ safeHTML .Section.ReceiptNote }}
+        </div>
+      </div>
+      {{ end }}
+
+    {{ else }}
+      <div class="rsvp-closed-state">
+        <div class="rsvp-closed-badge">Plazo Finalizado</div>
+        <p class="rsvp-closed-text">El plazo para confirmar asistencia para este evento ha finalizado.</p>
+        {{ if .Section.HasCustomNote }}
+          <p class="rsvp-custom-note">{{ .Section.CustomNote }}</p>
+        {{ end }}
+      </div>
+    {{ end }}
+  </div>
+</section>
+{{ end }}
+{{ end }}

@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initCountdown();
   initHeroScrollCue();
   initRSVPForm();
+  initBankCopy();
   initCarousel();
   initMusicAndSplash();
 });
@@ -240,6 +241,67 @@ function escapeHTML(str) {
   const p = document.createElement('p');
   p.textContent = str;
   return p.innerHTML;
+}
+
+/* ==========================================================================
+   1-Click Bank Account / Alias Copy
+   ========================================================================== */
+function initBankCopy() {
+  const copyButtons = document.querySelectorAll('.btn-copy-alias');
+  copyButtons.forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const textToCopy = btn.getAttribute('data-copy');
+      if (!textToCopy) return;
+
+      let success = false;
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(textToCopy);
+          success = true;
+        }
+      } catch (err) {
+        console.warn('navigator.clipboard failed, attempting execCommand fallback:', err);
+      }
+
+      if (!success) {
+        try {
+          const textarea = document.createElement('textarea');
+          textarea.value = textToCopy;
+          textarea.style.position = 'fixed';
+          textarea.style.left = '-999999px';
+          textarea.style.top = '-999999px';
+          document.body.appendChild(textarea);
+          textarea.focus();
+          textarea.select();
+          success = document.execCommand('copy');
+          textarea.remove();
+        } catch (err) {
+          console.error('execCommand copy fallback failed:', err);
+        }
+      }
+
+      if (success) {
+        const copyIcon = btn.querySelector('.copy-icon-wrap');
+        const checkIcon = btn.querySelector('.check-icon-wrap');
+        btn.classList.add('copied');
+        btn.setAttribute('title', '¡Copiado!');
+        if (copyIcon && checkIcon) {
+          copyIcon.style.display = 'none';
+          checkIcon.style.display = 'inline-flex';
+        }
+
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.setAttribute('title', 'Copiar al portapapeles');
+          if (copyIcon && checkIcon) {
+            copyIcon.style.display = 'inline-flex';
+            checkIcon.style.display = 'none';
+          }
+        }, 2000);
+      }
+    });
+  });
 }
 
 /* ==========================================================================

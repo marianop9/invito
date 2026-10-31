@@ -890,6 +890,200 @@ body.invitation-body {
   fill: none;
 }
 
+.btn-rsvp-whatsapp {
+  background-color: #25D366;
+}
+
+.btn-rsvp-whatsapp:hover {
+  background-color: #20ba59;
+  color: #FFFFFF;
+}
+
+.btn-wa-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-wa-icon svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+
+/* Seamless conversion card for direct canvas integration */
+.rsvp-conversion-card--seamless {
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  max-width: 440px;
+  width: 100%;
+}
+
+/* ==========================================================================
+   Bank Transfer Box & 1-Click Copy Alias
+   ========================================================================== */
+.rsvp-bank-box {
+  width: 100%;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.rsvp-bank-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--block-text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.15rem;
+}
+
+.rsvp-bank-icon {
+  color: var(--inv-accent);
+  display: inline-flex;
+}
+
+.rsvp-bank-icon svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  fill: none;
+}
+
+.rsvp-bank-field {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--block-text);
+  line-height: 1.2;
+}
+
+.rsvp-bank-field--alias {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.rsvp-bank-label {
+  color: var(--block-text-muted);
+  font-size: 0.8125rem;
+  flex-shrink: 0;
+}
+
+.rsvp-bank-value {
+  color: var(--block-text);
+  font-weight: 600;
+  text-align: right;
+  word-break: break-word;
+}
+
+.rsvp-bank-value--amount {
+  font-size: 0.9375rem;
+  color: var(--block-text);
+}
+
+/* Subtle border specifically for the Alias / CBU text field */
+.rsvp-alias-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 0.75rem;
+  background-color: var(--block-card-bg);
+  border: 1px solid var(--block-border-light);
+  border-radius: var(--inv-radius-md);
+  box-sizing: border-box;
+}
+
+.rsvp-alias-text {
+  font-family: monospace, var(--font-body);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--block-text);
+  letter-spacing: 0.03em;
+  word-break: break-all;
+  user-select: all;
+  line-height: 1.3;
+}
+
+.btn-copy-alias {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  background-color: var(--block-bg);
+  color: var(--block-text);
+  border: 1px solid var(--block-border);
+  border-radius: var(--inv-radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.btn-copy-alias:hover {
+  background-color: var(--inv-accent);
+  border-color: var(--inv-accent);
+  color: #FFFFFF;
+  transform: scale(1.05);
+}
+
+.btn-copy-alias.copied {
+  background-color: #25D366;
+  border-color: #25D366;
+  color: #FFFFFF;
+}
+
+.btn-copy-alias svg {
+  width: 1.05rem;
+  height: 1.05rem;
+  stroke: currentColor;
+  stroke-width: 2;
+  fill: none;
+}
+
+.copy-icon-wrap,
+.check-icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Receipt Note without outer box border */
+.rsvp-receipt-note {
+  width: 100%;
+  max-width: 440px;
+  margin-top: 1.35rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--block-text-muted);
+  text-align: left;
+}
+
+.rsvp-receipt-note strong {
+  color: var(--block-text);
+}
+
 .rsvp-notes-group {
   width: 100%;
   margin-top: 1.35rem;

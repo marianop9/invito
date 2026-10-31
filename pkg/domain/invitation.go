@@ -63,6 +63,7 @@ const (
 	SectionDressCode    SectionType = "dress_code"
 	SectionRSVP         SectionType = "rsvp"
 	SectionRSVPExternal SectionType = "rsvp_external"
+	SectionRSVPWhatsApp SectionType = "rsvp_whatsapp"
 	SectionFAQs         SectionType = "faqs"
 	SectionGiftRegistry SectionType = "gift_registry"
 	SectionClosing      SectionType = "closing"
@@ -99,6 +100,7 @@ var sectionRegistry = map[SectionType]SectionFactory{
 	SectionDressCode:    func() Section { return &DressCodeSection{SectionType: SectionDressCode} },
 	SectionRSVP:         func() Section { return &RSVPSection{SectionType: SectionRSVP, Enabled: true, MaxPartySize: 2} },
 	SectionRSVPExternal: func() Section { return &RSVPExternalSection{SectionType: SectionRSVPExternal, Enabled: true} },
+	SectionRSVPWhatsApp: func() Section { return &RSVPWhatsAppSection{SectionType: SectionRSVPWhatsApp, Enabled: true} },
 	SectionFAQs:         func() Section { return &FAQsSection{SectionType: SectionFAQs} },
 	SectionGiftRegistry: func() Section { return &GiftRegistrySection{SectionType: SectionGiftRegistry} },
 	SectionClosing:      func() Section { return &ClosingSection{SectionType: SectionClosing} },
@@ -452,6 +454,60 @@ func (r *RSVPExternalSection) HasReceiptNote() bool {
 	return strings.TrimSpace(r.ReceiptNote) != ""
 }
 func (r *RSVPExternalSection) HasCustomNote() bool {
+	return strings.TrimSpace(r.CustomNote) != ""
+}
+
+// RSVPWhatsAppSection configures attendance confirmation directly via WhatsApp with optional bank transfer details.
+type RSVPWhatsAppSection struct {
+	SectionType   SectionType `json:"type"`
+	Surface       string      `json:"surface,omitempty"`
+	Enabled       bool        `json:"enabled"`
+	Title         string      `json:"title,omitempty"`
+	Prompt        string      `json:"prompt,omitempty"`
+	WhatsAppURL   string      `json:"whatsapp_url"`
+	ButtonLabel   string      `json:"button_label,omitempty"`
+	Deadline      *time.Time  `json:"deadline,omitempty"`
+	BankAlias     string      `json:"bank_alias,omitempty"`
+	BankHolder    string      `json:"bank_holder,omitempty"`
+	BankName      string      `json:"bank_name,omitempty"`
+	DepositAmount string      `json:"deposit_amount,omitempty"`
+	ReceiptNote   string      `json:"receipt_note,omitempty"`
+	CustomNote    string      `json:"custom_note,omitempty"`
+}
+
+func (r *RSVPWhatsAppSection) Type() SectionType { return SectionRSVPWhatsApp }
+func (r *RSVPWhatsAppSection) GetSurface() string {
+	if r == nil {
+		return ""
+	}
+	return r.Surface
+}
+func (r *RSVPWhatsAppSection) TemplateName() string { return "partial_rsvp_whatsapp" }
+func (r *RSVPWhatsAppSection) Validate() error {
+	if strings.TrimSpace(r.WhatsAppURL) == "" {
+		return fmt.Errorf("rsvp_whatsapp section: whatsapp_url is required")
+	}
+	return nil
+}
+func (r *RSVPWhatsAppSection) IsOpen() bool {
+	if !r.Enabled {
+		return false
+	}
+	if r.Deadline != nil && !r.Deadline.IsZero() {
+		return time.Now().Before(*r.Deadline)
+	}
+	return true
+}
+func (r *RSVPWhatsAppSection) HasBankDetails() bool {
+	return strings.TrimSpace(r.BankAlias) != "" ||
+		strings.TrimSpace(r.BankHolder) != "" ||
+		strings.TrimSpace(r.BankName) != "" ||
+		strings.TrimSpace(r.DepositAmount) != ""
+}
+func (r *RSVPWhatsAppSection) HasReceiptNote() bool {
+	return strings.TrimSpace(r.ReceiptNote) != ""
+}
+func (r *RSVPWhatsAppSection) HasCustomNote() bool {
 	return strings.TrimSpace(r.CustomNote) != ""
 }
 
@@ -815,6 +871,8 @@ func (inv *Invitation) UnmarshalJSON(data []byte) error {
 			Image        *ImageSection        `json:"image,omitempty"`
 			DressCode    *DressCodeSection    `json:"dress_code,omitempty"`
 			RSVP         *RSVPSection         `json:"rsvp,omitempty"`
+			RSVPExternal *RSVPExternalSection `json:"rsvp_external,omitempty"`
+			RSVPWhatsApp *RSVPWhatsAppSection `json:"rsvp_whatsapp,omitempty"`
 			FAQs         []FAQItem            `json:"faqs,omitempty"`
 			GiftRegistry *GiftRegistrySection `json:"gift_registry,omitempty"`
 			Closing      *ClosingSection      `json:"closing,omitempty"`
@@ -857,6 +915,14 @@ func (inv *Invitation) UnmarshalJSON(data []byte) error {
 			legacy.RSVP.SectionType = SectionRSVP
 			inv.Sections = append(inv.Sections, legacy.RSVP)
 		}
+		if legacy.RSVPExternal != nil {
+			legacy.RSVPExternal.SectionType = SectionRSVPExternal
+			inv.Sections = append(inv.Sections, legacy.RSVPExternal)
+		}
+		if legacy.RSVPWhatsApp != nil {
+			legacy.RSVPWhatsApp.SectionType = SectionRSVPWhatsApp
+			inv.Sections = append(inv.Sections, legacy.RSVPWhatsApp)
+		}
 		if len(legacy.FAQs) > 0 {
 			inv.Sections = append(inv.Sections, &FAQsSection{SectionType: SectionFAQs, Items: legacy.FAQs})
 		}
@@ -897,6 +963,16 @@ func (inv *Invitation) RSVPSection() *RSVPSection {
 func (inv *Invitation) RSVPExternalSection() *RSVPExternalSection {
 	for _, sec := range inv.Sections {
 		if r, ok := sec.(*RSVPExternalSection); ok {
+			return r
+		}
+	}
+	return nil
+}
+
+// RSVPWhatsAppSection returns the first RSVPWhatsAppSection configured in the invitation, or nil.
+func (inv *Invitation) RSVPWhatsAppSection() *RSVPWhatsAppSection {
+	for _, sec := range inv.Sections {
+		if r, ok := sec.(*RSVPWhatsAppSection); ok {
 			return r
 		}
 	}
@@ -991,6 +1067,9 @@ func (inv *Invitation) IsRSVPOpen() bool {
 	}
 	if re := inv.RSVPExternalSection(); re != nil && re.Enabled {
 		return re.IsOpen()
+	}
+	if rw := inv.RSVPWhatsAppSection(); rw != nil && rw.Enabled {
+		return rw.IsOpen()
 	}
 	return false
 }

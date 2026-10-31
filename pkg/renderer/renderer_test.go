@@ -383,6 +383,88 @@ func TestRenderer(t *testing.T) {
 		}
 	})
 
+	t.Run("RenderInvitation with RSVPWhatsAppSection in open state", func(t *testing.T) {
+		future := time.Now().Add(72 * time.Hour)
+		waInv := *inv
+		waInv.Sections = []domain.Section{
+			&domain.RSVPWhatsAppSection{
+				SectionType:   domain.SectionRSVPWhatsApp,
+				Enabled:       true,
+				Title:         "Confirmación por WhatsApp",
+				Prompt:        "Hacé clic para confirmar tu asistencia directamente:",
+				WhatsAppURL:   "https://wa.me/5491112345678?text=Hola%20confirmo",
+				ButtonLabel:   "Confirmá por WhatsApp",
+				BankAlias:     "boda.caro.lucas",
+				BankHolder:    "Carolina López",
+				BankName:      "Mercado Pago",
+				DepositAmount: "$12.000 por persona",
+				ReceiptNote:   "Por favor envianos el comprobante de transferencia por WhatsApp.",
+				CustomNote:    "Confirmar antes del 15 de Octubre",
+				Deadline:      &future,
+			},
+		}
+
+		var buf bytes.Buffer
+		if err := r.RenderInvitation(&buf, &waInv); err != nil {
+			t.Fatalf("RenderInvitation with WhatsApp RSVP error: %v", err)
+		}
+
+		html := buf.String()
+		expectedKeywords := []string{
+			"section-rsvp-whatsapp",
+			"Confirmación por WhatsApp",
+			"Hacé clic para confirmar tu asistencia directamente:",
+			"https://wa.me/5491112345678?text=Hola%20confirmo",
+			"btn-rsvp-whatsapp",
+			"icon-tabler-brand-whatsapp",
+			"rsvp-bank-box",
+			"Datos para la transferencia",
+			"boda.caro.lucas",
+			"btn-copy-alias",
+			`data-copy="boda.caro.lucas"`,
+			"Mercado Pago",
+			"Carolina López",
+			"$12.000 por persona",
+			"Comprobante:",
+			"Por favor envianos el comprobante de transferencia por WhatsApp.",
+			"Confirmar antes del 15 de Octubre",
+		}
+
+		for _, kw := range expectedKeywords {
+			if !strings.Contains(html, kw) {
+				t.Errorf("expected rendered HTML to contain %q, but was missing", kw)
+			}
+		}
+	})
+
+	t.Run("RenderInvitation with RSVPWhatsAppSection in closed state", func(t *testing.T) {
+		past := time.Now().Add(-48 * time.Hour)
+		closedInv := *inv
+		closedInv.Sections = []domain.Section{
+			&domain.RSVPWhatsAppSection{
+				SectionType: domain.SectionRSVPWhatsApp,
+				Enabled:     true,
+				Title:       "Confirmación por WhatsApp",
+				WhatsAppURL: "https://wa.me/5491112345678",
+				Deadline:    &past,
+				CustomNote:  "El plazo de confirmación ha finalizado.",
+			},
+		}
+
+		var buf bytes.Buffer
+		if err := r.RenderInvitation(&buf, &closedInv); err != nil {
+			t.Fatalf("RenderInvitation with closed WhatsApp RSVP error: %v", err)
+		}
+
+		html := buf.String()
+		if !strings.Contains(html, "rsvp-closed-badge") || !strings.Contains(html, "Plazo Finalizado") {
+			t.Errorf("expected closed badge in output, got:\n%s", html)
+		}
+		if strings.Contains(html, "btn-rsvp-whatsapp") {
+			t.Errorf("expected closed WhatsApp RSVP not to display active CTA button")
+		}
+	})
+
 	t.Run("RenderInvitation with SplashScreen and Music config", func(t *testing.T) {
 		musicAndSplashInv := *inv
 		musicAndSplashInv.Music = &domain.MusicConfig{

@@ -111,6 +111,7 @@
               { "$ref": "#/definitions/dress_code_section" },
               { "$ref": "#/definitions/rsvp_section" },
               { "$ref": "#/definitions/rsvp_external_section" },
+              { "$ref": "#/definitions/rsvp_whatsapp_section" },
               { "$ref": "#/definitions/faqs_section" },
               { "$ref": "#/definitions/gift_registry_section" },
               { "$ref": "#/definitions/closing_section" }
@@ -410,6 +411,26 @@
         "contribution_note": { "type": "string", "description": "Note regarding reservation contribution / deposit / bank transfer" },
         "receipt_note": { "type": "string", "description": "Note instructing guests to send payment receipt via WhatsApp" },
         "custom_note": { "type": "string", "description": "Additional optional note" }
+      }
+    },
+    "rsvp_whatsapp_section": {
+      "type": "object",
+      "required": ["type", "whatsapp_url"],
+      "properties": {
+        "type": { "type": "string", "enum": ["rsvp_whatsapp"] },
+        "surface": { "$ref": "#/definitions/section_surface" },
+        "enabled": { "type": "boolean", "default": true },
+        "title": { "type": "string", "description": "RSVP WhatsApp section heading" },
+        "prompt": { "type": "string", "description": "Prompt text inviting guests to confirm attendance via WhatsApp" },
+        "whatsapp_url": { "type": "string", "description": "WhatsApp Click-to-Chat URL (https://wa.me/... or https://wa.link/...)" },
+        "button_label": { "type": "string", "description": "CTA button label (e.g. Confirmar por WhatsApp)" },
+        "deadline": { "type": "string", "format": "date-time" },
+        "bank_alias": { "type": "string", "description": "Bank Alias or CBU/CVU for transfers" },
+        "bank_holder": { "type": "string", "description": "Account holder name (Titular)" },
+        "bank_name": { "type": "string", "description": "Bank or wallet name (e.g. Banco Galicia, Mercado Pago)" },
+        "deposit_amount": { "type": "string", "description": "Optional deposit / reservation fee note (e.g. $15.000 por persona)" },
+        "receipt_note": { "type": "string", "description": "Note instructing guests to send payment receipt via WhatsApp" },
+        "custom_note": { "type": "string", "description": "Additional optional note or deadline notice" }
       }
     },
     "faqs_section": {
