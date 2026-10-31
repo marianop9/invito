@@ -1016,3 +1016,92 @@ func TestSaveTheDateConfig(t *testing.T) {
 	})
 }
 
+func TestInvitationTimezoneFormatting(t *testing.T) {
+	// 2026-11-14 23:00:00 UTC corresponds to 20:00:00 in America/Buenos_Aires (UTC-3)
+	startUTC := time.Date(2026, time.November, 14, 23, 0, 0, 0, time.UTC)
+	// 2026-11-15 05:00:00 UTC corresponds to 02:00:00 (next morning) in America/Buenos_Aires (UTC-3)
+	endUTC := time.Date(2026, time.November, 15, 5, 0, 0, 0, time.UTC)
+
+	t.Run("Formats 24h time in Buenos Aires timezone", func(t *testing.T) {
+		inv := Invitation{
+			DateStart: startUTC,
+			DateEnd:   &endUTC,
+			Timezone:  "America/Buenos_Aires",
+		}
+
+		expectedTime := "20:00 – 02:00"
+		if got := inv.FormattedTime(); got != expectedTime {
+			t.Errorf("expected FormattedTime %q, got %q", expectedTime, got)
+		}
+	})
+
+	t.Run("Formats start time only when no end date is provided", func(t *testing.T) {
+		inv := Invitation{
+			DateStart: startUTC,
+			Timezone:  "America/Buenos_Aires",
+		}
+
+		expectedTime := "20:00"
+		if got := inv.FormattedTime(); got != expectedTime {
+			t.Errorf("expected FormattedTime %q, got %q", expectedTime, got)
+		}
+	})
+
+	t.Run("Prevents date-rollover bug across midnight", func(t *testing.T) {
+		// 2026-11-15 01:30:00 UTC is Sunday 01:30 in UTC, but Saturday 22:30 in Buenos Aires
+		lateNightUTC := time.Date(2026, time.November, 15, 1, 30, 0, 0, time.UTC)
+		inv := Invitation{
+			DateStart: lateNightUTC,
+			Timezone:  "America/Buenos_Aires",
+		}
+
+		if gotTime := inv.FormattedTime(); gotTime != "22:30" {
+			t.Errorf("expected FormattedTime 22:30, got %q", gotTime)
+		}
+
+		dateFull := strings.ToLower(inv.FormattedFullDate())
+		if !strings.Contains(dateFull, "14 de noviembre") || !strings.Contains(dateFull, "sábado") {
+			t.Errorf("expected date in Buenos Aires (sábado 14 de noviembre), got %q", inv.FormattedFullDate())
+		}
+
+		if gotShort := inv.FormattedDateShort(); gotShort != "14/11/26" {
+			t.Errorf("expected FormattedDateShort '14/11/26', got %q", gotShort)
+		}
+	})
+
+	t.Run("Falls back gracefully to UTC for empty or invalid timezone", func(t *testing.T) {
+		invEmpty := Invitation{
+			DateStart: startUTC,
+			Timezone:  "",
+		}
+		if got := invEmpty.FormattedTime(); got != "23:00" {
+			t.Errorf("expected fallback to UTC 23:00, got %q", got)
+		}
+
+		invInvalid := Invitation{
+			DateStart: startUTC,
+			Timezone:  "Invalid/Unknown_Zone",
+		}
+		if got := invInvalid.FormattedTime(); got != "23:00" {
+			t.Errorf("expected fallback to UTC 23:00 for invalid timezone, got %q", got)
+		}
+	})
+
+	t.Run("SaveTheDate uses localized date", func(t *testing.T) {
+		// 2026-11-15 01:30:00 UTC is Saturday Nov 14 in Buenos Aires
+		lateNightUTC := time.Date(2026, time.November, 15, 1, 30, 0, 0, time.UTC)
+		inv := Invitation{
+			DateStart: lateNightUTC,
+			Timezone:  "America/Buenos_Aires",
+			SaveTheDate: &SaveTheDateConfig{
+				Enabled: true,
+			},
+		}
+
+		stdDate := strings.ToLower(inv.SaveTheDate.DisplayDate(&inv))
+		if !strings.Contains(stdDate, "14 de noviembre") {
+			t.Errorf("expected SaveTheDate to display localized date (14 de noviembre), got %q", stdDate)
+		}
+	})
+}
+

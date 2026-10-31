@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"strings"
 	"time"
+	_ "time/tzdata"
 
 	"github.com/goodsign/monday"
 )
@@ -652,7 +653,7 @@ func (s *SaveTheDateConfig) DisplayDate(inv *Invitation) string {
 	if inv == nil || inv.DateStart.IsZero() {
 		return ""
 	}
-	return monday.Format(inv.DateStart, "Monday, 2 de January de 2006", monday.LocaleEsES)
+	return monday.Format(inv.StartInLocation(), "Monday, 2 de January de 2006", monday.LocaleEsES)
 }
 
 func (s *SaveTheDateConfig) DisplayLocation(inv *Invitation) string {
@@ -1073,22 +1074,52 @@ func (inv *Invitation) HostsDisplay() string {
 	return strings.Join(inv.Hosts[:len(inv.Hosts)-1], ", ") + " & " + inv.Hosts[len(inv.Hosts)-1]
 }
 
-// FormattedFullDate returns a human-friendly date string like "Saturday, September 19, 2026".
+// LocationTZ returns the time.Location corresponding to inv.Timezone.
+// If inv.Timezone is empty or cannot be resolved, it falls back to time.UTC.
+func (inv *Invitation) LocationTZ() *time.Location {
+	if inv != nil && strings.TrimSpace(inv.Timezone) != "" {
+		if loc, err := time.LoadLocation(strings.TrimSpace(inv.Timezone)); err == nil {
+			return loc
+		}
+	}
+	return time.UTC
+}
+
+// StartInLocation returns DateStart adjusted to the invitation's configured timezone.
+func (inv *Invitation) StartInLocation() time.Time {
+	if inv == nil {
+		return time.Time{}
+	}
+	return inv.DateStart.In(inv.LocationTZ())
+}
+
+// EndInLocation returns DateEnd adjusted to the invitation's configured timezone, or nil if unset.
+func (inv *Invitation) EndInLocation() *time.Time {
+	if inv == nil || inv.DateEnd == nil {
+		return nil
+	}
+	end := inv.DateEnd.In(inv.LocationTZ())
+	return &end
+}
+
+// FormattedFullDate returns a human-friendly date string like "sábado, 19 de septiembre de 2026"
+// localized to the invitation's configured timezone.
 func (inv *Invitation) FormattedFullDate() string {
-	return monday.Format(inv.DateStart, "Monday, 2 de January de 2006", monday.LocaleEsES)
-	// return inv.DateStart.Format("Monday, January 2, 2006")
+	return monday.Format(inv.StartInLocation(), "Monday, 2 de January de 2006", monday.LocaleEsES)
 }
 
-// FormattedDateShort returns a compact date string.
+// FormattedDateShort returns a compact date string like "19/09/26" in the event's timezone.
 func (inv *Invitation) FormattedDateShort() string {
-	return inv.DateStart.Format("02/01/06")
+	return inv.StartInLocation().Format("02/01/06")
 }
 
-// FormattedTime returns a time string like "4:00 PM" or "4:00 PM – 11:30 PM".
+// FormattedTime returns a 24-hour time string in the event's timezone (e.g. "20:00" or "20:00 – 02:00").
 func (inv *Invitation) FormattedTime() string {
-	startStr := inv.DateStart.Format("3:04 PM")
+	start := inv.StartInLocation()
+	startStr := start.Format("15:04")
 	if inv.DateEnd != nil && !inv.DateEnd.IsZero() {
-		return fmt.Sprintf("%s – %s", startStr, inv.DateEnd.Format("3:04 PM"))
+		end := inv.EndInLocation()
+		return fmt.Sprintf("%s – %s", startStr, end.Format("15:04"))
 	}
 	return startStr
 }
