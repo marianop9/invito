@@ -1,0 +1,55 @@
+{
+    "version": "1.0",
+    "slug": "richard-35",
+    "title": "¡Tenemos una misión!",
+    "date_start": "2026-11-28T23:00:00Z",
+    "timezone": "America/Buenos_Aires",
+    "location": {
+        "name": "La Matera",
+        "address": "Manuel Tribole y 17 de Octubre",
+        "map_url": "https://maps.app.goo.gl/Ui1YsKYwWgPZu6Ry6"
+    },
+    "theme": {
+        "id": "golden-sunset",
+        "palette_override": null
+    },
+    "sections": [
+        {
+            "type": "hero",
+            "layout": "banner",
+            "eyebrow": "Cumple Richard",
+            "vibe": "asd",
+            "cover_image_url": "/uploads/richard-35-1793457946-ba347d60.jpg",
+            "show_countdown": true
+        },
+        {
+            "type": "text",
+            "surface": "contrast",
+            "text": "Richard llega a los 35 y queremos sorprenderlo con una noche inolvidable. Para eso necesitamos cómplices que nos ayuden a hacer de este cumpleaños un momento único. \n\n¿Contamos con vos?",
+            "align": "center"
+        },
+        {
+            "type": "details",
+            "show_map_link": true,
+            "show_calendar_button": true
+        },
+        {
+            "type": "rsvp_whatsapp",
+            "enabled": true,
+            "title": "Confirmá tu asistencia",
+            "whatsapp_url": "https://wa.me/543564639164?text=Hola!%20Te%20confirmo%20mi%20asistencia%20para%20el%20cumple.",
+            "button_label": "Confirmar por WhatsApp",
+            "bank_alias": "florbeldomenico.mp",
+            "bank_holder": "Florencia Beldomenico",
+            "bank_name": "Mercado Pago",
+            "deposit_amount": "$25.000",
+            "custom_note": "Confirmar antes del 21 de noviembre"
+        },
+        {
+            "type": "text",
+            "title": "Recordatorio:",
+            "text": " ¡Es sorpresa!\n\nLlevar bebida y cubiertos.",
+            "align": "center"
+        }
+    ]
+}
